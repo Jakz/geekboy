@@ -2,6 +2,7 @@
 #define _GB_SOUND_H_
 
 #include <set>
+#include <memory>
 #include "utils.h"
 #include "cpu.h"
 #include "memory.h"

@@ -102,7 +102,6 @@ private:
     void drawWindow(u8 line);
     void drawSprites(u8 line);
   
-
   static typename Pixel::type ccc(u8 r, u8 g, u8 b);
 };
   

@@ -1,0 +1,37 @@
+.phony: all opt clean
+
+CC = mipsel-linux-g++
+STRIP = mipsel-linux-strip
+
+SYSROOT := $(shell $(CC) --print-sysroot)
+SDL_INCLUDES := $(shell $(SYSROOT)/usr/bin/sdl-config --cflags)
+SDL_LIBS := $(shell $(SYSROOT)/usr/bin/sdl-config --libs)
+
+CCFLAGS = -std=c++11 $(SDL_INCLUDES) -fPIC
+LDFLAGS += $(SDL_LIBS) -lSDL_image -ldl -shared
+
+all opt debug:
+opt: CCFLAGS += -O3 -ffast-math
+debug: CCFLAGS += -g
+
+BINDIR := obj
+BASESRC := src
+SOURCE := $(BASESRC) $(BASESRC)/common $(BASESRC)/core $(BASESRC)/data $(BASESRC)/debug $(BASESRC)/systems $(BASESRC)/ui $(BASESRC)/views
+SOURCES := $(filter-out main.cpp screen.cpp, $(patsubst $(BASESRC)/%, %, $(foreach dir, $(SOURCE), $(wildcard $(dir)/*.cpp))))
+BINARIES := $(patsubst %.cpp, %.o, $(SOURCES))
+EXECUTABLE := geekboy.so
+
+all opt: $(EXECUTABLE)
+
+$(EXECUTABLE): $(addprefix $(BINDIR)/, $(BINARIES))
+	$(CC) $(CCFLAGS) $^ -o $@ $(LDFLAGS)
+	#$(STRIP) $@
+	
+	
+$(BINDIR)/%.o : $(BASESRC)/%.cpp
+	@test -d $(@D) || mkdir -p $(@D)
+	$(CC) -DMAKE -c $(CCFLAGS) $< -o $@
+	
+clean:
+	rm -rf obj
+	rm -f geekboy.so

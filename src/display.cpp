@@ -22,23 +22,27 @@ Display<T>::~Display()
   delete [] priorityMap;
 }
 
+namespace gb {
+
 template<>
-Display<PixelFormat::ARGB8>::Pixel::type Display<PixelFormat::ARGB8>::ccc(u8 r, u8 g, u8 b)
+Display<PixelFormat::ARGB8>::Pixel::type gb::Display<PixelFormat::ARGB8>::ccc(u8 r, u8 g, u8 b)
 {
   return (r*8) << 24 | (g*8) << 16 | (b*8) << 8 | 0xFF;
 }
 
 template<>
-Display<PixelFormat::ARGB51>::Pixel::type Display<PixelFormat::ARGB51>::ccc(u8 r, u8 g, u8 b)
+Display<PixelFormat::ARGB51>::Pixel::type gb::Display<PixelFormat::ARGB51>::ccc(u8 r, u8 g, u8 b) 
 {
   return ((r) << 11) | ((g) << 6) | ((b) << 1);
 }
 
 template<>
-Display<PixelFormat::ARGB565>::Pixel::type Display<PixelFormat::ARGB565>::ccc(u8 r, u8 g, u8 b)
+Display<PixelFormat::ARGB565>::Pixel::type gb::Display<PixelFormat::ARGB565>::ccc(u8 r, u8 g, u8 b)
 {
   return ((r) << 11) | ((g*2) << 5) | ((b) << 0);
 }
+
+};
 
 template<PixelFormat T>
 typename Display<T>::Pixel::type Display<T>::ccc(u8 r, u8 g, u8 b) { return 0; }
