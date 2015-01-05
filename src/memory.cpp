@@ -162,7 +162,7 @@ u8 Memory::trapPortRead(u16 address)
 void Memory::trapPortWrite(u16 address, u8 value)
 {
   if (address >= PORT_NR10 && address <= 0xFF3F)
-    emu.sound->write(address, value);
+    emu.sound.write(address, value);
   
   switch (address)
   {
@@ -337,7 +337,7 @@ void Memory::rawPortWrite(u16 address, u8 value)
 u8 Memory::rawPortRead(u16 address) const
 {
   if (address >= 0xFF10 && address <= 0xFF3F)
-    return emu.sound->read(address);
+    return emu.sound.read(address);
   
   return memory.ports_table[address - 0xFF00];
 }

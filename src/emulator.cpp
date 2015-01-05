@@ -6,18 +6,22 @@ using namespace gb;
 
 constexpr u32 Emulator::timerFrequencies[4];
 
-Emulator::Emulator() : mem(Memory(*this)), cpu(CpuGB(*this))
+Emulator::Emulator() : mem(Memory(*this)), cpu(CpuGB(*this)), sound(GBSound())
 {
-  display = new Display(cpu,mem,*this);
-  sound = new GBSound();
-
   this->timerCounter = 1024;
   this->cycles = 0;
   this->mode = MODE_GB;
   
+  this->display = new Display<u16>(cpu,mem,*this);
+  
   keysState = 0xFF;
   doubleSpeed = false;
   cyclesAdjust = 0;
+}
+
+void Emulator::setupSound(int sampleRate)
+{
+  sound.start(sampleRate);
 }
 
 u8 Emulator::step()
@@ -78,7 +82,7 @@ bool Emulator::run(u32 maxCycles)
     cpu.manageInterrupts();
   }
   
-  sound->update();
+  sound.update();
   
   //printf("SAMPLES: %d (cycles: %d / %d) %d\n", sound->generated, maxCycles, cyclesTotal, sound->tcycles);
   cyclesAdjust = cyclesTotal - maxCycles;

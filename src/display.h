@@ -49,10 +49,11 @@ struct PixelStatus
   u8 spriteX : 8;
 };
 
+template<typename T>
 class Display
 {
   private:
-    u32 *buffer;
+    T* buffer;
     PriorityType *priorityMap;
     const u32 width, height;
 
@@ -63,11 +64,13 @@ class Display
   
     // current scanline progression counter from CYCLES_PER_SCANLINE to 0
     s16 scanlineCounter;
-
   
+    void colorsForPalette(DrawLayer layer, u8 index, T (&palette)[4]);
+
   public:
     Display(CpuGB& cpu, Memory& memory, Emulator& emu);
     ~Display();
+    void setBuffer(T* buffer) { this->buffer = buffer; }
     void init();
     void reset();
   
@@ -83,11 +86,6 @@ class Display
     void drawTiles(u8 line);
     void drawWindow(u8 line);
     void drawSprites(u8 line);
-  
-    void colorsForPalette(DrawLayer layer, u8 index, u32 palette[4]);
-  
-    void resetBuffer(u8 color);
-    u32 *screenBuffer();
 };
   
 }

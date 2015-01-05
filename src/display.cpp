@@ -4,9 +4,9 @@
 
 using namespace gb;
 
-Display::Display(CpuGB& cpu, Memory& memory, Emulator& emu) : cpu(cpu), mem(memory), emu(emu), width(emu.spec.displayWidth), height(emu.spec.displayHeight)
+template<typename T>
+Display<T>::Display(CpuGB& cpu, Memory& memory, Emulator& emu) : cpu(cpu), mem(memory), emu(emu), width(emu.spec.displayWidth), height(emu.spec.displayHeight)
 {
-  buffer = new u32[width*height];
   priorityMap = new PriorityType[width*height];
   
   scanlineCounter = CYCLES_PER_SCANLINE;
@@ -14,29 +14,20 @@ Display::Display(CpuGB& cpu, Memory& memory, Emulator& emu) : cpu(cpu), mem(memo
   init();
 }
 
-Display::~Display()
+template<typename T>
+Display<T>::~Display()
 {
   delete [] buffer;
   delete [] priorityMap;
 }
 
-void Display::resetBuffer(u8 color)
-{
-  memset(buffer, color, width*height*sizeof(u32));
-}
-
-u32 *Display::screenBuffer()
-{
-  return buffer;
-}
-
-void Display::colorsForPalette(DrawLayer layer, u8 index, u32 *palette)
+template<>
+void Display<u32>::colorsForPalette(DrawLayer layer, u8 index, u32 (&palette)[4])
 {
   if (emu.mode == MODE_GB)
   {
     u8 indices;
-    //u32 colors[4] = {0xFFFFFFFF, 0xAAAAAAFF, 0x555555FF, 0x000000FF};
-    u32 colors[4] = {0xE0F8D0FF, 0x88C070FF, 0x346856FF, 0x081820FF};
+    static const u32 colors[4] = {0xE0F8D0FF, 0x88C070FF, 0x346856FF, 0x081820FF};
     
     // if layer is monochrome bg or window then we have just a palette to choose from
     // and index passed is ignored
@@ -80,22 +71,80 @@ void Display::colorsForPalette(DrawLayer layer, u8 index, u32 *palette)
   }
 }
 
-void Display::init()
+template<>
+void Display<u16>::colorsForPalette(DrawLayer layer, u8 index, u16 (&palette)[4])
+{
+  if (emu.mode == MODE_GB)
+  {
+    u8 indices;
+    static u16 colors[4] = {
+      (28 << 11) | (31 << 6) | (26 << 1),
+      (17 << 11) | (24 << 6) | (14 << 1),
+      (4 << 11) | (13 << 6) | (11 << 1),
+      (1 << 11) | (6 << 6) | (4 << 1)};
+    
+    // if layer is monochrome bg or window then we have just a palette to choose from
+    // and index passed is ignored
+    if (layer == LAYER_BACKGROUND)
+      indices = mem.read(PORT_BGP);
+    else
+    {
+      if (index == 0)
+        indices = mem.read(PORT_OBP0);
+      else
+        indices = mem.read(PORT_OBP1);
+    }
+    
+    for (int i = 0; i < 4; ++i)
+      palette[i] = colors[(indices >> (i*2)) & 0x03];
+    
+  }
+  else if (emu.mode == MODE_CGB)
+  {
+    // color palette is made by 2 bytes per color, 4 colors so 8 bytes per palette
+    // bg color palettes are stored starting at 0x00 of palette ram
+    // sprite color palettes are stored starting at 0x40
+    // since it's little endian we first fetch lower byte, then higher one and compose together to form the specific color
+    u8 offset = (layer == LAYER_BACKGROUND ? 0x00 : 0x40) + index*4*2;
+    
+    u16 colors16[4];
+    
+    for (int i = 0; i < 4; ++i)
+      colors16[i] = (mem.paletteRam(offset + 2*i)) | (mem.paletteRam(offset + 2*i + 1)<<8);
+    
+    // color layout is XXBBBBBGG GGGRRRRR so 5 bits per component = 32*32*32 colors
+    // conversion to rgb is made by multiplying by 8 the raw value even it should be improved
+    for (int i = 0; i < 4; ++i)
+    {
+      u8 r = colors16[i] & 0x1F;
+      u8 g = (colors16[i] >> 5) & 0x1F;
+      u8 b = (colors16[i] >> 10) & 0x1F;
+      
+      palette[i] = ((r) << 11) | ((g) << 6) | ((b) << 1);
+    }
+  }
+}
+
+template<typename T>
+void Display<T>::init()
 {
 
 }
 
-void Display::reset()
+template<typename T>
+void Display<T>::reset()
 {
   init();
 }
 
-bool Display::isEnabled()
+template<typename T>
+bool Display<T>::isEnabled()
 {
   return Utils::bit(mem.read(PORT_LCDC), 7);
 }
 
-void Display::update(u8 cycles)
+template<typename T>
+void Display<T>::update(u8 cycles)
 {
   manageSTAT();
   
@@ -131,8 +180,8 @@ void Display::update(u8 cycles)
   }
 }
 
-
-void Display::manageSTAT()
+template<typename T>
+void Display<T>::manageSTAT()
 {
   u8 status = mem.read(PORT_STAT);
   
@@ -252,8 +301,8 @@ void Display::manageSTAT()
   }
 }
 
-
-void Display::drawScanline(u8 line)
+template<typename T>
+void Display<T>::drawScanline(u8 line)
 {
   u8 lcdc = mem.read(PORT_LCDC);
   
@@ -270,7 +319,8 @@ void Display::drawScanline(u8 line)
     drawSprites(line);
 }
 
-void Display::drawTiles(u8 line)
+template<typename T>
+void Display<T>::drawTiles(u8 line)
 {
   u8 lcdc = mem.read(PORT_LCDC);
   
@@ -310,7 +360,7 @@ void Display::drawTiles(u8 line)
   u16 tileAddress;
   
   
-  u32 colors[4];
+  T colors[4];
   
   // if we're in mono gb mode we have just a palette for the background
   if (emu.mode == MODE_GB)
@@ -420,7 +470,8 @@ void Display::drawTiles(u8 line)
   }
 }
 
-void Display::drawWindow(u8 line)
+template<typename T>
+void Display<T>::drawWindow(u8 line)
 {
   u8 lcdc = mem.read(PORT_LCDC);
   
@@ -451,7 +502,7 @@ void Display::drawWindow(u8 line)
   u16 tileAddress;
   
   
-  u32 colors[4];
+  T colors[4];
   
   bool flipX = false, flipY = false;
   
@@ -570,7 +621,8 @@ void Display::drawWindow(u8 line)
   }
 }
 
-void Display::drawSprites(u8 line)
+template<typename T>
+void Display<T>::drawSprites(u8 line)
 {
   u8 *oam = mem.oam();
   u8 *vram = mem.memoryMap()->vram;
@@ -619,7 +671,7 @@ void Display::drawSprites(u8 line)
     // if the sprite resides on the line we're drawing
     if (line >= y && line < y+height)
     {
-      u32 colors[4];
+      T colors[4];
       
       // if mode is gb mono then just a bit is used for sprite palette, otherwise
       // lower 3 bits are used
@@ -686,9 +738,12 @@ void Display::drawSprites(u8 line)
         }
       }
     }
-    
-    
   }
-  
-  
 }
+
+
+template Display<u32>::Display(CpuGB& cpu, Memory& memory, Emulator& emu);
+template Display<u16>::Display(CpuGB& cpu, Memory& memory, Emulator& emu);
+
+template void Display<u16>::update(u8 cycles);
+template void Display<u32>::update(u8 cycles);

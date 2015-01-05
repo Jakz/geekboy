@@ -12,7 +12,9 @@
 
 namespace gb {
 
+template<typename T>
 class Display;
+
 class GBSound;
 class Memory;
 class CpuGB;
@@ -44,6 +46,8 @@ public:
   Emulator();
 
   void init();
+  
+  void setupSound(int sampleRate);
 
 
   void resetTimerCounter();
@@ -67,8 +71,8 @@ public:
 
   CpuGB cpu;
   Memory mem;
-  Display *display;
-  GBSound *sound;
+  Display<u16>* display;
+  GBSound sound;
 
   const EmuSpec spec = {160,144};
   

@@ -8,6 +8,7 @@
 
 #include <OpenGL/gl.h>
 #include <thread>
+#include <string>
 
 using namespace std;
 using namespace std::chrono;
@@ -98,67 +99,23 @@ bool Screen::init()
 	glDisable(GL_CULL_FACE);
 	glDisable(GL_DITHER);
 	glDisable(GL_BLEND);
-
-  /*SDL_Rect r = {0,0,160,144};
-  SDL_FillRect(screen, &r, 0xFFFFFFFF);
-  
-  SDL_Rect r2 = {0,0,800,600};
-  SDL_FillRect(total, &r2, 0xFFFFFFFF);*/
-
-  //emu->mem->cart->load("sml.gb");
-  
-  //u16 A = 1452;
-  
-  //emu->sound->write(PORT_NR13, A&0xFF);
-  //emu->sound->write(PORT_NR14, 0x80 | ((A&0x0700)>>8));
-  
-  
-  
-  //emu->sound->write(PORT_NR14, 0x06);
-  //emu->sound->write(PORT_NR13, 0xFF);
-  //emu->sound->write(PORT_NR14, 0x07);
-  
-  /*Assembler::init(32768);
-
-  assemble();
-  u8 *code = Assembler::consolidate();
-  u16 size = Assembler::size();
-  
-  emu->mem->cart->loadRaw(code, size);
-  free(code);*/
-  
   
   emu->init();
   
   return true;
 }
 
-int Screen::execute()
+int Screen::execute(const string& fileName)
 {
   SDL_Init(SDL_INIT_AUDIO);
-  
-  /*int duration = 500;
-  double Hz = 440;
-  
-  Beeper b;
-  
-  double C = 261.63;
-  double D = 293.665;
-  double E = 329.628;
-  double F = 349.228;
-  double G = 391.995;
-  double A = 440.000;
-  double B = 493.883;
-  double c = 554.365;
-  double d = 587.330;
 
-  b.beep(A, 5000);
-  b.wait();
-   
-  return 0;*/
-  
   emu = new Emulator();
-  emu->mem.cart->load("misc/sml2.gb");
+  emu->setupSound(48000);
+  emu->mem.cart->load(fileName.c_str());
+  
+  screenBuffer = new u16[emu->spec.displayWidth*emu->spec.displayHeight];
+
+  emu->display->setBuffer(screenBuffer);
 
   
   if (!init())
@@ -174,15 +131,9 @@ int Screen::execute()
     while(SDL_PollEvent(&event))
       handleEvent(&event);
    
-    //clock_t cstart = clock();
     loop();
-    //clock_t cmiddle = clock();
     render();
-    //clock_t cend = clock();
-    
-    //cloop += cmiddle - cstart;
-    //crender += cend - cmiddle;
-    
+
     timer.frameRateDelay();
   }
   
@@ -324,7 +275,7 @@ void Screen::render()
  	glLoadIdentity();
   glRasterPos2i(-1, 1);
 	glPixelZoom(static_cast<float>(scaleFactor), -static_cast<float>(scaleFactor));
- 	glDrawPixels(emu->spec.displayWidth, emu->spec.displayHeight, GL_RGBA, GL_UNSIGNED_INT_8_8_8_8, emu->display->screenBuffer());
+ 	glDrawPixels(emu->spec.displayWidth, emu->spec.displayHeight, GL_RGBA, GL_UNSIGNED_SHORT_5_5_5_1, screenBuffer);
   
   #if VRAM_DEBUG
   renderVRAM();

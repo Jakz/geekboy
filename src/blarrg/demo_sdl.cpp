@@ -9,6 +9,7 @@
 
 static Basic_Gb_Apu apu;
 
+/*
 // "emulate" 1/60 second of sound
 static void emulate_frame()
 {
@@ -75,3 +76,4 @@ int antanium( int argc, char** argv )
 	return 0;
 }
 
+*/
