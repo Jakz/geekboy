@@ -80,9 +80,7 @@ u8 Memory::readVram1(u16 address)
 }
 
 u8 Memory::read(u16 address)
-{		
-	/* GB VERO */
-	
+{
 	/* if address is for the ROM or ext RAM just forward it to the cartridge manager */
 	if (address <= 0x7FFF || (address >= 0xA000 && address <= 0xBFFF))
 		return cart->read(address);
@@ -114,8 +112,6 @@ u8 Memory::read(u16 address)
 
 void Memory::write(u16 address, u8 value)
 {
-	/* GB VERO */
-	
 	/* if address is for the ROM or ext RAM just forward it to the cartridge manager */
 	if (address <= 0x7FFF || (address >= 0xA000 && address <= 0xBFFF))
 		cart->write(address, value);
@@ -208,7 +204,6 @@ void Memory::trapPortWrite(u16 address, u8 value)
       // if we're asking for a speed switch
       if (Utils::bit(value,0))
       {
-        printf("SPEED SWITCH!");
         // set bit in the speed switch port to be managed by STOP instruction
         rawPortWrite(PORT_KEY1, rawPortRead(PORT_KEY1) | 0x01);
       }

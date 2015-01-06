@@ -4,7 +4,7 @@
 
 using namespace gb;
 
-template<typename T>
+template<PixelFormat T>
 Display<T>::Display(CpuGB& cpu, Memory& memory, Emulator& emu) : cpu(cpu), mem(memory), emu(emu), width(emu.spec.displayWidth), height(emu.spec.displayHeight)
 {
   priorityMap = new PriorityType[width*height];
@@ -14,7 +14,7 @@ Display<T>::Display(CpuGB& cpu, Memory& memory, Emulator& emu) : cpu(cpu), mem(m
   init();
 }
 
-template<typename T>
+template<PixelFormat T>
 Display<T>::~Display()
 {
   delete [] buffer;
@@ -22,12 +22,12 @@ Display<T>::~Display()
 }
 
 template<>
-void Display<u32>::colorsForPalette(DrawLayer layer, u8 index, u32 (&palette)[4])
+void Display<PixelFormat::ARGB8>::colorsForPalette(DrawLayer layer, u8 index, Pixel::type (&palette)[4])
 {
   if (emu.mode == MODE_GB)
   {
     u8 indices;
-    static const u32 colors[4] = {0xE0F8D0FF, 0x88C070FF, 0x346856FF, 0x081820FF};
+    static const Pixel::type colors[4] = {0xE0F8D0FF, 0x88C070FF, 0x346856FF, 0x081820FF};
     
     // if layer is monochrome bg or window then we have just a palette to choose from
     // and index passed is ignored
@@ -71,8 +71,8 @@ void Display<u32>::colorsForPalette(DrawLayer layer, u8 index, u32 (&palette)[4]
   }
 }
 
-template<>
-void Display<u16>::colorsForPalette(DrawLayer layer, u8 index, u16 (&palette)[4])
+template<PixelFormat T>
+void Display<T>::colorsForPalette(DrawLayer layer, u8 index, typename Pixel::type (&palette)[4])
 {
   if (emu.mode == MODE_GB)
   {
@@ -125,25 +125,25 @@ void Display<u16>::colorsForPalette(DrawLayer layer, u8 index, u16 (&palette)[4]
   }
 }
 
-template<typename T>
+template<PixelFormat T>
 void Display<T>::init()
 {
 
 }
 
-template<typename T>
+template<PixelFormat T>
 void Display<T>::reset()
 {
   init();
 }
 
-template<typename T>
+template<PixelFormat T>
 bool Display<T>::isEnabled()
 {
   return Utils::bit(mem.read(PORT_LCDC), 7);
 }
 
-template<typename T>
+template<PixelFormat T>
 void Display<T>::update(u8 cycles)
 {
   manageSTAT();
@@ -180,7 +180,7 @@ void Display<T>::update(u8 cycles)
   }
 }
 
-template<typename T>
+template<PixelFormat T>
 void Display<T>::manageSTAT()
 {
   u8 status = mem.read(PORT_STAT);
@@ -301,7 +301,7 @@ void Display<T>::manageSTAT()
   }
 }
 
-template<typename T>
+template<PixelFormat T>
 void Display<T>::drawScanline(u8 line)
 {
   u8 lcdc = mem.read(PORT_LCDC);
@@ -319,7 +319,7 @@ void Display<T>::drawScanline(u8 line)
     drawSprites(line);
 }
 
-template<typename T>
+template<PixelFormat T>
 void Display<T>::drawTiles(u8 line)
 {
   u8 lcdc = mem.read(PORT_LCDC);
@@ -360,7 +360,7 @@ void Display<T>::drawTiles(u8 line)
   u16 tileAddress;
   
   
-  T colors[4];
+  typename Pixel::type colors[4];
   
   // if we're in mono gb mode we have just a palette for the background
   if (emu.mode == MODE_GB)
@@ -470,7 +470,7 @@ void Display<T>::drawTiles(u8 line)
   }
 }
 
-template<typename T>
+template<PixelFormat T>
 void Display<T>::drawWindow(u8 line)
 {
   u8 lcdc = mem.read(PORT_LCDC);
@@ -502,7 +502,7 @@ void Display<T>::drawWindow(u8 line)
   u16 tileAddress;
   
   
-  T colors[4];
+  typename Pixel::type colors[4];
   
   bool flipX = false, flipY = false;
   
@@ -621,7 +621,7 @@ void Display<T>::drawWindow(u8 line)
   }
 }
 
-template<typename T>
+template<PixelFormat T>
 void Display<T>::drawSprites(u8 line)
 {
   u8 *oam = mem.oam();
@@ -671,7 +671,7 @@ void Display<T>::drawSprites(u8 line)
     // if the sprite resides on the line we're drawing
     if (line >= y && line < y+height)
     {
-      T colors[4];
+      typename Pixel::type colors[4];
       
       // if mode is gb mono then just a bit is used for sprite palette, otherwise
       // lower 3 bits are used
@@ -742,8 +742,10 @@ void Display<T>::drawSprites(u8 line)
 }
 
 
-template Display<u32>::Display(CpuGB& cpu, Memory& memory, Emulator& emu);
-template Display<u16>::Display(CpuGB& cpu, Memory& memory, Emulator& emu);
+template Display<PixelFormat::ARGB8>::Display(CpuGB& cpu, Memory& memory, Emulator& emu);
+template Display<PixelFormat::ARGB51>::Display(CpuGB& cpu, Memory& memory, Emulator& emu);
+template Display<PixelFormat::ARGB565>::Display(CpuGB& cpu, Memory& memory, Emulator& emu);
 
-template void Display<u16>::update(u8 cycles);
-template void Display<u32>::update(u8 cycles);
+template void Display<PixelFormat::ARGB8>::update(u8 cycles);
+template void Display<PixelFormat::ARGB51>::update(u8 cycles);
+template void Display<PixelFormat::ARGB565>::update(u8 cycles);

@@ -12,7 +12,7 @@ Emulator::Emulator() : mem(Memory(*this)), cpu(CpuGB(*this)), sound(GBSound())
   this->cycles = 0;
   this->mode = MODE_GB;
   
-  this->display = new Display<u16>(cpu,mem,*this);
+  this->display = new Display<PixelFormat::ARGB8>(cpu,mem,*this);
   
   keysState = 0xFF;
   doubleSpeed = false;
@@ -55,11 +55,7 @@ bool Emulator::run(u32 maxCycles)
   while (cyclesTotal < maxCycles)
   {
     u8 cycles;
-    
-    /*char buffer[64];
-    Gui::visualOpcode(this, buffer, cpu->regs()->PC);
-    printf("%s\n",buffer);*/
-    
+
     if (!cpu.halted)
       cycles = cpu.executeSingle();
     else
@@ -84,15 +80,7 @@ bool Emulator::run(u32 maxCycles)
   
   sound.update();
   
-  //printf("SAMPLES: %d (cycles: %d / %d) %d\n", sound->generated, maxCycles, cyclesTotal, sound->tcycles);
   cyclesAdjust = cyclesTotal - maxCycles;
-  
-  /*if (cyclesAdjust > 0)
-  {
-    updateTimers(cyclesAdjust);
-    display->update(cyclesAdjust);
-    sound->updateSound(cyclesAdjust);
-  }*/
   
   cycles += cyclesTotal;
   return true;
@@ -212,7 +200,6 @@ void Emulator::requestInterrupt(u8 interrupt)
 void Emulator::resetTimerCounter()
 {
   timerCounter = timerTicks();
-  //printf("SET TIMER COUNTER TO %d CLOCKS (%d)\n", timerCounter, mem->read(PORT_TAC) & 0x03);
 }
 
 u32 Emulator::timerTicks()

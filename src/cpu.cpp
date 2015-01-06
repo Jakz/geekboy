@@ -208,9 +208,7 @@ void CpuGB::manageInterrupts()
         {
           // disable interrupts
           s.interruptsEnabled = false;
-          
 
-          
           // reset the managed interrupt bit
           ifreg = Utils::res(ifreg, i);
           
@@ -434,8 +432,8 @@ u8 CpuGB::executeInstruction(u8 opcode)
     setFlag(FLAG_H, (value & 0x0F) == 0x0F);
     storeSingle(d, ++value);
     
-    /* TODO: nel manuale ufficiale dice che la flag C non viene modifica
-     ma in realtà dovrebbe essere implementato come un ADD 1 */
+    /* TODO: in official manual it states that C flag is not modified
+     but it should be implemented as an ADD 1 */
 
     setFlag(FLAG_S, value & 0x80);
     setFlag(FLAG_Z, value == 0x00);
@@ -458,8 +456,8 @@ u8 CpuGB::executeInstruction(u8 opcode)
     setFlag(FLAG_H, (value & 0x0F) == 0x00);
     storeSingle(d, --value);
     
-    /* TODO: nel manuale ufficiale dice che la flag C non viene modifica
-     ma in realtà dovrebbe essere implementato come un SUB 1 */
+    /* TODO: in official manual it states that C flag is not modified
+     but it should be implemented as an ADD 1 */
     
     setFlag(FLAG_S, value & 0x80);
     setFlag(FLAG_Z, value == 0x00);
@@ -709,8 +707,6 @@ u8 CpuGB::executeInstruction(u8 opcode)
   /* DJNZ n - STOP */
   else if (opcode == OPCODE_DJNZ_N)
   {
-    printf("STOP!");
-    
     // if a speed switch was requested
     u8 speed = mem.rawPortRead(PORT_KEY1);
     
@@ -1218,7 +1214,7 @@ u8 CpuGB::executeInstruction(u8 opcode)
   
   else if (opcode == OPCODE_NOP)
 	{
-		/* fai un cazzo */
+		/* idleing */
 	}
   
   return Opcodes::cpuCycles(op, op2, branchTaken);
@@ -1228,7 +1224,7 @@ u8 CpuGB::executeSingle()
 {
 	if (s.running)
   {  
-    /* legge un byte per capire l'opcode */
+    /* read a byte to get opcode */
     u8 opcode = mem.read(r.PC);
     
     ++r.PC;

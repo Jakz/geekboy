@@ -5,6 +5,8 @@
 #include <cstring>
 #include <cstdlib>
 
+#include <type_traits>
+
 #include "gbspec.h"
 
 #include "cpu.h"
@@ -48,12 +50,23 @@ struct PixelStatus
   u8 padding : 1;
   u8 spriteX : 8;
 };
+  
+enum class PixelFormat
+{
+  ARGB8,
+  ARGB51,
+  ARGB565
+};
 
-template<typename T>
+template<PixelFormat T>
 class Display
 {
-  private:
-    T* buffer;
+  
+public:
+  typedef std::conditional<(T == PixelFormat::ARGB8), u32, u16> Pixel;
+
+private:
+    typename Pixel::type* buffer;
     PriorityType *priorityMap;
     const u32 width, height;
 
@@ -65,12 +78,12 @@ class Display
     // current scanline progression counter from CYCLES_PER_SCANLINE to 0
     s16 scanlineCounter;
   
-    void colorsForPalette(DrawLayer layer, u8 index, T (&palette)[4]);
+    void colorsForPalette(DrawLayer layer, u8 index, typename Pixel::type (&palette)[4]);
 
   public:
     Display(CpuGB& cpu, Memory& memory, Emulator& emu);
     ~Display();
-    void setBuffer(T* buffer) { this->buffer = buffer; }
+    void setBuffer(typename Pixel::type* buffer) { this->buffer = buffer; }
     void init();
     void reset();
   
@@ -86,6 +99,7 @@ class Display
     void drawTiles(u8 line);
     void drawWindow(u8 line);
     void drawSprites(u8 line);
+  
 };
   
 }

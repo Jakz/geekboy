@@ -12,7 +12,7 @@
 
 namespace gb {
 
-template<typename T>
+template<PixelFormat T>
 class Display;
 
 class GBSound;
@@ -71,7 +71,7 @@ public:
 
   CpuGB cpu;
   Memory mem;
-  Display<u16>* display;
+  Display<PixelFormat::ARGB8>* display;
   GBSound sound;
 
   const EmuSpec spec = {160,144};

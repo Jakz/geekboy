@@ -9,7 +9,7 @@
 
 namespace gb {
 
-/* flags del gioco */
+/* flags for ROM */
 #define MBC_ROM 0x01
 #define MBC_RAM 0x02
 #define MBC_BATTERY 0x04
@@ -21,26 +21,27 @@ namespace gb {
 #define MBC_MBC4 0x100
 #define MBC_MBC5 0x200
 
-/* questo file dovrebbe preoccuparsi anche di essere interfacciato dallo Z80 per scrivere e leggere valori della ROM.
-   Chiaramente lo Z80 può semplicemente richiedere una lettura o una scrittura di un byte su un indirizzo specifico.
-   Il comportamento dipende dal tipo di gioco (e di mbc). In linea di massima per l'MBC1:
+/*
+  questo file dovrebbe preoccuparsi anche di essere interfacciato dallo Z80 per scrivere e leggere valori della ROM.
+  Chiaramente lo Z80 può semplicemente richiedere una lettura o una scrittura di un byte su un indirizzo specifico.
+  Il comportamento dipende dal tipo di gioco (e di mbc). In linea di massima per l'MBC1:
 
-   0x0000 - 0x3FFF -> primi 16kb della ROM (READ ONLY)
-   0x4000 - 0x7FFF -> secondi 16kb della ROM (se senza MBC), altrimenti 16kb del banco selezionato (READ ONLY)
-   0xA000 - 0xBFFF -> qui si trova la RAM (2Kb, 8Kb o 32Kb (4 banchi)) (READ/WRITE)
+  0x0000 - 0x3FFF -> first 16kb of ROM (READ ONLY)
+  0x4000 - 0x7FFF -> second 16kb of ROM (if without MBC), otherwise 16kb of the currently selected bank (READ ONLY)
+  0xA000 - 0xBFFF -> here is the RAM (2Kb, 8Kb o 32Kb (4 banks)) (READ/WRITE)
 
-   nel caso di MBC è possibile switchare il secondo banco ROM (quello in 0x4000-0x7FFF) o quello RAM scrivendo in
-   questi ADDRESS SPACE:
+  when there is MBC it is possible to switch the second ROM bank (address 0x4000-0x7FFF) or the RAM bank by writing in
+  the following address spaces:
 
-   0x0000 - 0x1FFF -> RAM Enable: 0x01 ON, 0x00 OFF (in realtà per l'emulazione ce ne frega il giusto)
-   0x2000 - 0x3FFF -> ROM Bank number: prende i 5 bit più bassi e ci fa numero di pagina, da selezionare, per i banchi
-                      0x00, 0x20, 0x40, 0x60 seleziona un banco con +1 (0x01, 0x21 ...)
-   0x4000 - 0x5FFF -> RAM Bank number o upper bits ROM Bank number: 0x00-0x03 per selezionare uno dei 4 banchi di RAM
-                      o impostare il bit 5-6 del ROM bank number (per numero di banchi >= 32)
-   0x6000 - 0x7FFF -> ROM/RAM bits: 0x00 -> usa il precedente per la ROM (8kb ram, 2mb rom)
+  0x0000 - 0x1FFF -> RAM Enable: 0x01 ON, 0x00 OFF (for emulation this is irrelevent)
+  0x2000 - 0x3FFF -> ROM Bank number: takes 5 lower bits to compute page number to select, for banks
+                      0x00, 0x20, 0x40, 0x60 value is adjusted by +1 (0x01, 0x21 ...)
+  0x4000 - 0x5FFF -> RAM Bank number or upper bits ROM Bank number: 0x00-0x03 to select one of 4 RAM banks
+                      or to set bit 5-6 of ROM bank number (per bank amount >= 32)
+  0x6000 - 0x7FFF -> ROM/RAM bits: 0x00 -> usa il precedente per la ROM (8kb ram, 2mb rom)
 									0x01 -> usa il precedente per la RAM (32kb ram, 512kb rom)
 									
-	gli altri son simili (MBC2, MBC3)
+  others are similar (MBC2, MBC3)
 */
 
 const u8 nintendo_logo[48] =
@@ -53,13 +54,13 @@ class Emulator;
 /* struttura header di una ROM gb (o gbc), non inizia da 0x000 nel file ma da 0x100 (prima non so cosa c'è) */
 struct GB_CART_HEADER
 {
-	u8 entry_point[4]; /* in genere NOP, JP 0x150 */
+	u8 entry_point[4]; /* usually NOP, JP 0x150 */
 	u8 nintendo_logo[48];
 	u8 title[11];
 	u8 manufacturer[4];
-	u8 cgb_flag; /* 0x01 se gameboy color */
+	u8 cgb_flag; /* 0x01 if gameboy color */
 	u8 new_license[2]; 
-	u8 sgb_flag; /* 0x01 se super gameboy */
+	u8 sgb_flag; /* 0x01 if super gameboy */
 	u8 cart_type;
 	u8 rom_size; /* 0x00 - 0x07, 0x52 - 0x54 */
 	u8 ram_size; /* 0x00 - 0x03 */
