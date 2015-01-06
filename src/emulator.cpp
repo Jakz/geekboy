@@ -12,7 +12,7 @@ Emulator::Emulator() : mem(Memory(*this)), cpu(CpuGB(*this)), sound(GBSound())
   this->cycles = 0;
   this->mode = MODE_GB;
   
-  this->display = new Display<PixelFormat::ARGB8>(cpu,mem,*this);
+  this->display = new Display<PixelFormat::ARGB51>(cpu,mem,*this);
   
   keysState = 0xFF;
   doubleSpeed = false;

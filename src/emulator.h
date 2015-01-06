@@ -71,7 +71,7 @@ public:
 
   CpuGB cpu;
   Memory mem;
-  Display<PixelFormat::ARGB8>* display;
+  Display<PixelFormat::ARGB51>* display;
   GBSound sound;
 
   const EmuSpec spec = {160,144};

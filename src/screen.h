@@ -43,7 +43,7 @@ class Screen
     SDL_Surface *total;
     const u32 scaleFactor;
   
-    u32 *screenBuffer;
+    u16 *screenBuffer;
   
 #if VRAM_DEBUG
     u32 tileData1[128*192*sizeof(u32)];

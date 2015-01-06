@@ -182,7 +182,7 @@ static void CustomApplicationMain (int argc, char **argv)
     /* Hand off to main application code */
     gCalledAppMainline = TRUE;
 
-  Screen::i()->execute(std::string("sml2.gb"));
+  Screen::i()->execute(std::string("zelda.gbc"));
 
     /* We're done, thank you for playing */
     exit(status);

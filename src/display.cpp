@@ -5,7 +5,8 @@
 using namespace gb;
 
 template<PixelFormat T>
-Display<T>::Display(CpuGB& cpu, Memory& memory, Emulator& emu) : cpu(cpu), mem(memory), emu(emu), width(emu.spec.displayWidth), height(emu.spec.displayHeight)
+Display<T>::Display(CpuGB& cpu, Memory& memory, Emulator& emu) : cpu(cpu), mem(memory), emu(emu), width(emu.spec.displayWidth), height(emu.spec.displayHeight),
+bcolors{ccc(28, 31, 26),ccc(17, 24, 14),ccc(4, 13, 11),ccc(1,3,4)}
 {
   priorityMap = new PriorityType[width*height];
   
@@ -22,54 +23,19 @@ Display<T>::~Display()
 }
 
 template<>
-void Display<PixelFormat::ARGB8>::colorsForPalette(DrawLayer layer, u8 index, Pixel::type (&palette)[4])
+Display<PixelFormat::ARGB8>::Pixel::type Display<PixelFormat::ARGB8>::ccc(u8 r, u8 g, u8 b)
 {
-  if (emu.mode == MODE_GB)
-  {
-    u8 indices;
-    static const Pixel::type colors[4] = {0xE0F8D0FF, 0x88C070FF, 0x346856FF, 0x081820FF};
-    
-    // if layer is monochrome bg or window then we have just a palette to choose from
-    // and index passed is ignored
-    if (layer == LAYER_BACKGROUND)
-      indices = mem.read(PORT_BGP);
-    else
-    {
-      if (index == 0)
-        indices = mem.read(PORT_OBP0);
-      else
-        indices = mem.read(PORT_OBP1);
-    }
-
-    for (int i = 0; i < 4; ++i)
-      palette[i] = colors[(indices >> (i*2)) & 0x03];
-
-  }
-  else if (emu.mode == MODE_CGB)
-  {
-    // color palette is made by 2 bytes per color, 4 colors so 8 bytes per palette
-    // bg color palettes are stored starting at 0x00 of palette ram
-    // sprite color palettes are stored starting at 0x40
-    // since it's little endian we first fetch lower byte, then higher one and compose together to form the specific color
-    u8 offset = (layer == LAYER_BACKGROUND ? 0x00 : 0x40) + index*4*2;
-    
-    u16 colors16[4];
-    
-    for (int i = 0; i < 4; ++i)
-      colors16[i] = (mem.paletteRam(offset + 2*i)) | (mem.paletteRam(offset + 2*i + 1)<<8);
-    
-    // color layout is XXBBBBBGG GGGRRRRR so 5 bits per component = 32*32*32 colors
-    // conversion to rgb is made by multiplying by 8 the raw value even it should be improved
-    for (int i = 0; i < 4; ++i)
-    {
-      u8 r = colors16[i] & 0x1F;
-      u8 g = (colors16[i] >> 5) & 0x1F;
-      u8 b = (colors16[i] >> 10) & 0x1F;
-     
-      palette[i] = (r*8) << 24 | (g*8) << 16 | (b*8) << 8 | 0xFF;
-    }
-  }
+  return (r*8) << 24 | (g*8) << 16 | (b*8) << 8 | 0xFF;
 }
+
+template<>
+Display<PixelFormat::ARGB51>::Pixel::type Display<PixelFormat::ARGB51>::ccc(u8 r, u8 g, u8 b)
+{
+  return ((r) << 11) | ((g) << 6) | ((b) << 1);
+}
+
+template<PixelFormat T>
+typename Display<T>::Pixel::type Display<T>::ccc(u8 r, u8 g, u8 b) { return 0; }
 
 template<PixelFormat T>
 void Display<T>::colorsForPalette(DrawLayer layer, u8 index, typename Pixel::type (&palette)[4])
@@ -77,12 +43,7 @@ void Display<T>::colorsForPalette(DrawLayer layer, u8 index, typename Pixel::typ
   if (emu.mode == MODE_GB)
   {
     u8 indices;
-    static u16 colors[4] = {
-      (28 << 11) | (31 << 6) | (26 << 1),
-      (17 << 11) | (24 << 6) | (14 << 1),
-      (4 << 11) | (13 << 6) | (11 << 1),
-      (1 << 11) | (6 << 6) | (4 << 1)};
-    
+
     // if layer is monochrome bg or window then we have just a palette to choose from
     // and index passed is ignored
     if (layer == LAYER_BACKGROUND)
@@ -96,7 +57,7 @@ void Display<T>::colorsForPalette(DrawLayer layer, u8 index, typename Pixel::typ
     }
     
     for (int i = 0; i < 4; ++i)
-      palette[i] = colors[(indices >> (i*2)) & 0x03];
+      palette[i] = bcolors[(indices >> (i*2)) & 0x03];
     
   }
   else if (emu.mode == MODE_CGB)
@@ -120,7 +81,7 @@ void Display<T>::colorsForPalette(DrawLayer layer, u8 index, typename Pixel::typ
       u8 g = (colors16[i] >> 5) & 0x1F;
       u8 b = (colors16[i] >> 10) & 0x1F;
       
-      palette[i] = ((r) << 11) | ((g) << 6) | ((b) << 1);
+      palette[i] = ccc(r,g,b);
     }
   }
 }

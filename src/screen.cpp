@@ -113,7 +113,7 @@ int Screen::execute(const string& fileName)
   emu->setupSound(48000);
   emu->mem.cart->load(fileName.c_str());
   
-  screenBuffer = new u32[emu->spec.displayWidth*emu->spec.displayHeight];
+  screenBuffer = new u16[emu->spec.displayWidth*emu->spec.displayHeight];
 
   emu->display->setBuffer(screenBuffer);
 
@@ -276,7 +276,7 @@ void Screen::render()
   glRasterPos2i(-1, 1);
 	glPixelZoom(static_cast<float>(scaleFactor), -static_cast<float>(scaleFactor));
  	//glDrawPixels(emu->spec.displayWidth, emu->spec.displayHeight, GL_RGBA, GL_UNSIGNED_SHORT_5_5_5_1, screenBuffer);
-  glDrawPixels(emu->spec.displayWidth, emu->spec.displayHeight, GL_RGBA, GL_UNSIGNED_INT_8_8_8_8, screenBuffer);
+  glDrawPixels(emu->spec.displayWidth, emu->spec.displayHeight, GL_RGBA, GL_UNSIGNED_SHORT_5_5_5_1, screenBuffer);
 
   
   #if VRAM_DEBUG

@@ -79,6 +79,8 @@ private:
     s16 scanlineCounter;
   
     void colorsForPalette(DrawLayer layer, u8 index, typename Pixel::type (&palette)[4]);
+  
+    const typename Pixel::type bcolors[4];
 
   public:
     Display(CpuGB& cpu, Memory& memory, Emulator& emu);
@@ -100,6 +102,8 @@ private:
     void drawWindow(u8 line);
     void drawSprites(u8 line);
   
+
+  static typename Pixel::type ccc(u8 r, u8 g, u8 b);
 };
   
 }
