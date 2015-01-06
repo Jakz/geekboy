@@ -4,7 +4,6 @@
 #define _GB_SCREEN_H_
 
 #include <chrono>
-#include <SDL/SDL.h>
 #include <OpenGL/OpenGL.h>
 #include "emulator.h"
 
