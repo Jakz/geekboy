@@ -13,7 +13,6 @@
 using namespace std;
 using namespace std::chrono;
 
-
 void Timer::setFrameRate(float rate)
 {
   totalFrames = 0;
@@ -30,11 +29,6 @@ void Timer::frameRateDelay()
   
   if (current <= target)
   {
-    /*microseconds delay = duration_cast<microseconds>(target-current);
-     microseconds spent = duration_cast<microseconds>(current - (target - ticksForFrame));
-     microseconds total = delay + spent;
-     
-     LOG("delay: %lldus - spent: %lldus - total: %lldus\n", delay.count(), spent.count(), total.count());*/
     this_thread::sleep_for(target-current);
   }
   else

@@ -114,8 +114,6 @@ class Cartridge
   
     /* carica una rom in memoria */
     void load(const char *romName);
-    void loadRaw(u8 *code, u32 length);
-    void loadRaw(u8 *code, u32 length, u32 offset);
     void dump();
     /* inizializza i valori (tipo banco selezionato, puntatori ai banchi) */
     void init();

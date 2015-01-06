@@ -49,9 +49,7 @@ bool Emulator::run(u32 maxCycles)
   u32 cyclesTotal = 0;
   
   if (doubleSpeed) maxCycles *= 2;
-  
-  //sound->generated = 0;
-  
+
   while (cyclesTotal < maxCycles)
   {
     u8 cycles;

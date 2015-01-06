@@ -343,27 +343,6 @@ void Cartridge::load(const char *rom_name)
   }*/
 }
 
-void Cartridge::loadRaw(u8 *code, u32 length)
-{
-  status.flags |= MBC_ROM;
-  
-  status.rom = (u8*)calloc(KB32, sizeof(u8));
-  status.rom_bank_0 = status.rom;
-  status.rom_bank_1 = &status.rom[KB16];
-  
-  status.ram = (u8*)calloc(KB8, sizeof(u8));
-  status.ram_bank = status.ram;
-  
-  u8 jump[4] = {0x00, 0xC3, 0x50, 0x01};
-  memcpy(&status.rom_bank_0[0x100], jump, 4);
-  memcpy(&status.rom_bank_0[0x150], code, length);
-}
-
-void Cartridge::loadRaw(u8 *code, u32 length, u32 offset)
-{
-  memcpy(&status.rom_bank_0[offset], code, length);
-}
-
 void Cartridge::dump()
 {
   FILE *out = fopen("rom.gb","wb");
