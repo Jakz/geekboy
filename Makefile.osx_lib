@@ -1,0 +1,41 @@
+.PHONY: all
+
+CC = clang++
+
+SDL_CONFIG = sdl-config
+
+SDL_INCLUDES = $(shell $(SDL_CONFIG) --cflags)
+SDL_LIBS = $(shell $(SDL_CONFIG) --libs)
+
+CCFLAGS = -std=c++11 -stdlib=libc++ -Wall $(SDL_INCLUDES)
+LDFLAGS += -dynamiclib -arch x86_64 $(SDL_LIBS) -lSDL_image -framework GLUT -framework OpenGL -framework Cocoa 
+
+all opt debug:
+opt: CCFLAGS += -O3 -ffast-math
+debug: CCFLAGS += -g
+	
+VPATH = src
+
+#SOURCES:= $(wildcard *.cpp)
+#BINARIES:= $(foreach source, $(SOURCES), $(source:%.cpp=%.o) )
+BINDIR := obj
+BASESRC := src
+SOURCE := $(BASESRC) $(BASESRC)/blarrg $(BASESRC)/blarrg/gb_apu
+SOURCES := $(patsubst $(BASESRC)/%, %, $(foreach dir, $(SOURCE), $(wildcard $(dir)/*.cpp)))
+BINARIES := $(patsubst %.cpp, %.o, $(SOURCES))
+EXECUTABLE := geekboy.dylib
+
+all opt debug: $(EXECUTABLE)
+
+$(EXECUTABLE): $(addprefix $(BINDIR)/, $(BINARIES))
+	$(CC) $(CCFLAGS) $^ -o $@ $(LDFLAGS)
+
+#$(LD) $(LDFLAGS) main.o -o $@ $(LIBS)
+
+clean:
+	rm -f $(EXECUTABLE)
+	rm -rf $(BINDIR)
+
+$(BINDIR)/%.o : $(BASESRC)/%.cpp
+	@test -d $(@D) || mkdir -p $(@D)
+	$(CC) -DMAKE -c $(CCFLAGS) $< -o $@
