@@ -48,6 +48,7 @@ public:
   
   void initialize() {
     emulator = new Emulator();
+    emulator->init();
     emulator->setupSound(48000);
     // framerate 59.73
     emulator->display->setBuffer(reinterpret_cast<u16*>(gfxBuffer.data));
