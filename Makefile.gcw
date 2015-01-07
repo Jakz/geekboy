@@ -11,7 +11,7 @@ CCFLAGS = -std=c++11 $(SDL_INCLUDES) -fPIC
 LDFLAGS += $(SDL_LIBS) -lSDL_image -lSDL_mixer -ldl -shared
 
 all opt debug profile:
-opt: CCFLAGS += -O3 -ffast-math
+opt: CCFLAGS += -O3 -ffast-math -flto
 debug: CCFLAGS += -g
 profile: CCFLAGS += -pg -O3 -ffast-math
 
