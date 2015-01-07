@@ -11,7 +11,16 @@ bcolors{ccc(28, 31, 26),ccc(17, 24, 14),ccc(4, 13, 11),ccc(1,3,4)}
   priorityMap = new PriorityType[width*height];
   
   scanlineCounter = CYCLES_PER_SCANLINE;
-
+  
+  ports.lcdc = &memory->memoryMap()->ports_table[PORT_LCDC - 0xFF00];
+  ports.stat = &memory->memoryMap()->ports_table[PORT_STAT - 0xFF00];
+  ports.ly = &memory->memoryMap()->ports_table[PORT_LY - 0xFF00];
+  ports.lyc = &memory->memoryMap()->ports_table[PORT_LYC - 0xFF00];
+  ports.scx = &memory->memoryMap()->ports_table[PORT_SCX - 0xFF00];
+  ports.scy = &memory->memoryMap()->ports_table[PORT_SCY - 0xFF00];
+  ports.wx = &memory->memoryMap()->ports_table[PORT_WX - 0xFF00];
+  ports.wy = &memory->memoryMap()->ports_table[PORT_WY - 0xFF00];
+  
   init();
 }
 
@@ -110,7 +119,7 @@ void Display<T>::reset()
 template<PixelFormat T>
 bool Display<T>::isEnabled()
 {
-  return Utils::bit(mem->read(PORT_LCDC), 7);
+  return Utils::bit(*ports.lcdc, 7);
 }
 
 template<PixelFormat T>
@@ -126,9 +135,9 @@ void Display<T>::update(u8 cycles)
   // cycles for a scanline expired, move to next one
   if (scanlineCounter <= 0)
   {
-    u8 line = mem->read(PORT_LY) + 1;
+    u8 line = *ports.ly + 1;
     
-    mem->rawPortWrite(PORT_LY, line);
+    *ports.ly = line;
     
     // reset scanlineCounter to beginning of next line, we subtract the excess cycles just to be more precise
     scanlineCounter = CYCLES_PER_SCANLINE + scanlineCounter;
@@ -142,7 +151,7 @@ void Display<T>::update(u8 cycles)
     // if we got over V-BLANK then reset the counter
     else if (line > VBLANK_END_LINE)
     {
-      mem->rawPortWrite(PORT_LY, 0);
+      *ports.ly = 0;
       memset(priorityMap, PRIORITY_NONE, width*height*sizeof(PriorityType));
       drawScanline(0);
     }
@@ -153,26 +162,26 @@ void Display<T>::update(u8 cycles)
 template<PixelFormat T>
 void Display<T>::manageSTAT()
 {
-  u8 status = mem->rawPortRead(PORT_STAT - 0xFF00);
+  u8 status = *ports.stat;
   
   if (!isEnabled())
   {
     scanlineCounter = CYCLES_PER_SCANLINE;
     
     // reset current vertical line
-    mem->rawPortWrite(PORT_LY, 0);
+    *ports.ly = 0;
     
     // clear current mode by clearing 2 lower bits and then set mode 1
     status &= ~0x03;
     status = Utils::set(status, 0);
     
     // write status back
-    mem->rawPortWrite(PORT_LCDC, status);
+    *ports.lcdc = status;
     
     return;
   }
   
-  u8 currentLine = mem->read(PORT_LY);
+  u8 currentLine = *ports.ly;
   u8 currentMode = status & 0x03;
   
   u8 mode = 0;
@@ -252,7 +261,7 @@ void Display<T>::manageSTAT()
     }
     
     // if LY == LYC we should set coincidence bit and request interrupt if the bit is enabled
-    if (currentLine == mem->read(PORT_LYC))
+    if (currentLine == *ports.lyc)
     {
       status = Utils::set(status,2);
       
@@ -266,15 +275,14 @@ void Display<T>::manageSTAT()
       status = Utils::res(status,2);
     }
     
-    mem->rawPortWrite(PORT_STAT, status);
-    
+    *ports.stat = status;
   }
 }
 
 template<PixelFormat T>
 void Display<T>::drawScanline(u8 line)
 {
-  u8 lcdc = mem->read(PORT_LCDC);
+  u8 lcdc = *ports.lcdc;
   
   // if background is enabled draw it
   if (Utils::bit(lcdc, 0))
@@ -292,7 +300,7 @@ void Display<T>::drawScanline(u8 line)
 template<PixelFormat T>
 void Display<T>::drawTiles(u8 line)
 {
-  u8 lcdc = mem->rawPortRead(PORT_LCDC);
+  u8 lcdc = *ports.lcdc;
   
   u8 *vram = mem->memoryMap()->vram;
   
@@ -324,9 +332,8 @@ void Display<T>::drawTiles(u8 line)
     tileMap = TILE_MAP1;
   
   // let's get the scroll values for the background tilemap
-  u8 scx = mem->read(PORT_SCX);
-  u8 scy = mem->read(PORT_SCY);
-  
+  u8 scx = *ports.scx, scy = *ports.scy;
+
   u16 tileAddress;
   
   
@@ -443,7 +450,7 @@ void Display<T>::drawTiles(u8 line)
 template<PixelFormat T>
 void Display<T>::drawWindow(u8 line)
 {
-  u8 lcdc = mem->read(PORT_LCDC);
+  u8 lcdc = *ports.lcdc;
   
   u16 tileData;
   u16 tileMap;
@@ -466,8 +473,8 @@ void Display<T>::drawWindow(u8 line)
     tileMap = TILE_MAP1;
   
   // let's get the scroll values for the background tilemap
-  s16 wx = mem->read(PORT_WX) - 7;
-  s16 wy = mem->read(PORT_WY);
+  s16 wx = *ports.wx - 7;
+  s16 wy = *ports.wy;
   
   u16 tileAddress;
   
@@ -606,7 +613,7 @@ void Display<T>::drawSprites(u8 line)
     tileData = 0x0000;
 
   // check if sprites are 8x16
-  bool doubleSize = Utils::bit(mem->read(PORT_LCDC), 2);
+  bool doubleSize = Utils::bit(*ports.lcdc, 2);
   u8 height = doubleSize ? TILE_HEIGHT*2 : TILE_HEIGHT;
   
   for (int i = 0; i < SPRITE_MAX_COUNT; ++i)

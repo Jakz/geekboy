@@ -60,8 +60,16 @@ enum class PixelFormat
   
 struct Ports
 {
-  u8* ldcd;
+  u8* lcdc;
   u8* stat;
+  u8* ly;
+  u8* lyc;
+  
+  u8* scx;
+  u8* scy;
+  
+  u8* wx;
+  u8* wy;
 };
 
 template<PixelFormat T>
@@ -75,7 +83,8 @@ private:
     typename Pixel::type* buffer;
     PriorityType *priorityMap;
 
-
+    Ports ports;
+  
     Emulator* emu;
     CpuGB* cpu;
     Memory* mem;

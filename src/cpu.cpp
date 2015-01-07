@@ -195,8 +195,8 @@ void CpuGB::manageInterrupts()
 {
   if (s.interruptsEnabled)
   {
-    u8 ifreg = mem->read(PORT_IF);
-    u8 efreg = mem->read(PORT_EF);
+    u8 ifreg = mem->memoryMap()->ports_table[PORT_IF - 0xFF00];
+    u8 efreg = mem->memoryMap()->ports_table[PORT_EF - 0xFF00];
     
     // if there is at least one interrupt to handle
     if (ifreg)
