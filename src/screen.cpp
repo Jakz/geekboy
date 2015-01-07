@@ -105,11 +105,11 @@ int Screen::execute(const string& fileName)
 
   emu = new Emulator();
   emu->setupSound(48000);
-  emu->mem.cart->load(fileName.c_str());
+  emu->getMemory()->cart->load(fileName.c_str());
   
   screenBuffer = new u16[emu->spec.displayWidth*emu->spec.displayHeight];
 
-  emu->display->setBuffer(screenBuffer);
+  emu->getDisplay()->setBuffer(screenBuffer);
 
   
   if (!init())
@@ -195,7 +195,7 @@ void Screen::cleanup()
   
   fclose(out);*/
   
-  emu->mem.cart->dumpSave();
+ // emu->mem.cart->dumpSave();
   
   SDL_FreeSurface(total);
   SDL_Quit();

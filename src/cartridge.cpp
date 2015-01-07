@@ -4,7 +4,7 @@
 
 using namespace gb;
 
-Cartridge::Cartridge(Emulator& emu) : emu(emu)
+Cartridge::Cartridge(Emulator* emu) : emu(emu)
 {
   status.rom = NULL;
   status.rom_bank_0 = NULL;
@@ -208,13 +208,13 @@ void Cartridge::load(const char *rom_name)
   status.fileName = strdup(rom_name);
 	
 	fseek(in, 0x100, SEEK_SET);
-	fread(&header, sizeof(GB_CART_HEADER), 1, in);
+	fread(&header, sizeof(CartridgeHeader), 1, in);
   fseek(in, 0, SEEK_SET);
 	
 	status.flags = 0x00;
   
   if (header.cgb_flag & 0x80 && rom_name[strlen(rom_name)-1] == 'c')
-    emu.mode = MODE_CGB;
+    emu->mode = MODE_CGB;
 	
 	/* in base al cart_type assegna le flag della rom */
 	if (header.cart_type == 0x00 || header.cart_type == 0x08 || header.cart_type == 0x09)

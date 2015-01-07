@@ -52,7 +52,7 @@ const u8 nintendo_logo[48] =
 class Emulator;
 
 /* struttura header di una ROM gb (o gbc), non inizia da 0x000 nel file ma da 0x100 (prima non so cosa c'è) */
-struct GB_CART_HEADER
+struct CartridgeHeader
 {
 	u8 entry_point[4]; /* usually NOP, JP 0x150 */
 	u8 nintendo_logo[48];
@@ -71,7 +71,7 @@ struct GB_CART_HEADER
 	u8 global_checksum[2];
 };
 
-struct GB_CART_STATUS
+struct CartridgeStatus
 {
 	/* puntatore ai primi 16kb di ROM (non varia mai a rigore) */
 	u8 *rom_bank_0;
@@ -100,16 +100,16 @@ struct GB_CART_STATUS
 class Cartridge
 {
   private:
-    Emulator& emu;
+    Emulator* emu;
   
-    GB_CART_HEADER header;
-    GB_CART_STATUS status;
+    CartridgeHeader header;
+    CartridgeStatus status;
   
     u32 romSize();
     u32 ramSize();
   
   public:
-    Cartridge(Emulator& emu);
+    Cartridge(Emulator* emu);
     ~Cartridge();
   
     /* carica una rom in memoria */

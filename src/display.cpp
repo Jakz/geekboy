@@ -5,7 +5,7 @@
 using namespace gb;
 
 template<PixelFormat T>
-Display<T>::Display(CpuGB& cpu, Memory& memory, Emulator& emu) : cpu(cpu), mem(memory), emu(emu), width(emu.spec.displayWidth), height(emu.spec.displayHeight),
+Display<T>::Display(CpuGB* cpu, Memory* memory, Emulator* emu) : emu(emu), cpu(cpu), mem(memory), width(emu->spec.displayWidth), height(emu->spec.displayHeight),
 bcolors{ccc(28, 31, 26),ccc(17, 24, 14),ccc(4, 13, 11),ccc(1,3,4)}
 {
   priorityMap = new PriorityType[width*height];
@@ -33,13 +33,13 @@ Display<PixelFormat::ARGB8>::Pixel::type gb::Display<PixelFormat::ARGB8>::ccc(u8
 template<>
 Display<PixelFormat::ARGB51>::Pixel::type gb::Display<PixelFormat::ARGB51>::ccc(u8 r, u8 g, u8 b) 
 {
-  return ((r) << 11) | ((g) << 6) | ((b) << 1);
+  return ((r) << 11) | ((g) << 6) | ((b) << 1) | 0x1;
 }
 
 template<>
 Display<PixelFormat::ARGB565>::Pixel::type gb::Display<PixelFormat::ARGB565>::ccc(u8 r, u8 g, u8 b)
 {
-  return ((r) << 11) | ((g*2) << 5) | ((b) << 0);
+  return ((r) << 11) | ((g << 1) << 5) | ((b) << 0);
 }
 
 };
@@ -50,27 +50,27 @@ typename Display<T>::Pixel::type Display<T>::ccc(u8 r, u8 g, u8 b) { return 0; }
 template<PixelFormat T>
 void Display<T>::colorsForPalette(DrawLayer layer, u8 index, typename Pixel::type (&palette)[4])
 {
-  if (emu.mode == MODE_GB)
+  if (emu->mode == MODE_GB)
   {
     u8 indices;
 
     // if layer is monochrome bg or window then we have just a palette to choose from
     // and index passed is ignored
     if (layer == LAYER_BACKGROUND)
-      indices = mem.read(PORT_BGP);
+      indices = mem->read(PORT_BGP);
     else
     {
       if (index == 0)
-        indices = mem.read(PORT_OBP0);
+        indices = mem->read(PORT_OBP0);
       else
-        indices = mem.read(PORT_OBP1);
+        indices = mem->read(PORT_OBP1);
     }
     
     for (int i = 0; i < 4; ++i)
       palette[i] = bcolors[(indices >> (i*2)) & 0x03];
     
   }
-  else if (emu.mode == MODE_CGB)
+  else if (emu->mode == MODE_CGB)
   {
     // color palette is made by 2 bytes per color, 4 colors so 8 bytes per palette
     // bg color palettes are stored starting at 0x00 of palette ram
@@ -81,16 +81,15 @@ void Display<T>::colorsForPalette(DrawLayer layer, u8 index, typename Pixel::typ
     u16 colors16[4];
     
     for (int i = 0; i < 4; ++i)
-      colors16[i] = (mem.paletteRam(offset + 2*i)) | (mem.paletteRam(offset + 2*i + 1)<<8);
+      colors16[i] = (mem->paletteRam(offset + 2*i)) | (mem->paletteRam(offset + 2*i + 1)<<8);
     
     // color layout is XXBBBBBGG GGGRRRRR so 5 bits per component = 32*32*32 colors
-    // conversion to rgb is made by multiplying by 8 the raw value even it should be improved
     for (int i = 0; i < 4; ++i)
     {
       u8 r = colors16[i] & 0x1F;
       u8 g = (colors16[i] >> 5) & 0x1F;
       u8 b = (colors16[i] >> 10) & 0x1F;
-      
+                  
       palette[i] = ccc(r,g,b);
     }
   }
@@ -111,7 +110,7 @@ void Display<T>::reset()
 template<PixelFormat T>
 bool Display<T>::isEnabled()
 {
-  return Utils::bit(mem.read(PORT_LCDC), 7);
+  return Utils::bit(mem->read(PORT_LCDC), 7);
 }
 
 template<PixelFormat T>
@@ -127,9 +126,9 @@ void Display<T>::update(u8 cycles)
   // cycles for a scanline expired, move to next one
   if (scanlineCounter <= 0)
   {
-    u8 line = mem.read(PORT_LY) + 1;
+    u8 line = mem->read(PORT_LY) + 1;
     
-    mem.rawPortWrite(PORT_LY, line);
+    mem->rawPortWrite(PORT_LY, line);
     
     // reset scanlineCounter to beginning of next line, we subtract the excess cycles just to be more precise
     scanlineCounter = CYCLES_PER_SCANLINE + scanlineCounter;
@@ -139,11 +138,11 @@ void Display<T>::update(u8 cycles)
       drawScanline(line);
     // if we reached V-BLANK then raise the interrupt
     else if (line == VBLANK_START_LINE)
-      emu.requestInterrupt(INT_VBLANK);
+      emu->requestInterrupt(INT_VBLANK);
     // if we got over V-BLANK then reset the counter
     else if (line > VBLANK_END_LINE)
     {
-      mem.rawPortWrite(PORT_LY, 0);
+      mem->rawPortWrite(PORT_LY, 0);
       memset(priorityMap, PRIORITY_NONE, width*height*sizeof(PriorityType));
       drawScanline(0);
     }
@@ -154,26 +153,26 @@ void Display<T>::update(u8 cycles)
 template<PixelFormat T>
 void Display<T>::manageSTAT()
 {
-  u8 status = mem.read(PORT_STAT);
+  u8 status = mem->read(PORT_STAT);
   
   if (!isEnabled())
   {
     scanlineCounter = CYCLES_PER_SCANLINE;
     
     // reset current vertical line
-    mem.rawPortWrite(PORT_LY, 0);
+    mem->rawPortWrite(PORT_LY, 0);
     
     // clear current mode by clearing 2 lower bits and then set mode 1
     status &= ~0x03;
     status = Utils::set(status, 0);
     
     // write status back
-    mem.rawPortWrite(PORT_LCDC, status);
+    mem->rawPortWrite(PORT_LCDC, status);
     
     return;
   }
   
-  u8 currentLine = mem.read(PORT_LY);
+  u8 currentLine = mem->read(PORT_LY);
   u8 currentMode = status & 0x03;
   
   u8 mode = 0;
@@ -192,8 +191,8 @@ void Display<T>::manageSTAT()
   }
   else
   {
-    u32 boundToMode2 = CYCLES_PER_SCANLINE - CYCLES_PER_OAV_TRANSFER;
-    u32 boundToMode3 = boundToMode2 - CYCLES_PER_OAV_VRAM_TRANSFER;
+    const u32 boundToMode2 = CYCLES_PER_SCANLINE - CYCLES_PER_OAV_TRANSFER;
+    const u32 boundToMode3 = boundToMode2 - CYCLES_PER_OAV_VRAM_TRANSFER;
     
     // we're in mode 2 (oam transfer)
     if (scanlineCounter > boundToMode2)
@@ -225,7 +224,7 @@ void Display<T>::manageSTAT()
       willRequestInterrupt = Utils::bit(status, 3);
       
       // manage HDMA if it's active
-      HDMA *hdma = mem.hdmaInfo();
+      HDMA *hdma = mem->hdmaInfo();
       if (hdma->active)
       {
         hdma->length -= 0x10;
@@ -233,7 +232,7 @@ void Display<T>::manageSTAT()
         // transfer 16 bytes
         for (int i = 0; i < 0x10; ++i)
         {
-          mem.write(hdma->dest, mem.read(hdma->src));
+          mem->write(hdma->dest, mem->read(hdma->src));
           ++hdma->dest;
           ++hdma->src;
         }
@@ -241,7 +240,7 @@ void Display<T>::manageSTAT()
         if (hdma->length == 0)
         {
           hdma->active = false;
-          mem.rawPortWrite(PORT_HDMA5, 0xFF);
+          mem->rawPortWrite(PORT_HDMA5, 0xFF);
         }
       }
     }
@@ -249,17 +248,17 @@ void Display<T>::manageSTAT()
     // if  we switched to a new mode and its interrupt was enabled
     if (willRequestInterrupt && currentMode != mode)
     {
-      emu.requestInterrupt(INT_STAT);
+      emu->requestInterrupt(INT_STAT);
     }
     
     // if LY == LYC we should set coincidence bit and request interrupt if the bit is enabled
-    if (currentLine == mem.read(PORT_LYC))
+    if (currentLine == mem->read(PORT_LYC))
     {
       status = Utils::set(status,2);
       
       if (Utils::bit(status, 6))
       {
-        emu.requestInterrupt(INT_STAT);
+        emu->requestInterrupt(INT_STAT);
       }
     }
     else
@@ -267,7 +266,7 @@ void Display<T>::manageSTAT()
       status = Utils::res(status,2);
     }
     
-    mem.rawPortWrite(PORT_STAT, status);
+    mem->rawPortWrite(PORT_STAT, status);
     
   }
 }
@@ -275,7 +274,7 @@ void Display<T>::manageSTAT()
 template<PixelFormat T>
 void Display<T>::drawScanline(u8 line)
 {
-  u8 lcdc = mem.read(PORT_LCDC);
+  u8 lcdc = mem->read(PORT_LCDC);
   
   // if background is enabled draw it
   if (Utils::bit(lcdc, 0))
@@ -293,9 +292,9 @@ void Display<T>::drawScanline(u8 line)
 template<PixelFormat T>
 void Display<T>::drawTiles(u8 line)
 {
-  u8 lcdc = mem.read(PORT_LCDC);
+  u8 lcdc = mem->read(PORT_LCDC);
   
-  u8 *vram = mem.memoryMap()->vram;
+  u8 *vram = mem->memoryMap()->vram;
   
   u16 tileData;
   u16 tileMap;
@@ -315,7 +314,7 @@ void Display<T>::drawTiles(u8 line)
   
   // if mode is GB then offset of VRAM will be always 0x0000 since there is only one bank of VRAM
   // (this operation is useless, is here just to be precise in behavior)
-  if (emu.mode == MODE_GB)
+  if (emu->mode == MODE_GB)
     tileData += 0x0000;
   
   // choose tile map according to bit in lcd control register
@@ -325,8 +324,8 @@ void Display<T>::drawTiles(u8 line)
     tileMap = TILE_MAP1;
   
   // let's get the scroll values for the background tilemap
-  u8 scx = mem.read(PORT_SCX);
-  u8 scy = mem.read(PORT_SCY);
+  u8 scx = mem->read(PORT_SCX);
+  u8 scy = mem->read(PORT_SCY);
   
   u16 tileAddress;
   
@@ -334,7 +333,7 @@ void Display<T>::drawTiles(u8 line)
   typename Pixel::type colors[4];
   
   // if we're in mono gb mode we have just a palette for the background
-  if (emu.mode == MODE_GB)
+  if (emu->mode == MODE_GB)
     colorsForPalette(LAYER_BACKGROUND, 0, colors);
   
   // for every pixel of the current line
@@ -357,9 +356,9 @@ void Display<T>::drawTiles(u8 line)
     
     // now we retrieve the tile address, first we lookup the index in the tile map
     // then we retrieve it from tile data address according to sign of the index identifier
-    if (emu.mode == MODE_GB)
+    if (emu->mode == MODE_GB)
     {
-      u8 index = mem.read(tileMap + TILE_MAP_WIDTH*ty + tx);
+      u8 index = mem->read(tileMap + TILE_MAP_WIDTH*ty + tx);
       
       if (isUnsigned)
         tileAddress = tileData + TILE_BYTES_SIZE*index;
@@ -373,8 +372,8 @@ void Display<T>::drawTiles(u8 line)
     // in CGB mode we should read the tile map data from vram bank 1 to read additional tile attributes
     else
     {
-      u8 index = mem.read(tileMap + TILE_MAP_WIDTH*ty + tx);
-      u8 tileAttributes = mem.readVram1(tileMap + TILE_MAP_WIDTH*ty + tx);
+      u8 index = mem->read(tileMap + TILE_MAP_WIDTH*ty + tx);
+      u8 tileAttributes = mem->readVram1(tileMap + TILE_MAP_WIDTH*ty + tx);
       
       colorsForPalette(LAYER_BACKGROUND, tileAttributes & 0x07 , colors);
       
@@ -444,7 +443,7 @@ void Display<T>::drawTiles(u8 line)
 template<PixelFormat T>
 void Display<T>::drawWindow(u8 line)
 {
-  u8 lcdc = mem.read(PORT_LCDC);
+  u8 lcdc = mem->read(PORT_LCDC);
   
   u16 tileData;
   u16 tileMap;
@@ -467,8 +466,8 @@ void Display<T>::drawWindow(u8 line)
     tileMap = TILE_MAP1;
   
   // let's get the scroll values for the background tilemap
-  s16 wx = mem.read(PORT_WX) - 7;
-  s16 wy = mem.read(PORT_WY);
+  s16 wx = mem->read(PORT_WX) - 7;
+  s16 wy = mem->read(PORT_WY);
   
   u16 tileAddress;
   
@@ -478,7 +477,7 @@ void Display<T>::drawWindow(u8 line)
   bool flipX = false, flipY = false;
   
   // if we're in mono gb mode we have just a palette for the background
-  if (emu.mode == MODE_GB)
+  if (emu->mode == MODE_GB)
     colorsForPalette(LAYER_BACKGROUND, 0, colors);
   
   // for every pixel of the current line
@@ -502,9 +501,9 @@ void Display<T>::drawWindow(u8 line)
       
       // now we retrieve the tile address, first we lookup the index in the tile map
       // then we retrieve it from tile data address according to sign of the index identifier
-      if (emu.mode == MODE_GB)
+      if (emu->mode == MODE_GB)
       {
-        u8 index = mem.read(tileMap + TILE_MAP_WIDTH*ty + tx);
+        u8 index = mem->read(tileMap + TILE_MAP_WIDTH*ty + tx);
         
         if (isUnsigned)
           tileAddress = tileData + TILE_BYTES_SIZE*index;
@@ -512,14 +511,14 @@ void Display<T>::drawWindow(u8 line)
           tileAddress = tileData + TILE_BYTES_SIZE*(((s8)index)+128);
         
         // get the two bytes for the correct row
-        byte1 = mem.readVram0(tileAddress + py*2);
-        byte2 = mem.readVram0(tileAddress + py*2 + 1);
+        byte1 = mem->readVram0(tileAddress + py*2);
+        byte2 = mem->readVram0(tileAddress + py*2 + 1);
       }
       // in CGB mode we should read the tile map data from vram bank 1 to read additional tile attributes
       else
       {
-        u8 index = mem.read(tileMap + TILE_MAP_WIDTH*ty + tx);
-        u8 tileAttributes = mem.readVram1(tileMap + TILE_MAP_WIDTH*ty + tx);
+        u8 index = mem->read(tileMap + TILE_MAP_WIDTH*ty + tx);
+        u8 tileAttributes = mem->readVram1(tileMap + TILE_MAP_WIDTH*ty + tx);
         
         if (!Utils::bit(tileAttributes,7))
           priority = PRIORITY_SPRITE;
@@ -542,13 +541,13 @@ void Display<T>::drawWindow(u8 line)
         // tile is from vram bank 1
         if (Utils::bit(tileAttributes, 3))
         {
-          byte1 = mem.readVram1(tileAddress + py*2);
-          byte2 = mem.readVram1(tileAddress + py*2 + 1);
+          byte1 = mem->readVram1(tileAddress + py*2);
+          byte2 = mem->readVram1(tileAddress + py*2 + 1);
         }
         else
         {
-          byte1 = mem.readVram0(tileAddress + py*2);
-          byte2 = mem.readVram0(tileAddress + py*2 + 1);
+          byte1 = mem->readVram0(tileAddress + py*2);
+          byte2 = mem->readVram0(tileAddress + py*2 + 1);
         }
       }
       
@@ -595,19 +594,19 @@ void Display<T>::drawWindow(u8 line)
 template<PixelFormat T>
 void Display<T>::drawSprites(u8 line)
 {
-  u8 *oam = mem.oam();
-  u8 *vram = mem.memoryMap()->vram;
+  u8 *oam = mem->oam();
+  u8 *vram = mem->memoryMap()->vram;
   bool hasBgPriority = false;
   
   
   u16 tileData;
   
   // if mode is GB then tile data is always 0x8000, so 0x0000 since we're reading directly from VRAM
-  if (emu.mode == MODE_GB)
+  if (emu->mode == MODE_GB)
     tileData = 0x0000;
 
   // check if sprites are 8x16
-  bool doubleSize = Utils::bit(mem.read(PORT_LCDC), 2);
+  bool doubleSize = Utils::bit(mem->read(PORT_LCDC), 2);
   u8 height = doubleSize ? TILE_HEIGHT*2 : TILE_HEIGHT;
   
   for (int i = 0; i < SPRITE_MAX_COUNT; ++i)
@@ -629,7 +628,7 @@ void Display<T>::drawSprites(u8 line)
     bool flipX = Utils::bit(flags, 5);
     
     
-    if (emu.mode == MODE_CGB)
+    if (emu->mode == MODE_CGB)
     {
       if (Utils::bit(flags,3))
         tileData = KB8;
@@ -646,7 +645,7 @@ void Display<T>::drawSprites(u8 line)
       
       // if mode is gb mono then just a bit is used for sprite palette, otherwise
       // lower 3 bits are used
-      if (emu.mode == MODE_GB)
+      if (emu->mode == MODE_GB)
         colorsForPalette(LAYER_SPRITE, Utils::bit(flags, 4) ? 1 : 0, colors);
       else
         colorsForPalette(LAYER_SPRITE, flags & 0x07, colors);
@@ -713,9 +712,9 @@ void Display<T>::drawSprites(u8 line)
 }
 
 
-template Display<PixelFormat::ARGB8>::Display(CpuGB& cpu, Memory& memory, Emulator& emu);
-template Display<PixelFormat::ARGB51>::Display(CpuGB& cpu, Memory& memory, Emulator& emu);
-template Display<PixelFormat::ARGB565>::Display(CpuGB& cpu, Memory& memory, Emulator& emu);
+template Display<PixelFormat::ARGB8>::Display(CpuGB* cpu, Memory* memory, Emulator* emu);
+template Display<PixelFormat::ARGB51>::Display(CpuGB* cpu, Memory* memory, Emulator* emu);
+template Display<PixelFormat::ARGB565>::Display(CpuGB* cpu, Memory* memory, Emulator* emu);
 
 template void Display<PixelFormat::ARGB8>::update(u8 cycles);
 template void Display<PixelFormat::ARGB51>::update(u8 cycles);

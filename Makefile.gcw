@@ -1,4 +1,4 @@
-.phony: all opt clean
+.phony: all opt clean debug profile
 
 CC = mipsel-linux-g++
 STRIP = mipsel-linux-strip
@@ -8,24 +8,24 @@ SDL_INCLUDES := $(shell $(SYSROOT)/usr/bin/sdl-config --cflags)
 SDL_LIBS := $(shell $(SYSROOT)/usr/bin/sdl-config --libs)
 
 CCFLAGS = -std=c++11 $(SDL_INCLUDES) -fPIC
-LDFLAGS += $(SDL_LIBS) -lSDL_image -ldl -shared
+LDFLAGS += $(SDL_LIBS) -lSDL_image -lSDL_mixer -ldl -shared
 
-all opt debug:
+all opt debug profile:
 opt: CCFLAGS += -O3 -ffast-math
 debug: CCFLAGS += -g
+profile: CCFLAGS += -pg -O3 -ffast-math
 
 BINDIR := obj
 BASESRC := src
-SOURCE := $(BASESRC) $(BASESRC)/common $(BASESRC)/core $(BASESRC)/data $(BASESRC)/debug $(BASESRC)/systems $(BASESRC)/ui $(BASESRC)/views
+SOURCE := $(BASESRC) $(BASESRC)/blarrg $(BASESRC)/blarrg/gb_apu
 SOURCES := $(filter-out main.cpp screen.cpp, $(patsubst $(BASESRC)/%, %, $(foreach dir, $(SOURCE), $(wildcard $(dir)/*.cpp))))
 BINARIES := $(patsubst %.cpp, %.o, $(SOURCES))
 EXECUTABLE := geekboy.so
 
-all opt: $(EXECUTABLE)
+all opt debug profile: $(EXECUTABLE)
 
 $(EXECUTABLE): $(addprefix $(BINDIR)/, $(BINARIES))
 	$(CC) $(CCFLAGS) $^ -o $@ $(LDFLAGS)
-	#$(STRIP) $@
 	
 	
 $(BINDIR)/%.o : $(BASESRC)/%.cpp

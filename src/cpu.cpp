@@ -6,7 +6,7 @@
 
 using namespace gb;
 
-CpuGB::CpuGB(Emulator& emu) : emu(emu), mem(emu.mem)
+CpuGB::CpuGB(Emulator* emu) : emu(emu)
 {
 
 }
@@ -180,7 +180,7 @@ inline bool CpuGB::parity(u8 x)
 
 void CpuGB::enableInterrupt(u8 interrupt)
 {
-  u8 ifreg = mem.read(PORT_IF);
+  u8 ifreg = mem->read(PORT_IF);
   
   // set the corresponding bit in the interrupt request register to 1
   ifreg = Utils::set(ifreg, interrupt);
@@ -188,15 +188,15 @@ void CpuGB::enableInterrupt(u8 interrupt)
   // resore cpu if it was halted
   halted = false;
   
-  mem.rawPortWrite(PORT_IF, ifreg);
+  mem->rawPortWrite(PORT_IF, ifreg);
 }
 
 void CpuGB::manageInterrupts()
 {
   if (s.interruptsEnabled)
   {
-    u8 ifreg = mem.read(PORT_IF);
-    u8 efreg = mem.read(PORT_EF);
+    u8 ifreg = mem->read(PORT_IF);
+    u8 efreg = mem->read(PORT_EF);
     
     // if there is at least one interrupt to handle
     if (ifreg)
@@ -217,7 +217,7 @@ void CpuGB::manageInterrupts()
           
           r.PC = 0x40 + 0x08*i;
           
-          mem.write(PORT_IF, ifreg);
+          mem->write(PORT_IF, ifreg);
           
           break;
         }
@@ -266,7 +266,7 @@ inline void CpuGB::resetFlag(u8 flag)
 inline void CpuGB::storeSingle(u8 reg, u8 value)
 {
   if (reg == REGS_HL)
-    mem.write(r.HL.HL, value);
+    mem->write(r.HL.HL, value);
   else
     *r.rr[reg] = value;
 }
@@ -274,7 +274,7 @@ inline void CpuGB::storeSingle(u8 reg, u8 value)
 inline u8 CpuGB::loadSingle(u8 reg)
 {
   if (reg == REGS_HL)
-    return mem.read(r.HL.HL);
+    return mem->read(r.HL.HL);
   else
     return *r.rr[reg];
 }
@@ -309,21 +309,21 @@ inline u16 CpuGB::loadDoubleAF(u8 reg)
 
 inline u16 CpuGB::popDoubleSP()
 {
-  u8 l = mem.read(r.SP++);
-  u8 h = mem.read(r.SP++);
+  u8 l = mem->read(r.SP++);
+  u8 h = mem->read(r.SP++);
   return (h << 8) | l;
 }
 
 inline void CpuGB::pushDoubleSP(u16 value)
 {
-  mem.write(--r.SP, value >> 8);
-  mem.write(--r.SP, value & 0xFF);
+  mem->write(--r.SP, value >> 8);
+  mem->write(--r.SP, value & 0xFF);
 }
 
 inline u16 CpuGB::loadDoublePC()
 {
-  u8 l = mem.read(r.PC++);
-  u8 h = mem.read(r.PC++);
+  u8 l = mem->read(r.PC++);
+  u8 h = mem->read(r.PC++);
   return (h << 8) | l;
 }
 
@@ -348,7 +348,7 @@ u8 CpuGB::executeInstruction(u8 opcode)
   /* LD r, n */
   else if ((opcode & 0xC7) == OPCODE_LD_R_N)
   {
-    u8 value = mem.read(r.PC++);
+    u8 value = mem->read(r.PC++);
     u8 d = (opcode & 0x38) >> 3;
     
     storeSingle(d, value);
@@ -358,8 +358,8 @@ u8 CpuGB::executeInstruction(u8 opcode)
   {
     u8 d = (opcode & 0x30) >> 4;
     
-    u8 l = mem.read(r.PC++);
-    u8 h = mem.read(r.PC++);
+    u8 l = mem->read(r.PC++);
+    u8 h = mem->read(r.PC++);
     
     u16 value = h << 8 | l;
     
@@ -368,45 +368,45 @@ u8 CpuGB::executeInstruction(u8 opcode)
   /* LD (BC), A */
   else if (opcode == OPCODE_LD_BC_A)
   {
-    mem.write(r.BC.BC, r.AF.A);
+    mem->write(r.BC.BC, r.AF.A);
   }
   /* LD (DE), A */
   else if (opcode == OPCODE_LD_DE_A)
   {
-    mem.write(r.DE.DE, r.AF.A);
+    mem->write(r.DE.DE, r.AF.A);
   }
   /* LD (nn), A - LDD (HL), A*/
   else if (opcode == OPCODE_LD_NN_A)
   {
-    mem.write(r.HL.HL, r.AF.A);
+    mem->write(r.HL.HL, r.AF.A);
     --r.HL.HL;
   }
   /* LD A, (BC) */
   else if (opcode == OPCODE_LD_A_BC)
   {
-    r.AF.A = mem.read(r.BC.BC);
+    r.AF.A = mem->read(r.BC.BC);
   }
   /* LD A, (DE) */
   else if (opcode == OPCODE_LD_A_DE)
   {
-    r.AF.A = mem.read(r.DE.DE);
+    r.AF.A = mem->read(r.DE.DE);
   }
   /* LD A, (nn) - LDD A, (HL) */
   else if (opcode == OPCODE_LD_A_NN)
   {
-    r.AF.A = mem.read(r.HL.HL);
+    r.AF.A = mem->read(r.HL.HL);
     --r.HL.HL;
   }
   /* LD (nn), HL - LDI (HL), A */
   else if (opcode == OPCODE_LD_NN_HL)
   {
-    mem.write(r.HL.HL, r.AF.A);
+    mem->write(r.HL.HL, r.AF.A);
     ++r.HL.HL;
   }
   /* LD HL, (nn) - LDI A, (HL) */
   else if (opcode == OPCODE_LD_HL_NN)
   {
-    r.AF.A = mem.read(r.HL.HL);
+    r.AF.A = mem->read(r.HL.HL);
     ++r.HL.HL;
   }
   /* LD SP, HL */
@@ -593,7 +593,7 @@ u8 CpuGB::executeInstruction(u8 opcode)
   /* ADD A, n */
   else if (opcode == OPCODE_ADD_N)
   {
-    u8 value = mem.read(r.PC++);
+    u8 value = mem->read(r.PC++);
     
     add(value);
     
@@ -602,7 +602,7 @@ u8 CpuGB::executeInstruction(u8 opcode)
   /* ADC A, n */
   else if (opcode == OPCODE_ADC_N)
   {
-    u8 value = mem.read(r.PC++);
+    u8 value = mem->read(r.PC++);
     
     adc(value);
     
@@ -611,7 +611,7 @@ u8 CpuGB::executeInstruction(u8 opcode)
   /* SUB A, n */
   else if (opcode == OPCODE_SUB_N)
   {
-    u8 value = mem.read(r.PC++);
+    u8 value = mem->read(r.PC++);
     
     sub(value);
     
@@ -620,7 +620,7 @@ u8 CpuGB::executeInstruction(u8 opcode)
   /* SBC A, n */
   else if (opcode == OPCODE_SBC_N)
   {
-    u8 value = mem.read(r.PC++);
+    u8 value = mem->read(r.PC++);
     
     sbc(value);
     
@@ -629,7 +629,7 @@ u8 CpuGB::executeInstruction(u8 opcode)
   /* AND A, n */
   else if (opcode == OPCODE_AND_N)
   {
-    u8 value = mem.read(r.PC++);
+    u8 value = mem->read(r.PC++);
     
     r.AF.A &= value;
     
@@ -643,7 +643,7 @@ u8 CpuGB::executeInstruction(u8 opcode)
   /* XOR A, n */
   else if (opcode == OPCODE_XOR_N)
   {
-    u8 value = mem.read(r.PC++);
+    u8 value = mem->read(r.PC++);
     
     r.AF.A ^= value;
     
@@ -657,7 +657,7 @@ u8 CpuGB::executeInstruction(u8 opcode)
   /* OR A, n */
   else if (opcode == OPCODE_OR_N)
   {
-    u8 value = mem.read(r.PC++);
+    u8 value = mem->read(r.PC++);
     
     r.AF.A |= value;
     
@@ -672,7 +672,7 @@ u8 CpuGB::executeInstruction(u8 opcode)
   else if (opcode == OPCODE_CP_N)
   {
     u8 back = r.AF.A;
-    u8 value = mem.read(r.PC++);
+    u8 value = mem->read(r.PC++);
     
     sub(value);
     
@@ -708,20 +708,20 @@ u8 CpuGB::executeInstruction(u8 opcode)
   else if (opcode == OPCODE_DJNZ_N)
   {
     // if a speed switch was requested
-    u8 speed = mem.rawPortRead(PORT_KEY1);
+    u8 speed = mem->rawPortRead(PORT_KEY1);
     
     if (Utils::bit(speed, 0))
     {
       // if CPU was in double mode
       if (Utils::bit(speed, 7))
       {
-        emu.toggleDoubleSpeed(false);
-        mem.rawPortWrite(PORT_KEY1, 0x00);
+        emu->toggleDoubleSpeed(false);
+        mem->rawPortWrite(PORT_KEY1, 0x00);
       }
       else
       {
-        emu.toggleDoubleSpeed(true);
-        mem.rawPortWrite(PORT_KEY1, 0x80);
+        emu->toggleDoubleSpeed(true);
+        mem->rawPortWrite(PORT_KEY1, 0x80);
       }
       
       //s.interruptsEnabled = true;
@@ -733,14 +733,14 @@ u8 CpuGB::executeInstruction(u8 opcode)
   /* JR n */
   else if (opcode == OPCODE_JR_N)
   {
-    s8 value = mem.read(r.PC++);
+    s8 value = mem->read(r.PC++);
     r.PC += value;
   }
   else if (opcode == OPCODE_JRNZ_N)
   {
     if (!isFlagSet(FLAG_Z))
     {    
-      s8 value = mem.read(r.PC++);
+      s8 value = mem->read(r.PC++);
       r.PC += value;
     }
     else
@@ -753,7 +753,7 @@ u8 CpuGB::executeInstruction(u8 opcode)
   {
     if (isFlagSet(FLAG_Z))
     {    
-      s8 value = mem.read(r.PC++);
+      s8 value = mem->read(r.PC++);
       r.PC += value;
     }
     else
@@ -766,7 +766,7 @@ u8 CpuGB::executeInstruction(u8 opcode)
   {
     if (!isFlagSet(FLAG_C))
     {    
-      s8 value = mem.read(r.PC++);
+      s8 value = mem->read(r.PC++);
       r.PC += value;
     }
     else
@@ -779,7 +779,7 @@ u8 CpuGB::executeInstruction(u8 opcode)
   {
     if (isFlagSet(FLAG_C))
     {    
-      s8 value = mem.read(r.PC++);
+      s8 value = mem->read(r.PC++);
       r.PC += value;
     }
     else
@@ -805,22 +805,22 @@ u8 CpuGB::executeInstruction(u8 opcode)
       switch (cond) {
         /* LD (FF00+C), A */
         case COND_PO: {
-          mem.write(0xFF00|r.BC.C, r.AF.A);
+          mem->write(0xFF00|r.BC.C, r.AF.A);
           break;
         }
         /* LD (nn), A */
         case COND_PE: {
-          mem.write(loadDoublePC(), r.AF.A);
+          mem->write(loadDoublePC(), r.AF.A);
           break;
         }
         /* LD A, (FF00+C) */
         case COND_SP: {
-          r.AF.A = mem.read(0xFF00|r.BC.C);
+          r.AF.A = mem->read(0xFF00|r.BC.C);
           break;
         }
         /* LD A, (nn) */
         case COND_SN: {
-          r.AF.A = mem.read(loadDoublePC());
+          r.AF.A = mem->read(loadDoublePC());
           break;
         }
       }
@@ -892,13 +892,13 @@ u8 CpuGB::executeInstruction(u8 opcode)
       switch (cond) {
         /* LD (FF00+n), A */
         case COND_PO: {
-          u8 p = mem.read(r.PC++);
-          mem.write(0xFF00|p, r.AF.A);
+          u8 p = mem->read(r.PC++);
+          mem->write(0xFF00|p, r.AF.A);
           break;
         }
         /* ADD SP, dd */
         case COND_PE: {
-          s8 p = mem.read(r.PC++);
+          s8 p = mem->read(r.PC++);
           u8 b = (u8)p;
           u8 a = r.SP;
           
@@ -916,13 +916,13 @@ u8 CpuGB::executeInstruction(u8 opcode)
         }
         /* LD A, (FF00+n) */
         case COND_SP: {
-          u8 p = mem.read(r.PC++);
-          r.AF.A = mem.read(0xFF00|p);
+          u8 p = mem->read(r.PC++);
+          r.AF.A = mem->read(0xFF00|p);
           break;
         }
         /* LD HL, SP+dd*/
         case COND_SN: {
-          s8 p = mem.read(r.PC++);
+          s8 p = mem->read(r.PC++);
           u8 b = (u8)p;
           u8 a = r.SP;
           
@@ -1015,7 +1015,7 @@ u8 CpuGB::executeInstruction(u8 opcode)
   /* CB BITS OPERATIONS */
   else if (opcode == OPCODE_BITS)
   {
-    opcode = mem.read(r.PC++);
+    opcode = mem->read(r.PC++);
     op2 = opcode;
     
     u8 b = (opcode & 0x38) >> 3;
@@ -1190,12 +1190,12 @@ u8 CpuGB::executeInstruction(u8 opcode)
   /* EX AF, AF' - LD (nn), SP */
   else if (opcode == OPCODE_EX_AF_AF)
   {
-    u8 l = mem.read(r.PC++);
-    u8 h = mem.read(r.PC++);
+    u8 l = mem->read(r.PC++);
+    u8 h = mem->read(r.PC++);
     u16 address = (h << 8) | l;
   
-    mem.write(address, r.SP & 0xFF);
-    mem.write(address+1, r.SP >> 8);
+    mem->write(address, r.SP & 0xFF);
+    mem->write(address+1, r.SP >> 8);
   }
   else if (opcode == OPCODE_EX_SP_HL)
   {
@@ -1225,7 +1225,7 @@ u8 CpuGB::executeSingle()
 	if (s.running)
   {  
     /* read a byte to get opcode */
-    u8 opcode = mem.read(r.PC);
+    u8 opcode = mem->read(r.PC);
     
     ++r.PC;
     

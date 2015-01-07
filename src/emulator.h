@@ -41,6 +41,11 @@ private:
   void updateTimers(u16 cycles);
 
   bool doubleSpeed;
+  
+  CpuGB* cpu;
+  Memory* mem;
+  Display<PixelFormat::ARGB565>* display;
+  GBSound sound;
 
 public:
   Emulator();
@@ -68,11 +73,10 @@ public:
   void keyReleased(Key key);
   u8 keyPadState(u8 writeValue) const;
 
+  GBSound& getSound() { return sound; }
+  Display<PixelFormat::ARGB565>* getDisplay() { return display; }
+  Memory* getMemory() { return mem; }
 
-  CpuGB cpu;
-  Memory mem;
-  Display<PixelFormat::ARGB51>* display;
-  GBSound sound;
 
   const EmuSpec spec = {160,144};
   

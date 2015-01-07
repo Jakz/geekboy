@@ -7,10 +7,9 @@ using namespace gb;
 
 //static u8 code[] = { (u8) 0x2E, (u8) 0x06, (u8) 0x26, (u8) 0x80, 0x36, 0x0A, (u8)0x06, (u8) 0x40, (u8)0x70, (u8)0x56, 0x3A, 0x06, 0x80};
 
-Memory::Memory(Emulator& emu) : emu(emu)
+Memory::Memory(Emulator* emu) : emu(emu), cart(new Cartridge(emu))
 {
   init();
-  cart = new Cartridge(emu);
 }
 
 /* dealloca tutto e rialloca nuova fiammante memoria */
@@ -28,18 +27,18 @@ void Memory::init()
    memory.oam_table = NULL;
    */
   
-  memory.vram = new u8[KB16];
+  memory.vram = new u8[KB16]();
   memory.vram_bank = memory.vram;
   
-  memory.wram = new u8[KB32];
+  memory.wram = new u8[KB32]();
   memory.wram_bank_0 = memory.wram;
   memory.wram_bank_1 = &memory.wram[KB4];
   
-	memory.oam_table = new u8[160];
+	memory.oam_table = new u8[160]();
   
-  memory.ports_table = new u8[256];
+  memory.ports_table = new u8[256]();
   
-  memory.color_palette_ram = new u8[128];
+  memory.color_palette_ram = new u8[128]();
   
   memory.cgbPaletteAutoIncr[0] = false;
   memory.cgbPaletteAutoIncr[1] = false;
@@ -144,7 +143,7 @@ u8 Memory::trapPortRead(u16 address)
   {
     case PORT_JOYP:
     {
-      u8 joyp = emu.keyPadState(rawPortRead(address));
+      u8 joyp = emu->keyPadState(rawPortRead(address));
       rawPortWrite(address, joyp);
       return joyp;
       break;
@@ -158,7 +157,10 @@ u8 Memory::trapPortRead(u16 address)
 void Memory::trapPortWrite(u16 address, u8 value)
 {
   if (address >= PORT_NR10 && address <= 0xFF3F)
-    emu.sound.write(address, value);
+  {
+    emu->getSound().write(address, value);
+    return;
+  }
   
   switch (address)
   {
@@ -175,7 +177,7 @@ void Memory::trapPortWrite(u16 address, u8 value)
       rawPortWrite(address, value);
       
       // if frequency of the timer has just to change
-      emu.resetTimerCounter();
+      emu->resetTimerCounter();
       
       return;
     }
@@ -332,7 +334,7 @@ void Memory::rawPortWrite(u16 address, u8 value)
 u8 Memory::rawPortRead(u16 address) const
 {
   if (address >= 0xFF10 && address <= 0xFF3F)
-    return emu.sound.read(address);
+    return emu->getSound().read(address);
   
   return memory.ports_table[address - 0xFF00];
 }

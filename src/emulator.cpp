@@ -6,13 +6,15 @@ using namespace gb;
 
 constexpr u32 Emulator::timerFrequencies[4];
 
-Emulator::Emulator() : mem(Memory(*this)), cpu(CpuGB(*this)), sound(GBSound())
+Emulator::Emulator() : cpu(new CpuGB(this)), mem(new Memory(this)), sound(GBSound())
 {
   this->timerCounter = 1024;
   this->cycles = 0;
   this->mode = MODE_GB;
   
-  this->display = new Display<PixelFormat::ARGB51>(cpu,mem,*this);
+  this->display = new Display<PixelFormat::ARGB565>(cpu,mem,this);
+  
+  cpu->setMemory(mem);
   
   keysState = 0xFF;
   doubleSpeed = false;
@@ -28,8 +30,8 @@ u8 Emulator::step()
 {
   u8 cycles;
   
-  if (!cpu.halted)
-    cycles = cpu.executeSingle();
+  if (!cpu->halted)
+    cycles = cpu->executeSingle();
   else
     cycles = 4;
   
@@ -37,7 +39,7 @@ u8 Emulator::step()
   
   updateTimers(cycles);
   display->update(cycles);
-  cpu.manageInterrupts();
+  cpu->manageInterrupts();
   
   return cycles;
 }
@@ -54,8 +56,8 @@ bool Emulator::run(u32 maxCycles)
   {
     u8 cycles;
 
-    if (!cpu.halted)
-      cycles = cpu.executeSingle();
+    if (!cpu->halted)
+      cycles = cpu->executeSingle();
     else
       cycles = 4;
 
@@ -73,7 +75,7 @@ bool Emulator::run(u32 maxCycles)
     }
     
 
-    cpu.manageInterrupts();
+    cpu->manageInterrupts();
   }
   
   sound.update();
@@ -81,14 +83,19 @@ bool Emulator::run(u32 maxCycles)
   cyclesAdjust = cyclesTotal - maxCycles;
   
   cycles += cyclesTotal;
+  
+  /*for (int i = 0; i < 128; ++i)
+    printf("%.2X", mem->memoryMap()->color_palette_ram[i]);
+  printf("\n");*/
+  
   return true;
 }
 
 void Emulator::init()
 {
-  cpu.reset();
+  cpu->reset();
   
-  Registers *regs = cpu.regs();
+  Registers *regs = cpu->regs();
   
   regs->PC = 0x0100;
   
@@ -102,37 +109,37 @@ void Emulator::init()
   regs->HL.HL = 0x014D;
   regs->SP = 0xFFFE;
 
-  mem.rawPortWrite(0xFF05, 0x00);
-  mem.rawPortWrite(0xFF06, 0x00);
-  mem.rawPortWrite(0xFF07, 0x00);
-  mem.rawPortWrite(0xFF10, 0x80);
-  mem.rawPortWrite(0xFF11, 0xBF);
-  mem.rawPortWrite(0xFF12, 0xF3);
-  mem.rawPortWrite(0xFF14, 0xBF);
-  mem.rawPortWrite(0xFF16, 0x3F);
-  mem.rawPortWrite(0xFF17, 0x00);
-  mem.rawPortWrite(0xFF19, 0xBF);
-  mem.rawPortWrite(0xFF1A, 0x7F);
-  mem.rawPortWrite(0xFF1B, 0xFF);
-  mem.rawPortWrite(0xFF1C, 0x9F);
-  mem.rawPortWrite(0xFF1E, 0xBF);
-  mem.rawPortWrite(0xFF20, 0xFF);
-  mem.rawPortWrite(0xFF21, 0x00);
-  mem.rawPortWrite(0xFF22, 0x00);
-  mem.rawPortWrite(0xFF23, 0xBF);
-  mem.rawPortWrite(0xFF24, 0x77);
-  mem.rawPortWrite(0xFF25, 0xF3);
-  mem.rawPortWrite(0xFF26, 0xF1);
-  mem.rawPortWrite(0xFF40, 0x91);
-  mem.rawPortWrite(0xFF42, 0x00);
-  mem.rawPortWrite(0xFF43, 0x00);
-  mem.rawPortWrite(0xFF45, 0x00);
-  mem.rawPortWrite(0xFF47, 0xFC);
-  mem.rawPortWrite(0xFF48, 0xFF);
-  mem.rawPortWrite(0xFF49, 0xFF);
-  mem.rawPortWrite(0xFF4A, 0x00);
-  mem.rawPortWrite(0xFF4B, 0x00);
-  mem.rawPortWrite(0xFFFF, 0x00);
+  mem->rawPortWrite(0xFF05, 0x00);
+  mem->rawPortWrite(0xFF06, 0x00);
+  mem->rawPortWrite(0xFF07, 0x00);
+  mem->rawPortWrite(0xFF10, 0x80);
+  mem->rawPortWrite(0xFF11, 0xBF);
+  mem->rawPortWrite(0xFF12, 0xF3);
+  mem->rawPortWrite(0xFF14, 0xBF);
+  mem->rawPortWrite(0xFF16, 0x3F);
+  mem->rawPortWrite(0xFF17, 0x00);
+  mem->rawPortWrite(0xFF19, 0xBF);
+  mem->rawPortWrite(0xFF1A, 0x7F);
+  mem->rawPortWrite(0xFF1B, 0xFF);
+  mem->rawPortWrite(0xFF1C, 0x9F);
+  mem->rawPortWrite(0xFF1E, 0xBF);
+  mem->rawPortWrite(0xFF20, 0xFF);
+  mem->rawPortWrite(0xFF21, 0x00);
+  mem->rawPortWrite(0xFF22, 0x00);
+  mem->rawPortWrite(0xFF23, 0xBF);
+  mem->rawPortWrite(0xFF24, 0x77);
+  mem->rawPortWrite(0xFF25, 0xF3);
+  mem->rawPortWrite(0xFF26, 0xF1);
+  mem->rawPortWrite(0xFF40, 0x91);
+  mem->rawPortWrite(0xFF42, 0x00);
+  mem->rawPortWrite(0xFF43, 0x00);
+  mem->rawPortWrite(0xFF45, 0x00);
+  mem->rawPortWrite(0xFF47, 0xFC);
+  mem->rawPortWrite(0xFF48, 0xFF);
+  mem->rawPortWrite(0xFF49, 0xFF);
+  mem->rawPortWrite(0xFF4A, 0x00);
+  mem->rawPortWrite(0xFF4B, 0x00);
+  mem->rawPortWrite(0xFFFF, 0x00);
   
   dividerCounter = CYCLES_PER_DIVIDER_INCR;
   resetTimerCounter();
@@ -153,18 +160,18 @@ void Emulator::updateTimers(u16 cycles)
     // while the counter is expired
     while (timerCounter <= 0)
     {
-      u8 counter = mem.read(PORT_TIMA);
+      u8 counter = mem->read(PORT_TIMA);
       
       // if we reached overflow of timer then request an interrupt
       // and reset it according to TMA register
       if (counter == 0xFF)
       {
-        mem.rawPortWrite(PORT_TIMA, mem.read(PORT_TMA));
+        mem->rawPortWrite(PORT_TIMA, mem->read(PORT_TMA));
         requestInterrupt(INT_TIMER);
       }
       // just increment it
       else
-        mem.rawPortWrite(PORT_TIMA, counter + 1);
+        mem->rawPortWrite(PORT_TIMA, counter + 1);
       
       timerCounter += timerTicks();
     }
@@ -176,14 +183,14 @@ void Emulator::updateTimers(u16 cycles)
   if (dividerCounter <= 0)
   {
     // read current value and increment it by one
-    u8 t = mem.read(PORT_DIV);
+    u8 t = mem->read(PORT_DIV);
     
     // increase it or make it wrap
     if (t == 255) t = 0;
     else ++t;
     
     // write updated value on address by skipping normal procedure
-    mem.rawPortWrite(PORT_DIV, t);
+    mem->rawPortWrite(PORT_DIV, t);
     
     // reset counter for next divider increment
     dividerCounter = CYCLES_PER_DIVIDER_INCR + dividerCounter;
@@ -192,7 +199,7 @@ void Emulator::updateTimers(u16 cycles)
 
 void Emulator::requestInterrupt(u8 interrupt)
 {
-  cpu.enableInterrupt(interrupt);
+  cpu->enableInterrupt(interrupt);
 }
 
 void Emulator::resetTimerCounter()
@@ -202,17 +209,15 @@ void Emulator::resetTimerCounter()
 
 u32 Emulator::timerTicks()
 {
-  u32 frequency = timerFrequencies[mem.read(PORT_TAC) & 0x03];
+  u32 frequency = timerFrequencies[mem->read(PORT_TAC) & 0x03];
   
   return CYCLES_PER_SECOND / frequency;
 }
 
 bool Emulator::isTimerEnabled()
 {
-  return Utils::bit(mem.read(PORT_TAC), 2);
+  return Utils::bit(mem->read(PORT_TAC), 2);
 }
-
-
 
 void Emulator::keyPressed(Key key)
 {
@@ -224,7 +229,7 @@ void Emulator::keyPressed(Key key)
   
   bool isDirectional = key < 4;
   
-  u8 joyp = mem.rawPortRead(PORT_JOYP);
+  u8 joyp = mem->rawPortRead(PORT_JOYP);
   
   if (isChanging && ((isDirectional && !Utils::bit(joyp, 4)) || (!isDirectional && !Utils::bit(joyp, 5))))
     requestInterrupt(INT_JOYPAD);

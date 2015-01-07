@@ -69,7 +69,7 @@ class Memory
   private:
     MemoryMap memory;
     
-    Emulator& emu;
+    Emulator* emu;
   
     HDMA hdma;
   
@@ -78,10 +78,11 @@ class Memory
     inline void trapPortWrite(u16 address, u8 value);
     inline u8 trapPortRead(u16 address);
   
-    
+    Memory& operator=(const Memory& other) = delete;
+    Memory(const Memory& other) = delete;
 
   public:
-    Memory(Emulator& emu);
+    Memory(Emulator* emu);
     ~Memory();
   
     u8 read(u16 address);

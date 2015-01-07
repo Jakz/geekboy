@@ -138,57 +138,62 @@ struct Status
 
 class CpuGB
 {
-  private:
-    Memory& mem;
-    Emulator& emu;
-    
-    Registers r;
-    Status s;
+private:
+  Emulator* emu;
+  Memory* mem;
   
-    u8 executeInstruction(u8 opcode);
-  
-    void storeSingle(u8 reg, u8 value);
-    u8 loadSingle(u8 reg);
-  
-    void storeDoubleSP(u8 reg, u16 value);
-    u16 loadDoubleSP(u8 reg);
-  
-    void storeDoubleAF(u8 reg, u16 value);
-    u16 loadDoubleAF(u8 reg);
-  
-    u16 popDoubleSP();
-    void pushDoubleSP(u16 value);
-  
-    u16 loadDoublePC();
-    
-    bool isConditionTrue(u8 cond);
-    void halt();
-  
-  public:
-    CpuGB(Emulator& emu);
+  Registers r;
+  Status s;
 
-    void resetFlag(u8 flag);
-    void setFlag(u8 flag, u8 value);
-    bool isFlagSet(u8 flag);
-    
-    void add(u8 value);
-    void sub(u8 value);
-    void adc(u8 value);
-    void sbc(u8 value);
-    void daa();
+  u8 executeInstruction(u8 opcode);
+
+  void storeSingle(u8 reg, u8 value);
+  u8 loadSingle(u8 reg);
+
+  void storeDoubleSP(u8 reg, u16 value);
+  u16 loadDoubleSP(u8 reg);
+
+  void storeDoubleAF(u8 reg, u16 value);
+  u16 loadDoubleAF(u8 reg);
+
+  u16 popDoubleSP();
+  void pushDoubleSP(u16 value);
+
+  u16 loadDoublePC();
   
-    bool parity(u8 value);
-    
-    void reset();
-    u8 executeSingle();
+  bool isConditionTrue(u8 cond);
+  void halt();
   
-    void enableInterrupt(u8 interrupt);
-    void manageInterrupts();
+  CpuGB& operator=(const CpuGB& other) = delete;
+  CpuGB(const CpuGB& other) = delete;
   
-    Registers *regs();
-    Status *status();
+public:
+  CpuGB(Emulator* emu);
   
-    bool halted;
+  void setMemory(Memory* mem) { this->mem = mem;}
+
+  void resetFlag(u8 flag);
+  void setFlag(u8 flag, u8 value);
+  bool isFlagSet(u8 flag);
+  
+  void add(u8 value);
+  void sub(u8 value);
+  void adc(u8 value);
+  void sbc(u8 value);
+  void daa();
+
+  bool parity(u8 value);
+  
+  void reset();
+  u8 executeSingle();
+
+  void enableInterrupt(u8 interrupt);
+  void manageInterrupts();
+
+  Registers *regs();
+  Status *status();
+
+  bool halted;
 };
 
 }

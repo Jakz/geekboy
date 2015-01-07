@@ -1,4 +1,4 @@
-.PHONY: all
+.PHONY: all opt debug profile
 
 CC = clang++
 
@@ -13,6 +13,7 @@ LDFLAGS += -dynamiclib -arch x86_64 $(SDL_LIBS) -lSDL_image -framework GLUT -fra
 all opt debug:
 opt: CCFLAGS += -O3 -ffast-math
 debug: CCFLAGS += -g
+profile: CCFLAGS += -pg -O3 -ffast-math
 	
 VPATH = src
 

@@ -68,13 +68,13 @@ public:
 private:
     typename Pixel::type* buffer;
     PriorityType *priorityMap;
-    const u32 width, height;
 
-    CpuGB& cpu;
-    Memory& mem;
+
+    Emulator* emu;
+    CpuGB* cpu;
+    Memory* mem;
   
-    Emulator& emu;
-  
+    const u32 width, height;
     // current scanline progression counter from CYCLES_PER_SCANLINE to 0
     s16 scanlineCounter;
   
@@ -83,7 +83,7 @@ private:
     const typename Pixel::type bcolors[4];
 
   public:
-    Display(CpuGB& cpu, Memory& memory, Emulator& emu);
+    Display(CpuGB* cpu, Memory* memory, Emulator* emu);
     ~Display();
     void setBuffer(typename Pixel::type* buffer) { this->buffer = buffer; }
     void init();
