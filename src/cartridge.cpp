@@ -161,11 +161,18 @@ u8 Cartridge::read(u16 address) const
   // second 16k -> rom_bank_1
   else if (address >= 0x4000 && address <= 0x7FFF)
     return status.rom_bank_1[address-0x4000];
-  // external ram 8k -> ram_bank
-  else if (address >= 0xA000 && address <= 0xBFFF)
+  // external ram 8k -> ram_bank - moved to its own method
+  /* else if (address >= 0xA000 && address <= 0xBFFF)
     return status.ram_bank[address-0xA000];
+  */
 
 	return 0;
+}
+
+u8 Cartridge::readRam(u16 address) const
+{
+  // external ram 8k -> ram_bank
+  return status.ram_bank[address-0xA000];
 }
 
 u32 Cartridge::romSize()

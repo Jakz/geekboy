@@ -57,6 +57,12 @@ enum class PixelFormat
   ARGB51,
   ARGB565
 };
+  
+struct Ports
+{
+  u8* ldcd;
+  u8* stat;
+};
 
 template<PixelFormat T>
 class Display

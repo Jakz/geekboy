@@ -80,33 +80,32 @@ u8 Memory::readVram1(u16 address)
 
 u8 Memory::read(u16 address)
 {
-	/* if address is for the ROM or ext RAM just forward it to the cartridge manager */
-	if (address <= 0x7FFF || (address >= 0xA000 && address <= 0xBFFF))
-		return cart->read(address);
-  /* vram (switchable 0-1 CGB) */
-  else if (address >= 0x8000 && address <= 0x9FFF)
-    return memory.vram_bank[address - 0x8000];
-	/* wram bank 0 */
-	else if (address >= 0xC000 && address <= 0xCFFF)
-		return memory.wram_bank_0[address - 0xC000];
-	/* wram bank 1 (switchable 1-7 in CGB) */
-	else if (address >= 0xD000 && address <= 0xDFFF)
-		return memory.wram_bank_1[address - 0xD000];
-	/* mirror working ram banco 0 */
-	else if (address >= 0xE000 && address <= 0xFDFF)
-		return memory.wram_bank_0[address - 0xE000];
-  // oam table
-  else if (address >= 0xFE00 && address <= 0xFE9F)
-    return memory.oam_table[address - 0xFE00];
-  // not usable
-  else if (address >= 0xFEA0 && address <= 0xFEFF)
-    return -1;
   // ports + HRAM
-  else if (address >= 0xFF00)
+  if (address >= 0xFF00)
     return trapPortRead(address);
-	
+	/* if address is for the ROM just forward it to the cartridge manager */
+	else if (address <= 0x7FFF)
+    return cart->read(address);
+  /* vram (switchable 0-1 CGB) */
+  else if (address <= 0x9FFF)
+    return memory.vram_bank[address - 0x8000];
+  /* cartridge RAM */
+  else if (address <= 0xBFFF)
+    return cart->readRam(address);
+	/* wram bank 0 */
+	else if (address <= 0xCFFF)
+    return memory.wram_bank_0[address - 0xC000];
+	/* wram bank 1 (switchable 1-7 in CGB) */
+	else if (address <= 0xDFFF)
+    return memory.wram_bank_1[address - 0xD000];
+	/* mirror working ram banco 0 */
+	else if (address <= 0xFDFF)
+    return memory.wram_bank_0[address - 0xE000];
+  // oam table
+  else if (address <= 0xFE9F)
+    return memory.oam_table[address - 0xFE00];
+
 	return 0;
-		
 }
 
 void Memory::write(u16 address, u8 value)

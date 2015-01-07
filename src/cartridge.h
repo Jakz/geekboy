@@ -122,8 +122,9 @@ class Cartridge
      dell'MBC interno alla cart */
     void write(u16 address, u8 value);
   
-    /* legge un valore ad un determinato indirizzo */
+    /* reads a value at a given address */
     u8 read(u16 address) const;
+    u8 readRam(u16 address) const;
   
     void dumpSave();
 };

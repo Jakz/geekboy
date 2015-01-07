@@ -153,7 +153,7 @@ void Display<T>::update(u8 cycles)
 template<PixelFormat T>
 void Display<T>::manageSTAT()
 {
-  u8 status = mem->read(PORT_STAT);
+  u8 status = mem->rawPortRead(PORT_STAT - 0xFF00);
   
   if (!isEnabled())
   {
@@ -292,7 +292,7 @@ void Display<T>::drawScanline(u8 line)
 template<PixelFormat T>
 void Display<T>::drawTiles(u8 line)
 {
-  u8 lcdc = mem->read(PORT_LCDC);
+  u8 lcdc = mem->rawPortRead(PORT_LCDC);
   
   u8 *vram = mem->memoryMap()->vram;
   
