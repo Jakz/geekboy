@@ -62,8 +62,6 @@ public:
   u8 step();
   bool run(u32 cycles);
 
-  void requestInterrupt(u8 interrupt);
-
   u64 cycles;
   Mode mode;
 

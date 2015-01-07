@@ -167,7 +167,7 @@ void Emulator::updateTimers(u16 cycles)
       if (counter == 0xFF)
       {
         mem->rawPortWrite(PORT_TIMA, mem->read(PORT_TMA));
-        requestInterrupt(INT_TIMER);
+        cpu->enableInterrupt(INT_TIMER);
       }
       // just increment it
       else
@@ -195,11 +195,6 @@ void Emulator::updateTimers(u16 cycles)
     // reset counter for next divider increment
     dividerCounter = CYCLES_PER_DIVIDER_INCR + dividerCounter;
   }
-}
-
-void Emulator::requestInterrupt(u8 interrupt)
-{
-  cpu->enableInterrupt(interrupt);
 }
 
 void Emulator::resetTimerCounter()
@@ -232,7 +227,7 @@ void Emulator::keyPressed(Key key)
   u8 joyp = mem->rawPortRead(PORT_JOYP);
   
   if (isChanging && ((isDirectional && !Utils::bit(joyp, 4)) || (!isDirectional && !Utils::bit(joyp, 5))))
-    requestInterrupt(INT_JOYPAD);
+    cpu->enableInterrupt(INT_JOYPAD);
 }
 
 void Emulator::keyReleased(Key key)

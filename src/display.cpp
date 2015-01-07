@@ -147,7 +147,7 @@ void Display<T>::update(u8 cycles)
       drawScanline(line);
     // if we reached V-BLANK then raise the interrupt
     else if (line == VBLANK_START_LINE)
-      emu->requestInterrupt(INT_VBLANK);
+      cpu->enableInterrupt(INT_VBLANK);
     // if we got over V-BLANK then reset the counter
     else if (line > VBLANK_END_LINE)
     {
@@ -257,7 +257,7 @@ void Display<T>::manageSTAT()
     // if  we switched to a new mode and its interrupt was enabled
     if (willRequestInterrupt && currentMode != mode)
     {
-      emu->requestInterrupt(INT_STAT);
+      cpu->enableInterrupt(INT_STAT);
     }
     
     // if LY == LYC we should set coincidence bit and request interrupt if the bit is enabled
@@ -267,7 +267,7 @@ void Display<T>::manageSTAT()
       
       if (Utils::bit(status, 6))
       {
-        emu->requestInterrupt(INT_STAT);
+        cpu->enableInterrupt(INT_STAT);
       }
     }
     else
