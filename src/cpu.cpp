@@ -180,15 +180,9 @@ inline bool CpuGB::parity(u8 x)
 
 void CpuGB::enableInterrupt(u8 interrupt)
 {
-  u8 ifreg = mem->read(PORT_IF);
-  
   // set the corresponding bit in the interrupt request register to 1
-  ifreg = Utils::set(ifreg, interrupt);
-  
-  // resore cpu if it was halted
+  mem->memoryMap()->ports_table[PORT_IF - 0xFF00] |= (1 << interrupt);
   halted = false;
-  
-  mem->rawPortWrite(PORT_IF, ifreg);
 }
 
 void CpuGB::manageInterrupts()
@@ -196,11 +190,12 @@ void CpuGB::manageInterrupts()
   if (s.interruptsEnabled)
   {
     u8 ifreg = mem->memoryMap()->ports_table[PORT_IF - 0xFF00];
-    u8 efreg = mem->memoryMap()->ports_table[PORT_EF - 0xFF00];
     
     // if there is at least one interrupt to handle
     if (ifreg)
     {
+      u8 efreg = mem->memoryMap()->ports_table[PORT_EF - 0xFF00];
+
       for (int i = 0; i < 5; ++i)
       {
         // if the ith interrupt is both set and enabled
