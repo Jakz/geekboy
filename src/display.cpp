@@ -606,11 +606,8 @@ void Display<T>::drawSprites(u8 line)
   bool hasBgPriority = false;
   
   
-  u16 tileData;
-  
   // if mode is GB then tile data is always 0x8000, so 0x0000 since we're reading directly from VRAM
-  if (emu->mode == MODE_GB)
-    tileData = 0x0000;
+  u16 tileData = 0x0000;
 
   // check if sprites are 8x16
   bool doubleSize = Utils::bit(*ports.lcdc, 2);

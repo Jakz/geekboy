@@ -44,7 +44,7 @@ class GBSound
       static blip_sample_t buf [buf_size];
       // Play whatever samples are available
       long count = bApu->read_samples( buf, buf_size );
-      bQueue.write( buf, count );
+      bQueue.write( buf, static_cast<int>(count) );
     }
 };
   

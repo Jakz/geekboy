@@ -196,25 +196,28 @@ void CpuGB::manageInterrupts()
     {
       u8 efreg = mem->memoryMap()->ports_table[PORT_EF - 0xFF00];
 
-      for (int i = 0; i < 5; ++i)
+      if (efreg)
       {
-        // if the ith interrupt is both set and enabled
-        if (Utils::bit(ifreg, i) && Utils::bit(efreg, i))
+        for (int i = 0; i < 5; ++i)
         {
-          // disable interrupts
-          s.interruptsEnabled = false;
+          // if the ith interrupt is both set and enabled
+          if (Utils::bit(ifreg, i) && Utils::bit(efreg, i))
+          {
+            // disable interrupts
+            s.interruptsEnabled = false;
 
-          // reset the managed interrupt bit
-          ifreg = Utils::res(ifreg, i);
-          
-          // push current program counter on stack
-          pushDoubleSP(r.PC);
-          
-          r.PC = 0x40 + 0x08*i;
-          
-          mem->write(PORT_IF, ifreg);
-          
-          break;
+            // reset the managed interrupt bit
+            ifreg = Utils::res(ifreg, i);
+            
+            // push current program counter on stack
+            pushDoubleSP(r.PC);
+            
+            r.PC = 0x40 + 0x08*i;
+            
+            mem->write(PORT_IF, ifreg);
+            
+            break;
+          }
         }
       }
     }

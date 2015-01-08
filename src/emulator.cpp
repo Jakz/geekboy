@@ -160,18 +160,18 @@ void Emulator::updateTimers(u16 cycles)
     // while the counter is expired
     while (timerCounter <= 0)
     {
-      u8 counter = mem->read(PORT_TIMA);
+      u8* counter = &mem->memoryMap()->ports_table[PORT_TIMA - 0xFF00];
       
       // if we reached overflow of timer then request an interrupt
       // and reset it according to TMA register
-      if (counter == 0xFF)
+      if (*counter == 0xFF)
       {
-        mem->rawPortWrite(PORT_TIMA, mem->read(PORT_TMA));
+        *counter = mem->memoryMap()->ports_table[PORT_TMA - 0xFF00];
         cpu->enableInterrupt(INT_TIMER);
       }
       // just increment it
       else
-        mem->rawPortWrite(PORT_TIMA, counter + 1);
+        *counter = *counter + 1;
       
       timerCounter += timerTicks();
     }
@@ -183,14 +183,13 @@ void Emulator::updateTimers(u16 cycles)
   if (dividerCounter <= 0)
   {
     // read current value and increment it by one
-    u8 t = mem->read(PORT_DIV);
+    u8* t = &mem->memoryMap()->ports_table[PORT_DIV - 0xFF00];
     
     // increase it or make it wrap
-    if (t == 255) t = 0;
-    else ++t;
-    
     // write updated value on address by skipping normal procedure
-    mem->rawPortWrite(PORT_DIV, t);
+
+    if (*t == 255) *t = 0;
+    else ++*t;
     
     // reset counter for next divider increment
     dividerCounter = CYCLES_PER_DIVIDER_INCR + dividerCounter;
