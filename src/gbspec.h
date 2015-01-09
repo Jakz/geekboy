@@ -77,7 +77,7 @@ namespace gb
 
 
 
-  const u32 DIVIDER_REGISTER_TICK = KB16;
+  const u32 DIVIDER_REGISTER_TICK = gb::KB16;
 
   const u32 CYCLES_PER_SECOND = 4194304;
   const u32 CYCLES_PER_REFRESH = 70224;

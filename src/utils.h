@@ -15,15 +15,15 @@ typedef signed char s8;
 typedef signed short s16;
 typedef signed int s32;
 
-#define KB2 (2048)
-#define KB4 (4096)
-#define KB8 (8192)
-#define KB16 (16384)
-#define KB32 (32768)
-
-#define KB131 (131072)
-
-#define MB4 (4194304)
+namespace gb {
+  const u32 KB2 = 2048;
+  const u32 KB4 = 4096;
+  const u32 KB8 = 8192;
+  const u32 KB16 = 16384;
+  const u32 KB32 = 32768;
+  const u32 KB131 = 131072;
+  const u32 MB4 = 4194304;
+}
 
 class Utils
 {
