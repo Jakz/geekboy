@@ -59,7 +59,7 @@ public:
   
   void emulationSuspended() override { }
   void emulationResumed() override { }
-  
+  void emulationStopped() override { }
   void emulationStarted() override { }
   
   void initialize() {
