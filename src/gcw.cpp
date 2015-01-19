@@ -121,6 +121,11 @@ class GBFullBlit : public Blitter
   }
 };
 
+EnumSet<MonoPalette> palettes = {
+  EnumValue<MonoPalette>("Monochrome", PALETTE_BLACK_WHITE),
+  EnumValue<MonoPalette>("Greenish", PALETTE_GREENISH)
+};
+
 class GeekBoyCore : public CoreInterface
 {
 private:
@@ -142,10 +147,25 @@ public:
     registerButton(ButtonSetting("Left", GCW_KEY_LEFT, KEY_LEFT, true));
     registerButton(ButtonSetting("Down", GCW_KEY_DOWN, KEY_DOWN, true));
     
+    //registerSetting("sound-enabled", Setting::Group::VIDEO, "Sound Enabled", true, true, &GeekBoyCore::soundEnabledChanged);
+    
+    registerBoolSetting("sound-enabled", "Sound Enabled", Setting::Group::VIDEO, true, true, std::bind(&GeekBoyCore::soundEnabledChanged, this, std::placeholders::_1));
+    registerEnumSetting<MonoPalette>("palette", "Palette", Setting::Group::VIDEO, palettes, PALETTE_GREENISH, true, std::bind(&GeekBoyCore::monoPaletteChanged, this, std::placeholders::_1));
+    
     registerScaler(fullScreenBlitter);
     
     setGfxFormat(160, 144, FORMAT_RGB565);
     
+  }
+  
+  void soundEnabledChanged(bool value)
+  {
+    
+  }
+  
+  void monoPaletteChanged(MonoPalette palette)
+  {
+    emulator->getDisplay()->setMonoPalette(palette);
   }
   
   void emulationFrame() override

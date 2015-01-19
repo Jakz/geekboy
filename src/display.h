@@ -28,6 +28,12 @@ struct oam
   u8 tileNumber;
   u8 flags;
 };
+  
+enum MonoPalette
+{
+  PALETTE_GREENISH,
+  PALETTE_BLACK_WHITE
+};
 
 enum DrawLayer
 {
@@ -95,7 +101,7 @@ private:
   
     void colorsForPalette(DrawLayer layer, u8 index, typename Pixel::type (&palette)[4]);
   
-    const typename Pixel::type bcolors[4];
+    typename Pixel::type bcolors[4];
 
   public:
     Display(CpuGB* cpu, Memory* memory, Emulator* emu);
@@ -109,6 +115,24 @@ private:
     void update(u8 cycles);
   
     void manageSTAT();
+  
+    void setMonoPalette(MonoPalette palette)
+    {
+      if (palette == PALETTE_GREENISH)
+      {
+        bcolors[0] = ccc(28, 31, 26);
+        bcolors[1] = ccc(17, 24, 14);
+        bcolors[2] = ccc(4, 13, 11);
+        bcolors[3] = ccc(1,3,4);
+      }
+      else if (palette == PALETTE_BLACK_WHITE)
+      {
+        bcolors[0] = ccc(28, 28, 28);
+        bcolors[1] = ccc(16, 16, 16);
+        bcolors[2] = ccc(8, 8, 8);
+        bcolors[3] = ccc(2,2,2);
+      }
+    }
   
   
     void drawScanline(u8 line);

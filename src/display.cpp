@@ -5,9 +5,10 @@
 using namespace gb;
 
 template<PixelFormat T>
-Display<T>::Display(CpuGB* cpu, Memory* memory, Emulator* emu) : emu(emu), cpu(cpu), mem(memory), width(emu->spec.displayWidth), height(emu->spec.displayHeight),
-bcolors{ccc(28, 31, 26),ccc(17, 24, 14),ccc(4, 13, 11),ccc(1,3,4)}
+Display<T>::Display(CpuGB* cpu, Memory* memory, Emulator* emu) : emu(emu), cpu(cpu), mem(memory), width(emu->spec.displayWidth), height(emu->spec.displayHeight)
 {
+  setMonoPalette(PALETTE_BLACK_WHITE);
+  
   priorityMap = new PriorityType[width*height];
   
   scanlineCounter = CYCLES_PER_SCANLINE;
