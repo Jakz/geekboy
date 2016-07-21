@@ -6,12 +6,13 @@ using namespace gb;
 
 Cartridge::Cartridge(Emulator& emu) : emu(emu)
 {
-  status.rom = NULL;
-  status.rom_bank_0 = NULL;
-  status.rom_bank_1 = NULL;
-  status.ram = NULL;
-  status.ram_bank = NULL;
+  status.rom = nullptr;
+  status.rom_bank_0 = nullptr;
+  status.rom_bank_1 = nullptr;
+  status.ram = nullptr;
+  status.ram_bank = nullptr;
   
+  status.rtc_override = false;
   status.ram_enabled = false;
   status.flags = 0;
   
@@ -115,6 +116,44 @@ void Cartridge::write(u16 address, u8 value)
     }
   }
   
+  else if ((status.flags & MBC_MBC3) == MBC_MBC3)
+  {
+    /* this enables or less the RAM and the RTC */
+    if (address <= 0x1FFF)
+    {
+      if ((value & 0x0A) == 0x0A)
+        status.ram_enabled = true;
+      else
+        status.ram_enabled = false;
+    }
+    /* selects rom bank 01h to 7fh (7 bits) */
+    else if (address <= 0x3FFF)
+    {
+      u8 romBank = value & 0x7F;
+      
+      if (romBank == 0) romBank = 1;
+      
+      status.current_rom_bank = romBank;
+      status.rom_bank_1 = &status.rom[status.current_rom_bank*KB16];
+    }
+    /* select RAM bank or RTC register */
+    else if (address >= 0x4000 && address <= 0x5FFF)
+    {
+      if (value < 0x04)
+      {
+        status.current_ram_bank = value & 0x0F;
+        status.ram_bank = &status.ram[status.current_ram_bank*KB8];
+        status.rtc_override = false;
+      }
+      else if (value >= 0x08 && value <= 0x0C)
+      {
+        /* selects RTC register and mark that writes/read will occur there */
+        status.rtc_register = &status.rtc[value - 0x08];
+        status.rtc_override = true;
+      }
+    }
+  }
+  
   
   else if ((status.flags & MBC_MBC5) == MBC_MBC5)
   {
@@ -152,7 +191,7 @@ void Cartridge::write(u16 address, u8 value)
 
 }
 
-// legge un byte dalla ROM
+// reads a byte from rom
 u8 Cartridge::read(u16 address) const
 {
   // first 16kb -> rom_bank_0
@@ -304,6 +343,19 @@ void Cartridge::load(const char *rom_name)
 		status.rom_bank_0 = status.rom;
     status.rom_bank_1 = &status.rom[KB16];
   }
+  else if ((status.flags & MBC_MBC3) == MBC_MBC3)
+  {
+    unsigned long n = length / KB16;
+    
+    /* allochiamo n banks da 16kb */
+    printf("MBC3 allocating %lu x 16kb = %ld bytes\r\n", n, length);
+    
+    status.rom = (u8*)calloc(length, sizeof(u8));
+    fread(status.rom, 1, n*KB16, in);
+    
+    status.rom_bank_0 = status.rom;
+    status.rom_bank_1 = &status.rom[KB16];
+  }
   else if ((status.flags & MBC_MBC5) == MBC_MBC5)
   {
     unsigned long n = length / KB16;
@@ -327,6 +379,13 @@ void Cartridge::load(const char *rom_name)
     
     /* allochiamo n banks da 8kb */
 		printf("RAM allocating %u x 8kb = %u bytes\r\n", size/KB8, size);
+  }
+  
+  if ((status.flags & MBC_TIMER) == MBC_TIMER)
+  {
+    status.rtc = new u8[5];
+    
+    printf("TIMER allocating 5 bytes for RTC\r\n");
   }
 		
 	fclose(in);

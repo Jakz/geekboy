@@ -73,19 +73,26 @@ struct GB_CART_HEADER
 
 struct GB_CART_STATUS
 {
-	/* puntatore ai primi 16kb di ROM (non varia mai a rigore) */
+	/* pointer to first 16kb of ROM */
 	u8 *rom_bank_0;
-	/* puntatore ai 16kb di ROM selezionati dal bank number */
+	/* pointer to 16kb of ROM selected by MBC */
 	u8 *rom_bank_1;	
 	/* puntatore ai tot kb di RAM (in base al tipo di cart) */
 	u8 *ram_bank;
-	/* tutta la ROM */
+  /* pointer to selected RTC register */
+  u8 *rtc_register;
+  
+	/* whole ROM */
 	u8 *rom;
-	/* tutta la RAM */
+	/* whole RAM */
 	u8 *ram;
+  /* all RTC registers */
+  u8 *rtc;
 	
 	/* true = ram attiva */
 	bool ram_enabled;
+  /* true = writes are on RTC registers, not on RAM */
+  bool rtc_override;
 	/* true = 32kb RAM, false = 2mb ROM (indica i 2 bit 5-6 cosa contano) */
 	bool rom_banking_mode;
   
