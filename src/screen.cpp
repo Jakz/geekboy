@@ -46,6 +46,7 @@ Screen::Screen() : scaleFactor(3)
 {
   running = true;
   fpsCap = true;
+  paused = false;
   
   crender = 0;
   cloop = 0;
@@ -66,16 +67,13 @@ bool Screen::init()
   int height = emu->spec.displayHeight*scaleFactor;
   
   #if VRAM_DEBUG
-    if((total = SDL_SetVideoMode(1440, 900, 32, SDL_OPENGL)) == NULL) {
-      return false;
-    }
-  #else
-    if((total = SDL_SetVideoMode(width, height, 32, SDL_OPENGL | SDL_HWSURFACE)) == NULL) {
-      return false;
-    }
+    width = 1440;
+    height = 1100;
   #endif
   
-  
+  if((total = SDL_SetVideoMode(width, height, 32, SDL_OPENGL | SDL_HWSURFACE | SDL_DOUBLEBUF)) == NULL) {
+    return false;
+  }
 
 
   glViewport(0, 0, width, height);
@@ -125,7 +123,8 @@ int Screen::execute(const string& fileName)
     while(SDL_PollEvent(&event))
       handleEvent(&event);
    
-    loop();
+    if (!paused)
+      loop();
     render();
 
     timer.frameRateDelay();
@@ -225,6 +224,7 @@ void Screen::handleEvent(SDL_Event *event)
           
         case SDLK_ESCAPE: { running = false; break; }
         case SDLK_SPACE: { fpsCap = false; break; }
+        case SDLK_p: { paused = !paused; break; }
           
         default: break;
       }
@@ -269,7 +269,7 @@ void Screen::render()
  	glLoadIdentity();
   glRasterPos2i(-1, 1);
 	glPixelZoom(static_cast<float>(scaleFactor), -static_cast<float>(scaleFactor));
- 	//glDrawPixels(emu->spec.displayWidth, emu->spec.displayHeight, GL_RGBA, GL_UNSIGNED_SHORT_5_5_5_1, screenBuffer);
+  
   glDrawPixels(emu->spec.displayWidth, emu->spec.displayHeight, GL_RGBA, GL_UNSIGNED_SHORT_5_5_5_1, screenBuffer);
 
   
@@ -277,31 +277,36 @@ void Screen::render()
   renderVRAM();
   #endif
 
-	SDL_GL_SwapBuffers( ) ;
+	SDL_GL_SwapBuffers();
 }
 
 #if VRAM_DEBUG
 void Screen::renderVRAM()
 {
-  renderTileData(tileData1, emu->mem.memoryMap()->vram_bank);
+  renderTileData(tileData1, emu->mem.memoryMap()->vram);
   glRasterPos2f(0.0, 1);
-	//glPixelZoom(1, -1);
- 	glDrawPixels(128, 192, GL_RGBA, GL_UNSIGNED_INT_8_8_8_8, tileData1);
+	glPixelZoom(static_cast<float>(2), -static_cast<float>(2));
+ 	glDrawPixels(128, 192, GL_RGBA, GL_UNSIGNED_SHORT_5_5_5_1, tileData1);
   
-  renderTileData(tileData2, &emu->mem.memoryMap()->vram_bank[KB8]);
+  renderTileData(tileData2, &emu->mem.memoryMap()->vram[KB8]);
   glRasterPos2f(0.5, 1);
-	//glPixelZoom(1, -1);
- 	glDrawPixels(128, 192, GL_RGBA, GL_UNSIGNED_INT_8_8_8_8, tileData2);
+	glPixelZoom(static_cast<float>(2), -static_cast<float>(2));
+ 	glDrawPixels(128, 192, GL_RGBA, GL_UNSIGNED_SHORT_5_5_5_1, tileData2);
 
   renderTileMap(tileMap1, TILE_MAP1);
-  glRasterPos2f(-1, 0);
-	glPixelZoom(1, -1);
- 	glDrawPixels(256, 256, GL_RGBA, GL_UNSIGNED_INT_8_8_8_8, tileMap1);
+  glRasterPos2f(-1, 0.1);
+	glPixelZoom(static_cast<float>(2), -static_cast<float>(2));
+ 	glDrawPixels(256, 256, GL_RGBA, GL_UNSIGNED_SHORT_5_5_5_1, tileMap1);
   
   renderTileMap(tileMap2, TILE_MAP2);
-  glRasterPos2f(-0.53, 0);
-	glPixelZoom(1, -1);
- 	glDrawPixels(256, 256, GL_RGBA, GL_UNSIGNED_INT_8_8_8_8, tileMap2);
+  glRasterPos2f(-0.25f, 0.1);
+	glPixelZoom(static_cast<float>(2), -static_cast<float>(2));
+ 	glDrawPixels(256, 256, GL_RGBA, GL_UNSIGNED_SHORT_5_5_5_1, tileMap2);
+  
+  renderSprites(sprites, emu->mem.oam(), emu->mem.memoryMap()->vram);
+  glRasterPos2f(-1.0f, -0.9);
+	glPixelZoom(static_cast<float>(2), -static_cast<float>(2));
+ 	glDrawPixels(40*8, 16, GL_RGBA, GL_UNSIGNED_SHORT_5_5_5_1, sprites);
   
   if (emu->mode == MODE_GB)
     renderGbPalette();
@@ -309,9 +314,9 @@ void Screen::renderVRAM()
     renderCgbPalette();
 }
 
-void Screen::renderTileData(u32 *dest, u8 *data)
+void Screen::renderTileData(pixel_type *dest, u8 *data)
 {
-  u32 colors[4];
+  Display<PixelFormat::ARGB51>::Pixel::type colors[4];
   u16 address;
   emu->display->colorsForPalette(LAYER_BACKGROUND, 0, colors);
 
@@ -326,7 +331,7 @@ void Screen::renderTileData(u32 *dest, u8 *data)
       for (int x = 0; x < 8; ++x)
       {
         u8 index = ((byte2 >> (7 - x)) & 0x01) << 1 | ((byte1 >> (7 - x)) & 0x01);
-        u32 color = colors[index];
+        pixel_type color = colors[index];
         
         int fx = (i%16)*8 + x;
         int fy = (i/16)*8 + y;
@@ -337,7 +342,7 @@ void Screen::renderTileData(u32 *dest, u8 *data)
   }
 }
 
-void Screen::renderTileMap(u32 *dest, u16 address)
+void Screen::renderTileMap(pixel_type *dest, u16 address)
 {
   u8 lcdc = emu->mem.read(PORT_LCDC);
   bool isUnsigned = Utils::bit(lcdc, 4);
@@ -346,37 +351,191 @@ void Screen::renderTileMap(u32 *dest, u16 address)
     for (int j = 0; j < 32; ++j)
     {
       s16 index;
-      if (isUnsigned) index = emu->mem.read(address+32*i+j);
-      else index = (s8)emu->mem.read(address+32*i+j) + 256;
-      
+      if (isUnsigned) index = emu->mem.readVram0(address+32*i+j);
+      else index = (s8)emu->mem.readVram0(address+32*i+j) + 256;
       
       for (int k = 0; k < 8; ++k)
       {
         int sp = ((index/16)*8+k)*128 + (index%16)*8;
         int dp = (i*8+k)*256 + j*8;
         
-        memcpy(&dest[dp], &tileData1[sp], sizeof(u32)*8);
+        memcpy(&dest[dp], &tileData1[sp], sizeof(pixel_type)*8);
       }
       //SDL_BlitSurface(tileData,&src,total,&dest);
     }
+  
+  if (!(Utils::bit(lcdc, 3) ^ (address == TILE_MAP2)))
+  {
+    pixel_type edge = gb::Display<gb::PixelFormat::ARGB51>::ccc(31, 0, 0);
+    
+    u8 scx = emu->mem.read(PORT_SCX);
+    u8 scy = emu->mem.read(PORT_SCY);
+    
+    for (int x = 0; x < 160; ++x)
+    {
+      int fx = (x + scx)%256;
+      int fy = scy, sy = (scy+144)%256;
+
+      dest[fy*256 + fx] = edge;
+      dest[sy*256 + fx] = edge;
+    }
+    
+    for (int y = 0; y < 144; ++y)
+    {
+      int fy = (y + scy)%256;
+      int fx = scx, sx = (scx+160)%256;
+      
+      dest[fy*256 + fx] = edge;
+      dest[fy*256 + sx] = edge;
+    }
+  }
+  
+  if (!(Utils::bit(lcdc, 6) ^ (address == TILE_MAP2)))
+  {
+    pixel_type edge = gb::Display<gb::PixelFormat::ARGB51>::ccc(0, 31, 0);
+
+    
+    int wx = emu->mem.read(PORT_WX) - 7;
+    int wy = emu->mem.read(PORT_WY);
+    
+    for (int x = 0; x < 160; ++x)
+    {
+      int fx = (x + wx)%256;
+      int fy = wy, sy = (wy+144)%256;
+      
+      dest[fy*256 + fx] = edge;
+      dest[sy*256 + fx] = edge;
+    }
+    
+    for (int y = 0; y < 144; ++y)
+    {
+      int fy = (y + wy)%256;
+      int fx = wx, sx = (wx+160)%256;
+      
+      dest[fy*256 + fx] = edge;
+      dest[fy*256 + sx] = edge;
+    }
+  }
+
+  
+}
+
+void Screen::renderSprites(pixel_type* dest, u8* oams, u8* vram_total)
+{
+  pixel_type colors[4];
+  
+  bool doubleSize = Utils::bit(emu->mem.read(PORT_LCDC), 2);
+
+  for (int i = 0; i < 40; ++i)
+  {
+    u8* oam = &oams[i*4];
+    
+    /*u8 x = oam[0];
+    u8 y = oam[1];*/
+    u8 index = oam[2];
+    u8 attrs = oam[3];
+
+    bool flipY = Utils::bit(attrs, 6);
+    bool flipX = Utils::bit(attrs, 5);
+    
+    u8* vram = vram_total;
+    
+    if (emu->mode == MODE_CGB)
+    {
+      if (Utils::bit(attrs, 3))
+        vram = &vram[KB8];
+      
+      emu->display->colorsForPalette(LAYER_SPRITE, attrs & 0x07, colors);
+    }
+    else
+      emu->display->colorsForPalette(LAYER_SPRITE, Utils::bit(attrs, 4) ? 1 : 0, colors);
+    
+    u8* spriteAddress;
+
+    if (!doubleSize)
+      spriteAddress = vram + TILE_BYTES_SIZE*index;
+    else
+      spriteAddress = vram + TILE_BYTES_SIZE*(index & 0xFE);
+    
+    for (int y = 0; y < 8; ++y)
+    {
+      u8 byte1, byte2;
+      
+      if (flipY)
+      {
+        byte1 = spriteAddress[2*(7-y)];
+        byte2 = spriteAddress[2*(7-y)+1];
+      }
+      else
+      {
+        byte1 = spriteAddress[2*y];
+        byte2 = spriteAddress[2*y+1];
+      }
+      
+      
+      for (int x = 0; x < 8; ++x)
+      {
+        u8 colorIndex = ((byte2 >> x) & 0x01) << 1 | ((byte1 >> x) & 0x01);
+        
+        int xx = i*8 + (!flipX ? (8 - x - 1) : x);
+        int yy = y;
+        int value = yy*(40*8) + xx;
+        
+        dest[value] = colors[colorIndex];
+      }
+    }
+    
+    if (doubleSize)
+    {
+      spriteAddress = vram + TILE_BYTES_SIZE * (index | 0x01);
+
+      for (int y = 0; y < 8; ++y)
+      {
+        u8 byte1, byte2;
+        
+        if (flipY)
+        {
+          byte1 = spriteAddress[2*(7-y)];
+          byte2 = spriteAddress[2*(7-y)+1];
+        }
+        else
+        {
+          byte1 = spriteAddress[2*y];
+          byte2 = spriteAddress[2*y+1];
+        }
+        
+        
+        for (int x = 0; x < 8; ++x)
+        {
+          u8 colorIndex = ((byte2 >> x) & 0x01) << 1 | ((byte1 >> x) & 0x01);
+          
+          int xx = i*8 + (!flipX ? (8 - x - 1) : x);
+          int yy = y+8;
+          int value = yy*(40*8) + xx;
+          
+          dest[value] = colors[colorIndex];
+        }
+      }
+    }
+  }
 }
 
 void Screen::renderGbPalette()
 {
-  u32 colors[4];
+  pixel_type colors[4];
   
   emu->display->colorsForPalette(LAYER_BACKGROUND, 0, colors);
-  memcpy(gbpal, &colors, sizeof(u32)*4);
+  memcpy(gbpal, &colors, sizeof(pixel_type));
   
   emu->display->colorsForPalette(LAYER_SPRITE, 0, colors);
-  memcpy(&gbpal[8*4], &colors, sizeof(u32)*4);
+  memcpy(&gbpal[8*4], &colors, sizeof(pixel_type));
   
   emu->display->colorsForPalette(LAYER_SPRITE, 1, colors);
-  memcpy(&gbpal[9*4], &colors, sizeof(u32)*4);
+  memcpy(&gbpal[9*4], &colors, sizeof(pixel_type));
   
-  glRasterPos2f(-0.4, 1);
+  glRasterPos2f(-0.3, 1);
 	glPixelZoom(5, -5);
- 	glDrawPixels(32, 2, GL_RGBA, GL_UNSIGNED_INT_8_8_8_8, gbpal);
+ 	glDrawPixels(32, 2, GL_RGBA, GL_UNSIGNED_SHORT_5_5_5_1, gbpal);
   
 }
 
@@ -392,23 +551,23 @@ void Screen::renderCgbPalette()
     
   printf("\n\n\n");*/
   
-  u32 colors[4];
+  pixel_type colors[4];
   
   for (int i = 0; i < 8; ++i)
   {
     emu->display->colorsForPalette(LAYER_BACKGROUND, i, colors);
-    memcpy(&gbpal[i*4], &colors, sizeof(u32)*4*i);
+    memcpy(&gbpal[i*4], &colors, sizeof(pixel_type)*i);
   }
   
   for (int i = 0; i < 8; ++i)
   {
     emu->display->colorsForPalette(LAYER_SPRITE, i, colors);
-    memcpy(&gbpal[(8+i)*4], &colors, sizeof(u32)*4*i);
+    memcpy(&gbpal[(8+i)*4], &colors, sizeof(pixel_type)*i);
   }
 
-  glRasterPos2f(-0.4, 1);
+  glRasterPos2f(-0.3, 1);
 	glPixelZoom(6, -6);
- 	glDrawPixels(32, 2, GL_RGBA, GL_UNSIGNED_INT_8_8_8_8, gbpal);
+ 	glDrawPixels(32, 2, GL_RGBA, GL_UNSIGNED_SHORT_5_5_5_1, gbpal);
   
 }
 

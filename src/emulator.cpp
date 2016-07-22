@@ -76,7 +76,7 @@ bool Emulator::run(u32 maxCycles)
     cpu.manageInterrupts();
   }
   
-  sound.update();
+  //sound.update();
   
   cyclesAdjust = cyclesTotal - maxCycles;
   

@@ -4,6 +4,28 @@
 
 using namespace gb;
 
+enum LCDC_Mask : u8
+{
+  LCDC_DISPLAY_ENABLE = 7,
+  LCDC_WINDOW_TILE_MAP_SELECT = 6,
+  LCDC_WINDOW_DISPLAY_ENABLE = 5,
+  LCDC_BG_WINDOW_TILE_DATA_SELECT = 4,
+  LCDC_BG_TILE_MAP_SELECT = 3,
+  LCDC_SPRITE_SIZE = 2,
+  LCDC_SPRITE_DISPLAY_ENABLE = 1,
+  LCDC_BG_DISPLAY_MODE = 0
+};
+
+enum TileAttributeMask : u8
+{
+  ATTRIB_PRIORITY = 7,
+  ATTRIB_FLIP_VERTICAL = 6,
+  ATTRIB_FLIP_HORIZONTAL = 5,
+  ATTRIB_PALETTE_GB = 4,
+  ATTRIB_VRAM_BANK = 3,
+  ATTRIB_PALETTE_CGB_MASK = 0x07
+};
+
 template<PixelFormat T>
 Display<T>::Display(CpuGB& cpu, Memory& memory, Emulator& emu) : cpu(cpu), mem(memory), emu(emu), width(emu.spec.displayWidth), height(emu.spec.displayHeight),
 bcolors{ccc(28, 31, 26),ccc(17, 24, 14),ccc(4, 13, 11),ccc(1,3,4)}
@@ -141,6 +163,8 @@ void Display<T>::update(u8 cycles)
     {
       mem.rawPortWrite(PORT_LY, 0);
       memset(priorityMap, PRIORITY_NONE, width*height*sizeof(PriorityType));
+      //memset(buffer, 0, width*height*sizeof(Pixel));
+
       drawScanline(0);
     }
     
@@ -150,7 +174,7 @@ void Display<T>::update(u8 cycles)
 template<PixelFormat T>
 void Display<T>::manageSTAT()
 {
-  u8 status = mem.read(PORT_STAT);
+  u8 status = mem.rawPortRead(PORT_STAT);
   
   if (!isEnabled())
   {
@@ -164,7 +188,7 @@ void Display<T>::manageSTAT()
     status = Utils::set(status, 0);
     
     // write status back
-    mem.rawPortWrite(PORT_LCDC, status);
+    mem.rawPortWrite(PORT_STAT, status);
     
     return;
   }
@@ -273,35 +297,75 @@ void Display<T>::drawScanline(u8 line)
 {
   u8 lcdc = mem.read(PORT_LCDC);
   
-  // if background is enabled draw it
-  if (Utils::bit(lcdc, 0))
-    drawTiles(line);
+  if (!isEnabled())
+    return;
   
-  // if window is enabled draw it
-  if (Utils::bit(lcdc, 5))
-    drawWindow(line);
-  
-  // if sprites are enabled draw them
-  if (Utils::bit(lcdc, 1))
-    drawSprites(line);
+  /* in gb mode bit 0 enables or disables background */
+  if (emu.mode == gb::Mode::MODE_GB)
+  {
+    // if background is enabled draw it
+    if (Utils::bit(lcdc, LCDC_BG_DISPLAY_MODE))
+      drawTiles(line);
+    
+    // if window is enabled draw it
+    if (Utils::bit(lcdc, LCDC_WINDOW_DISPLAY_ENABLE))
+      drawWindow(line);
+    
+    // if sprites are enabled draw them
+    if (Utils::bit(lcdc, LCDC_SPRITE_DISPLAY_ENABLE))
+      drawSprites(line);
+  }
+  /* in cgb mode bit 0 makes background and window lose priority over sprites */
+  else if (emu.mode == gb::MODE_CGB)
+  {
+    // if background is enabled draw it
+    if (Utils::bit(lcdc, LCDC_BG_DISPLAY_MODE))
+      drawTiles(line);
+    
+    // if window is enabled draw it
+    if (Utils::bit(lcdc, LCDC_WINDOW_DISPLAY_ENABLE))
+      drawWindow(line);
+    
+    // if sprites are enabled draw them
+    if (Utils::bit(lcdc, LCDC_SPRITE_DISPLAY_ENABLE))
+      drawSprites(line);
+  }
+  /* in cgb in gb mode bit 0 disables both background and window (regardless of bit 5) */
+  else if (emu.mode == gb::MODE_CGB_IN_GB)
+  {
+    bool masterEnable = Utils::bit(lcdc, LCDC_BG_DISPLAY_MODE);
+    
+    if (masterEnable)
+    {
+      drawTiles(line);
+      
+      // if window is enabled draw it
+      if (Utils::bit(lcdc, LCDC_WINDOW_DISPLAY_ENABLE))
+        drawWindow(line);
+    }
+    
+    // if sprites are enabled draw them
+    if (Utils::bit(lcdc, LCDC_SPRITE_DISPLAY_ENABLE))
+      drawSprites(line);
+  }
 }
 
 template<PixelFormat T>
 void Display<T>::drawTiles(u8 line)
 {
   u8 lcdc = mem.read(PORT_LCDC);
+  bool priorityEnabled = emu.mode == MODE_CGB && Utils::bit(lcdc, LCDC_BG_DISPLAY_MODE);
   
-  u8 *vram = mem.memoryMap()->vram;
+  const u8 *vram = mem.memoryMap()->vram;
   
   u16 tileData;
   u16 tileMap;
   bool isUnsigned = true;
-  PriorityType priority = PRIORITY_NONE;
   
   // choose tile data according to bit in lcd control register
   // since in CGB tile data can be in two different banks we just use deltas from 0x8000
   // and access vram directly
-  if (Utils::bit(lcdc, 4))
+  if (Utils::bit(lcdc, LCDC_BG_WINDOW_TILE_DATA_SELECT))
     tileData = 0x0000;
   else
   {
@@ -315,7 +379,7 @@ void Display<T>::drawTiles(u8 line)
     tileData += 0x0000;
   
   // choose tile map according to bit in lcd control register
-  if (Utils::bit(lcdc, 3))
+  if (Utils::bit(lcdc, LCDC_BG_TILE_MAP_SELECT))
     tileMap = TILE_MAP2;
   else
     tileMap = TILE_MAP1;
@@ -333,9 +397,13 @@ void Display<T>::drawTiles(u8 line)
   if (emu.mode == MODE_GB)
     colorsForPalette(LAYER_BACKGROUND, 0, colors);
   
+  //printf("line %d: ", line);
+  
   // for every pixel of the current line
   for (int i = 0; i < width; ++i)
   {
+    PriorityType priority = PRIORITY_NONE;
+    
     // compute the pixel position inside the tilemap and wrap it around edges if needed
     u8 y = (line + scy) % (TILE_MAP_HEIGHT*TILE_HEIGHT);
     u8 x = (i + scx) % (TILE_MAP_WIDTH*TILE_WIDTH);
@@ -369,7 +437,7 @@ void Display<T>::drawTiles(u8 line)
     // in CGB mode we should read the tile map data from vram bank 1 to read additional tile attributes
     else
     {
-      u8 index = mem.read(tileMap + TILE_MAP_WIDTH*ty + tx);
+      u8 index = mem.readVram0(tileMap + TILE_MAP_WIDTH*ty + tx);
       u8 tileAttributes = mem.readVram1(tileMap + TILE_MAP_WIDTH*ty + tx);
       
       colorsForPalette(LAYER_BACKGROUND, tileAttributes & 0x07 , colors);
@@ -377,7 +445,7 @@ void Display<T>::drawTiles(u8 line)
       u16 vramBank = 0x0000;
       
       // correct tileData according to which bank is set in bit 3
-      if (Utils::bit(tileAttributes, 3))
+      if (Utils::bit(tileAttributes, ATTRIB_VRAM_BANK))
         vramBank = KB8;
         
 
@@ -386,11 +454,11 @@ void Display<T>::drawTiles(u8 line)
       else
         tileAddress = vramBank + tileData + TILE_BYTES_SIZE*(((s8)index)+128);
 
-      flipX = Utils::bit(tileAttributes, 5);
-      flipY = Utils::bit(tileAttributes, 6);
-      
-      if (!Utils::bit(tileAttributes,7))
-        priority = PRIORITY_SPRITE;
+      flipX = Utils::bit(tileAttributes, ATTRIB_FLIP_HORIZONTAL);
+      flipY = Utils::bit(tileAttributes, ATTRIB_FLIP_VERTICAL);
+
+      if (Utils::bit(tileAttributes, ATTRIB_PRIORITY))
+        priorityEnabled = true;
       
       if (flipY)
         py = 7 - py;
@@ -410,7 +478,9 @@ void Display<T>::drawTiles(u8 line)
       else
         index = ((byte2 >> px) & 0x01) << 1 | ((byte1 >> px) & 0x01);
       
-      if (priority == PRIORITY_NONE)
+      //printf("%d", index);
+      
+      if (priority == PRIORITY_NONE && priorityEnabled)
       {
         if (index == 0)
           priority = PRIORITY_MAYBE_SPRITE;
@@ -435,20 +505,23 @@ void Display<T>::drawTiles(u8 line)
 
     } while (true);
   }
+  
+  //printf("\n");
+
 }
 
 template<PixelFormat T>
 void Display<T>::drawWindow(u8 line)
 {
   u8 lcdc = mem.read(PORT_LCDC);
+  bool priorityEnabled = emu.mode == MODE_CGB && Utils::bit(lcdc, LCDC_BG_DISPLAY_MODE);
   
   u16 tileData;
   u16 tileMap;
   bool isUnsigned = true;
-  PriorityType priority = PRIORITY_NONE;
   
   // choose tile data according to bit in lcd control register
-  if (Utils::bit(lcdc, 4))
+  if (Utils::bit(lcdc, LCDC_BG_WINDOW_TILE_DATA_SELECT))
     tileData = TILE_DATA1;
   else
   {
@@ -457,7 +530,7 @@ void Display<T>::drawWindow(u8 line)
   }
   
   // choose tile map according to bit in lcd control register
-  if (Utils::bit(lcdc, 6))
+  if (Utils::bit(lcdc, LCDC_WINDOW_TILE_MAP_SELECT))
     tileMap = TILE_MAP2;
   else
     tileMap = TILE_MAP1;
@@ -480,6 +553,8 @@ void Display<T>::drawWindow(u8 line)
   // for every pixel of the current line
   for (int i = 0; i < width; ++i)
   {
+    PriorityType priority = priorityMap[line*width + i];
+    
     if (line >= wy && i >= wx)
     {
       // compute the pixel position inside the tilemap and wrap it around edges if needed
@@ -514,21 +589,21 @@ void Display<T>::drawWindow(u8 line)
       // in CGB mode we should read the tile map data from vram bank 1 to read additional tile attributes
       else
       {
-        u8 index = mem.read(tileMap + TILE_MAP_WIDTH*ty + tx);
+        u8 index = mem.readVram0(tileMap + TILE_MAP_WIDTH*ty + tx);
         u8 tileAttributes = mem.readVram1(tileMap + TILE_MAP_WIDTH*ty + tx);
         
-        if (!Utils::bit(tileAttributes,7))
-          priority = PRIORITY_SPRITE;
+        if (Utils::bit(tileAttributes, ATTRIB_PRIORITY))
+          priorityEnabled = true;
         
-        colorsForPalette(LAYER_BACKGROUND, tileAttributes & 0x07 , colors);
+        colorsForPalette(LAYER_BACKGROUND, tileAttributes & ATTRIB_PALETTE_CGB_MASK , colors);
         
         if (isUnsigned)
           tileAddress = tileData + TILE_BYTES_SIZE*index;
         else
           tileAddress = tileData + TILE_BYTES_SIZE*(((s8)index)+128);
 
-        flipX = Utils::bit(tileAttributes, 5);
-        flipY = Utils::bit(tileAttributes, 6);
+        flipX = Utils::bit(tileAttributes, ATTRIB_FLIP_HORIZONTAL);
+        flipY = Utils::bit(tileAttributes, ATTRIB_FLIP_VERTICAL);
         
         if (flipY)
           py = 7 - py;
@@ -536,7 +611,7 @@ void Display<T>::drawWindow(u8 line)
         // TODO priority flag
         
         // tile is from vram bank 1
-        if (Utils::bit(tileAttributes, 3))
+        if (Utils::bit(tileAttributes, ATTRIB_VRAM_BANK))
         {
           byte1 = mem.readVram1(tileAddress + py*2);
           byte2 = mem.readVram1(tileAddress + py*2 + 1);
@@ -560,18 +635,20 @@ void Display<T>::drawWindow(u8 line)
         else
           index = ((byte2 >> px) & 0x01) << 1 | ((byte1 >> px) & 0x01);
         
-        /*if (priority == PRIORITY_NONE)
+        priority = priorityMap[line*width+i];
+        
+        if (priority == PRIORITY_NONE && priorityEnabled)
         {
           if (index == 0)
             priority = PRIORITY_MAYBE_SPRITE;
           else
             priority = PRIORITY_BG;
-        }*/
+        }
           
         u32 color = colors[index];
         
         // place pixel on buffer at (i, line)
-        //priorityMap[line*width+i] = priority;
+        priorityMap[line*width+i] = priority;
         buffer[line*width+i] = color;
         
         // increase current pixel (i), current pixel in tile (px)
@@ -603,16 +680,18 @@ void Display<T>::drawSprites(u8 line)
     tileData = 0x0000;
 
   // check if sprites are 8x16
-  bool doubleSize = Utils::bit(mem.read(PORT_LCDC), 2);
+  bool doubleSize = Utils::bit(mem.read(PORT_LCDC), LCDC_SPRITE_SIZE);
   u8 height = doubleSize ? TILE_HEIGHT*2 : TILE_HEIGHT;
   
-  for (int i = 0; i < SPRITE_MAX_COUNT; ++i)
+  
+  for (int i = SPRITE_MAX_COUNT; i >= 0; --i)
+  //for (int i = 0; i < SPRITE_MAX_COUNT; ++i)
   {
     s16 y = oam[4*i];
     s16 x = oam[4*i + 1];
     u8 index = oam[4*i + 2];
     u8 flags = oam[4*i + 3];
-    hasBgPriority = Utils::bit(flags,7);
+    hasBgPriority = Utils::bit(flags, ATTRIB_PRIORITY);
     
     // if x or y is outside bounds the sprite is hidden
     if (x == 0 || x >= 168 || y == 0 || y >= 160)
@@ -621,13 +700,13 @@ void Display<T>::drawSprites(u8 line)
     y -= 16;
     x -= 8;
         
-    bool flipY = Utils::bit(flags, 6);
-    bool flipX = Utils::bit(flags, 5);
+    bool flipY = Utils::bit(flags, ATTRIB_FLIP_VERTICAL);
+    bool flipX = Utils::bit(flags, ATTRIB_FLIP_HORIZONTAL);
     
     
     if (emu.mode == MODE_CGB)
     {
-      if (Utils::bit(flags,3))
+      if (Utils::bit(flags, ATTRIB_VRAM_BANK))
         tileData = KB8;
       else
         tileData = 0;
@@ -643,9 +722,9 @@ void Display<T>::drawSprites(u8 line)
       // if mode is gb mono then just a bit is used for sprite palette, otherwise
       // lower 3 bits are used
       if (emu.mode == MODE_GB)
-        colorsForPalette(LAYER_SPRITE, Utils::bit(flags, 4) ? 1 : 0, colors);
+        colorsForPalette(LAYER_SPRITE, Utils::bit(flags, ATTRIB_PALETTE_GB) ? 1 : 0, colors);
       else
-        colorsForPalette(LAYER_SPRITE, flags & 0x07, colors);
+        colorsForPalette(LAYER_SPRITE, flags & ATTRIB_PALETTE_CGB_MASK, colors);
       
       u8 sy;
       u16 spriteAddress;

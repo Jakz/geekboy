@@ -39,7 +39,7 @@ class GBSound
   
     void writeBlarggSamples()
     {
-      int const buf_size = 2048;
+      constexpr int buf_size = 2048;
       static blip_sample_t buf [buf_size];
       // Play whatever samples are available
       long count = bApu->read_samples( buf, buf_size );

@@ -1,9 +1,6 @@
 #ifndef _GB_EMULATOR_H_
 #define _GB_EMULATOR_H_
 
-#define _BLARGG_APU_
-#define _NO_SOUND_
-
 #include "utils.h"
 
 #include "display.h"

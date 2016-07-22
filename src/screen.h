@@ -7,9 +7,11 @@
 #include <OpenGL/OpenGL.h>
 #include "emulator.h"
 
+using pixel_type = gb::Display<gb::PixelFormat::ARGB51>::Pixel::type;
+
 #define FPS (60)
 
-#define VRAM_DEBUG false
+#define VRAM_DEBUG true
 
 
 using namespace gb;
@@ -45,17 +47,19 @@ class Screen
     u16 *screenBuffer;
   
 #if VRAM_DEBUG
-    u32 tileData1[128*192*sizeof(u32)];
-    u32 tileData2[128*192*sizeof(u32)];
-    u32 tileMap1[256*256*sizeof(u32)];
-    u32 tileMap2[256*256*sizeof(u32)];
+    pixel_type tileData1[128*192*sizeof(pixel_type)];
+    pixel_type tileData2[128*192*sizeof(pixel_type)];
+    pixel_type tileMap1[256*256*sizeof(pixel_type)];
+    pixel_type tileMap2[256*256*sizeof(pixel_type)];
+    pixel_type sprites[8*8*40*2*sizeof(pixel_type)];
   
-    u32 gbpal[16*4*sizeof(u32)];
+    pixel_type gbpal[16*4*sizeof(pixel_type)];
 #endif
 
 
     bool running;
     bool fpsCap;
+    bool paused;
   
     clock_t crender, cloop;
 
@@ -76,8 +80,9 @@ class Screen
   
 #if VRAM_DEBUG
     void renderVRAM();
-    void renderTileData(u32 *dest, u8 *tileData);
-    void renderTileMap(u32 *dest, u16 address);
+    void renderTileData(pixel_type *dest, u8 *tileData);
+    void renderTileMap(pixel_type *dest, u16 address);
+    void renderSprites(pixel_type* dest, u8* oam, u8 *vram);
   
     void renderGbPalette();
     void renderCgbPalette();

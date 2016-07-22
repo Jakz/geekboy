@@ -66,43 +66,45 @@ public:
   typedef std::conditional<(T == PixelFormat::ARGB8), u32, u16> Pixel;
 
 private:
-    typename Pixel::type* buffer;
-    PriorityType *priorityMap;
-    const u32 width, height;
+  typename Pixel::type* buffer;
+  PriorityType *priorityMap;
+  const u32 width, height;
 
-    CpuGB& cpu;
-    Memory& mem;
-  
-    Emulator& emu;
-  
-    // current scanline progression counter from CYCLES_PER_SCANLINE to 0
-    s16 scanlineCounter;
-  
-    void colorsForPalette(DrawLayer layer, u8 index, typename Pixel::type (&palette)[4]);
-  
-    const typename Pixel::type bcolors[4];
+  CpuGB& cpu;
+  Memory& mem;
 
-  public:
-    Display(CpuGB& cpu, Memory& memory, Emulator& emu);
-    ~Display();
-    void setBuffer(typename Pixel::type* buffer) { this->buffer = buffer; }
-    void init();
-    void reset();
-  
-    bool isEnabled();
-  
-    void update(u8 cycles);
-  
-    void manageSTAT();
-  
-  
-    void drawScanline(u8 line);
-  
-    void drawTiles(u8 line);
-    void drawWindow(u8 line);
-    void drawSprites(u8 line);
+  Emulator& emu;
+
+  // current scanline progression counter from CYCLES_PER_SCANLINE to 0
+  s16 scanlineCounter;
+
+
+  const typename Pixel::type bcolors[4];
+
+public:
+  Display(CpuGB& cpu, Memory& memory, Emulator& emu);
+  ~Display();
+  void setBuffer(typename Pixel::type* buffer) { this->buffer = buffer; }
+  void init();
+  void reset();
+
+  bool isEnabled();
+
+  void update(u8 cycles);
+
+  void manageSTAT();
+
+
+  void drawScanline(u8 line);
+
+  void drawTiles(u8 line);
+  void drawWindow(u8 line);
+  void drawSprites(u8 line);
   
 
+  void colorsForPalette(DrawLayer layer, u8 index, typename Pixel::type (&palette)[4]);
+
+  
   static typename Pixel::type ccc(u8 r, u8 g, u8 b);
 };
   

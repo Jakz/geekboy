@@ -727,8 +727,8 @@ u8 CpuGB::executeInstruction(u8 opcode)
       //s.interruptsEnabled = true;
       //mem->write(PORT_IF, 0x1F);
     }
-    
-    halted = true;
+    else
+      halted = true;
   }
   /* JR n */
   else if (opcode == OPCODE_JR_N)

@@ -31,6 +31,8 @@ void Memory::init()
   memory.vram = new u8[KB16];
   memory.vram_bank = memory.vram;
   
+  memset(memory.vram, 0, KB16);
+  
   memory.wram = new u8[KB32];
   memory.wram_bank_0 = memory.wram;
   memory.wram_bank_1 = &memory.wram[KB4];
@@ -43,6 +45,13 @@ void Memory::init()
   
   memory.cgbPaletteAutoIncr[0] = false;
   memory.cgbPaletteAutoIncr[1] = false;
+  
+  memset(memory.vram, 0, KB16);
+  memset(memory.wram, 0, KB32);
+  memset(memory.oam_table, 0, 160);
+  memset(memory.ports_table, 0, 256);
+  memset(memory.color_palette_ram, 0, 128);
+
 }
 
 Memory::~Memory()
@@ -76,7 +85,7 @@ u8 Memory::readVram0(u16 address)
 
 u8 Memory::readVram1(u16 address)
 {
-  return memory.vram[address - 0x8000 + 0x2000];
+  return memory.vram[address - 0x8000 + KB8];
 }
 
 u8 Memory::read(u16 address)
@@ -181,10 +190,10 @@ void Memory::trapPortWrite(u16 address, u8 value)
     }
     // switch vram bank in CGB
     case PORT_VBK:
-    {
-      if (Utils::bit(value, 0) && memory.vram_bank == memory.vram)
+    {      
+      if (Utils::bit(value, 0))
         memory.vram_bank = &memory.vram[KB8];
-      else if (!Utils::bit(value, 0) && memory.vram_bank != memory.vram)
+      else if (!Utils::bit(value, 0))
         memory.vram_bank = memory.vram;
       
       break;
@@ -317,7 +326,19 @@ void Memory::trapPortWrite(u16 address, u8 value)
         }
       }
       break;
-    }  
+    }
+    case PORT_LCDC:
+    {
+      //printf("LCDC %.2x\n", value); break;
+
+      break;
+    }
+      
+    case PORT_STAT:
+    {
+      //printf("STAT %.2x\n", value); break;
+      break;
+    }
   }
 
   rawPortWrite(address, value);
@@ -333,6 +354,9 @@ u8 Memory::rawPortRead(u16 address) const
 {
   if (address >= 0xFF10 && address <= 0xFF3F)
     return emu.sound.read(address);
+  
+  //if (address == PORT_LCDC && rand()%10000 == 0)
+  //  printf("LCDC READ: %.2x\n", memory.ports_table[address - 0xFF00]);
   
   return memory.ports_table[address - 0xFF00];
 }
