@@ -318,9 +318,6 @@ const char *Opcodes::cbMnemonics[] =
 
 u8 Opcodes::cpuCycles(u8 opcode, u8 opcode2, bool branchTaken)
 {
-  //if (opcode == 0xCB && opcode2 == 0x46)
-  //  printf("antani");
-  
   if (opcode == 0xCB)
   {
     if ((opcode2 & 0x07) == 0x06)

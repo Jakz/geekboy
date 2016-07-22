@@ -191,7 +191,7 @@ void CpuGB::enableInterrupt(u8 interrupt)
   mem.rawPortWrite(PORT_IF, ifreg);
 }
 
-void CpuGB::manageInterrupts()
+bool CpuGB::manageInterrupts()
 {
   if (s.interruptsEnabled)
   {
@@ -219,11 +219,13 @@ void CpuGB::manageInterrupts()
           
           mem.write(PORT_IF, ifreg);
           
-          break;
+          return true;
         }
       }
     }
   }
+  
+  return false;
 }
 
 inline bool CpuGB::isFlagSet(u8 flag)
@@ -1216,6 +1218,11 @@ u8 CpuGB::executeInstruction(u8 opcode)
 	{
 		/* idleing */
 	}
+  
+  else
+  {
+    printf("Unknown instruction: %.2x\n", op);
+  }
   
   return Opcodes::cpuCycles(op, op2, branchTaken);
 }

@@ -175,6 +175,9 @@ void Memory::trapPortWrite(u16 address, u8 value)
     //case PORT_LY:
     case PORT_DIV: { 
       value = 0;
+      emu.resetDivCounter();
+      /* writing on DIV also resets programmable TIMER */
+      emu.resetTimerCounter();
       break;
     }
     // writing on the TAC register will start/stop the timer or change its frequency

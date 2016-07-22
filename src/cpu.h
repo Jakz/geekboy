@@ -183,7 +183,7 @@ class CpuGB
     u8 executeSingle();
   
     void enableInterrupt(u8 interrupt);
-    void manageInterrupts();
+    bool manageInterrupts();
   
     Registers *regs();
     Status *status();

@@ -36,6 +36,7 @@ private:
 
   bool isTimerEnabled();
   void updateTimers(u16 cycles);
+  void timerTrigger();
 
   bool doubleSpeed;
 
@@ -48,6 +49,7 @@ public:
 
 
   void resetTimerCounter();
+  void resetDivCounter();
   u32 timerTicks();
 
 

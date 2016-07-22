@@ -274,7 +274,7 @@ void Cartridge::load(const char *rom_name)
 		
 	if (header.cart_type == 0x02 || header.cart_type == 0x03 || header.cart_type == 0x08 || header.cart_type == 0x09 ||
 	    header.cart_type == 0x10 || header.cart_type == 0x12 || header.cart_type == 0x13 || header.cart_type == 0x1A ||
-      header.cart_type == 0x1B)
+      header.cart_type == 0x1B || header.cart_type == 0x1E)
 		status.flags |= MBC_RAM;
 	
 	if (header.cart_type == 0x03 || header.cart_type == 0x06 || header.cart_type == 0x09 || header.cart_type == 0x0F ||
@@ -295,6 +295,7 @@ void Cartridge::load(const char *rom_name)
 	printf("Effective file length: %lu\n", length);
 	printf("ROM size: %u\n", romSize());
 	printf("RAM size: %u\n", ramSize());
+  printf("Cart type: %.2x\n", header.cart_type);
 	printf("Destination: %s\n", (header.dest_code == 0x00)?("Japanese"):("Not Japanese"));
 	printf("Header CRC: %d\n", header.checksum);
 	printf("Cart props %d\n", status.flags);

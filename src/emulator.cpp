@@ -53,11 +53,16 @@ bool Emulator::run(u32 maxCycles)
   while (cyclesTotal < maxCycles)
   {
     u8 cycles;
-
-    if (!cpu.halted)
-      cycles = cpu.executeSingle();
+    
+    if (cpu.manageInterrupts())
+      cycles = 12;
     else
-      cycles = 4;
+      cycles = 0;
+    
+    if (!cpu.halted)
+      cycles += cpu.executeSingle();
+    else
+      cycles += 4;
 
     cyclesTotal += cycles;
     
@@ -71,12 +76,10 @@ bool Emulator::run(u32 maxCycles)
     {
       display->update(cycles);
     }
-    
 
-    cpu.manageInterrupts();
   }
   
-  //sound.update();
+  sound.update();
   
   cyclesAdjust = cyclesTotal - maxCycles;
   
@@ -141,6 +144,14 @@ void Emulator::init()
   
 }
 
+void Emulator::timerTrigger()
+{
+  /* set TIMA according to TMA */
+  mem.rawPortWrite(PORT_TIMA, mem.read(PORT_TMA));
+  /* request timer interrupt */
+  requestInterrupt(INT_TIMER);
+}
+
 void Emulator::updateTimers(u16 cycles)
 {
   // if timer is enabled
@@ -155,12 +166,12 @@ void Emulator::updateTimers(u16 cycles)
     {
       u8 counter = mem.read(PORT_TIMA);
       
-      // if we reached overflow of timer then request an interrupt
-      // and reset it according to TMA register
+      // if we overflowed
       if (counter == 0xFF)
       {
-        mem.rawPortWrite(PORT_TIMA, mem.read(PORT_TMA));
-        requestInterrupt(INT_TIMER);
+        //mem.rawPortWrite(PORT_TIMA, 0);
+        /* TODO: real behavior delays trigger by 4 clock cycles and value of TIMA is 0 meanwhile */
+        timerTrigger();
       }
       // just increment it
       else
@@ -193,6 +204,11 @@ void Emulator::updateTimers(u16 cycles)
 void Emulator::requestInterrupt(u8 interrupt)
 {
   cpu.enableInterrupt(interrupt);
+}
+
+void Emulator::resetDivCounter()
+{
+  dividerCounter = CYCLES_PER_DIVIDER_INCR;
 }
 
 void Emulator::resetTimerCounter()
