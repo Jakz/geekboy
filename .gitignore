@@ -2,3 +2,5 @@ xcode
 GameBoy
 geekboy
 obj
+misc/*
+roms/*
