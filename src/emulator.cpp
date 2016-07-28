@@ -334,18 +334,18 @@ void Emulator::keyReleased(Key key)
 }
 
 u8 Emulator::keyPadState(u8 joyp) const
-{
-  // directional buttons
-  if (!Utils::bit(joyp, 5))
-  {
-    joyp |= 0x2F;
-    joyp &= (keysState & 0x0F) | 0x20;
-  }
+{  
   // normal buttons
-  else if (!Utils::bit(joyp, 4))
+  if (!Utils::bit(joyp, 5))
   {
     joyp |= 0x1F;
     joyp &= ((keysState >> 4) & 0x0F) | 0x10;
+  }
+  // directional buttons
+  else if (!Utils::bit(joyp, 4))
+  {
+    joyp |= 0x2F;
+    joyp &= (keysState & 0x0F) | 0x20;
   }
   
   return joyp;

@@ -153,7 +153,8 @@ u8 Memory::trapPortRead(u16 address)
   {
     case PORT_JOYP:
     {
-      u8 joyp = emu.keyPadState(rawPortRead(address));
+      u8 oldJoyp = rawPortRead(address);
+      u8 joyp = emu.keyPadState(oldJoyp);
       rawPortWrite(address, joyp);
       return joyp;
       break;
@@ -194,6 +195,14 @@ void Memory::trapPortWrite(u16 address, u8 value)
       emu.resetTimerCounter();
       
       return;
+    }
+    case PORT_JOYP:
+    {
+      /* writes to lower 4 bits JOYP are inhibited */
+      u8 oldValue = rawPortRead(PORT_JOYP);
+      
+      value = (value & 0xF0) | (oldValue & 0x0F);
+      break;
     }
     // switch vram bank in CGB
     case PORT_VBK:

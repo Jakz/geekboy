@@ -429,7 +429,7 @@ void Screen::renderRegs()
   sprintf(buffer, "SP %04xh IF %02xh IE %02xh", regs.SP, mem.read(PORT_IF), mem.read(PORT_EF));
   drawString(buffer, 1100, 730, 1);
   
-  std::array<PortSpec, 4> specst = { { {PORT_DIV, "DIV"}, {PORT_TIMA, "TIMA"}, {PORT_TMA, "TMA"}, {PORT_TAC, "TAC"} } };
+  std::array<PortSpec, 5> specst = { { {PORT_DIV, "DIV"}, {PORT_TIMA, "TIMA"}, {PORT_TMA, "TMA"}, {PORT_TAC, "TAC"}, {PORT_JOYP, "JOYP"} } };
   renderPorts(specst, 1100, 750);
   
   std::array<PortSpec, 8> specsd = { { {PORT_LCDC, "LCDC"}, {PORT_STAT, "STAT"}, {PORT_SCY, "SCY"}, {PORT_SCX, "SCX"}, {PORT_LY, "LY"}, {PORT_LYC, "LYC"}, {PORT_WY, "WY"}, {PORT_WX, "WX"} } };
