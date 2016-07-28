@@ -45,19 +45,7 @@ typedef signed char s8;
 class Memory;
 class Emulator;
 
-enum Conditions
-{
-  COND_NZ = 0x00,
-  COND_Z = 0x01,
-  COND_NC = 0x02,
-  COND_C = 0x03,
-  COND_PO = 0x04,
-  COND_PE = 0x05,
-  COND_SP = 0x06,
-  COND_SN = 0x07
-};
-
-enum Interrupts
+enum Interrupt
 {
   INT_VBLANK = 0,
   INT_STAT = 1,

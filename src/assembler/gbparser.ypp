@@ -1,0 +1,278 @@
+%skeleton "lalr1.cc"
+%require "3.0.2"
+
+%defines
+%define api.namespace {assembler}
+%define parser_class_name {Parser}
+
+%define api.token.constructor
+%define api.value.type variant
+%define parse.assert true
+
+%code requires {
+  #include "../utils.h"
+  #include "../opcodes.h"
+  
+  namespace assembler
+  {
+    class Assembler;
+    class Lexer;
+  }
+
+  using namespace gb;
+}
+
+%lex-param { assembler::Lexer &lexer }
+%lex-param { assembler::Assembler &assembler }
+%parse-param { assembler::Lexer &lexer }
+%parse-param { assembler::Assembler &assembler }
+
+%locations
+%initial-action
+{
+  @$.begin.filename = @$.end.filename = &assembler.file;
+};
+
+%define parse.trace
+%define parse.error verbose
+
+
+%code top {
+  #include "assembler.h"
+  #include "gblexer.h"
+  #include "gbparser.hpp"
+  #include "../opcodes.h"
+  #include "../utils.h"
+  
+  static assembler::Parser::symbol_type yylex(assembler::Lexer &scanner, assembler::Assembler &assembler) {
+    return scanner.get_next_token();
+  }
+
+  using namespace assembler;
+}
+
+%token T_COLON T_COMMA T_LPAREN T_RPAREN T_QUOTE
+
+%token RDP_BC RDP_DE RDP_SP
+
+%token
+  END 0 "end of file"
+  EOL "\n"
+
+
+
+%token OP_NOP OP_STOP
+%token OP_LD OP_LDI OP_LDD OP_HALT OP_ADD OP_ADC OP_SUB OP_SBC OP_AND OP_XOR OP_OR OP_INC OP_DEC OP_CP OP_DAA
+%token OP_RLCA OP_RLA OP_RRCA OP_RRA
+%token OP_CPL OP_CCF OP_SCF
+%token OP_DJNZ OP_JR OP_JRNZ OP_JRZ OP_JRNC OP_JRC
+%token OP_CALL OP_RET OP_JP OP_PUSH OP_POP OP_RST OP_RETI
+
+%token OP_BIT OP_RES OP_SET
+%token OP_RLC OP_RL OP_RRC OP_RR OP_SLA OP_SRA OP_SLL OP_SRL OP_SWAP
+%token OP_EI OP_DI
+%token OP_OUT OP_IN
+%token OP_EX OP_EXX
+
+%token <u16>
+  U16
+  RS_B
+  RS_C
+  RS_D
+  RS_E
+  RS_H
+  RS_L
+  RS_HL
+  RS_A
+  RD_BC
+  RD_DE
+  RD_HL
+  RD_SP
+  RD_AF
+  CC_COND
+;
+
+%token <float> FLOAT
+%token <std::string> LITERAL IDENTIFIER
+
+%type <u16>
+  sreg snum dreg pnum dregaf
+  instruction
+;
+
+%%
+
+start:
+  { assembler.init(8192); } instructions { }
+;
+
+instructions:
+  | instructions instruction { }
+  | instructions EOL { }
+  /*| instructions label T_EOL { }*/
+;
+
+instruction:
+  OP_NOP { assembler.assemble(OPCODE_NOP); }
+  | OP_STOP { assembler.assemble(OPCODE_DJNZ_N); } // GB
+
+
+  | OP_LD sreg T_COMMA sreg { assembler.assemble(OPCODE_LD_R_R | ($2 << 3) | ($4)); }
+  | OP_LD sreg T_COMMA snum { assembler.assemble(OPCODE_LD_R_N | ($2 << 3), (u8)$4); }
+  | OP_LD dreg T_COMMA snum { assembler.assemble(OPCODE_LD_RR_NN | ($2 << 4), (u8)($4 & 0xFF), (u8)(($4 >> 8) & 0xFF) ); }
+
+  | OP_LD RDP_BC T_COMMA RS_A { assembler.assemble(OPCODE_LD_BC_A); }
+  | OP_LD RDP_DE T_COMMA RS_A { assembler.assemble(OPCODE_LD_DE_A); }
+  | OP_LD sreg T_COMMA RDP_BC { assembler.aassert($2 == 7, "LD A, (BC) requires A reg!"); assembler.assemble(OPCODE_LD_A_BC); }
+  | OP_LD sreg T_COMMA RDP_DE { assembler.aassert($2 == 7, "LD A, (DE) requires A reg!"); assembler.assemble(OPCODE_LD_A_DE); }
+  | OP_LD dreg T_COMMA RD_HL { assembler.assemble(OPCODE_LD_SP_HL); }
+  | OP_LD T_LPAREN snum T_RPAREN T_COMMA RS_A { assembler.assemble(OPCODE_LD_NN_A, (u8)($3 & 0xFF), (u8)(($3 >> 8) & 0xFF)); }
+  | OP_LD sreg T_COMMA pnum { assembler.aassert($2 == 7, "LD A, (nn) requires A reg!"); assembler.assemble(OPCODE_LD_A_NN, (u8)($4 & 0xFF), (u8)(($4 >> 8) & 0xFF)); }
+
+  | OP_LD dreg T_COMMA pnum { assembler.assemble(OPCODE_LD_HL_NN, (u8)($4 & 0xFF), (u8)(($4 >> 8) & 0xFF)); }
+  | OP_LD T_LPAREN snum T_RPAREN T_COMMA RD_HL { assembler.assemble(OPCODE_LD_NN_HL, (u8)($3 & 0xFF), (u8)(($3 >> 8) & 0xFF)); }
+
+  | OP_LDI RS_HL T_COMMA RS_A { assembler.assemble(OPCODE_LD_NN_HL); } /* GB */
+  | OP_LDI RS_A T_COMMA RS_HL { assembler.assemble(OPCODE_LD_HL_NN); } /* GB */
+  | OP_LDD RS_HL T_COMMA RS_A { assembler.assemble(OPCODE_LD_NN_A); } /* GB */
+  | OP_LDD RS_A T_COMMA RS_HL { assembler.assemble(OPCODE_LD_A_NN); } /* GB */
+
+  | OP_LD T_LPAREN snum T_RPAREN T_COMMA RD_SP { assembler.assemble(OPCODE_EX_AF_AF, (u8)($3 & 0xFF), (u8)(($3 >> 8) & 0xFF)); } /* GB */
+
+  | OP_ADD sreg { assembler.assemble(OPCODE_ADD_R | $2); }
+  | OP_ADC sreg { assembler.assemble(OPCODE_ADC_R | $2); }
+  | OP_SUB sreg { assembler.assemble(OPCODE_SUB_R | $2); }
+  | OP_SBC sreg { assembler.assemble(OPCODE_SBC_R | $2); }
+  | OP_DAA { assembler.assemble(OPCODE_DAA); }
+
+  | OP_AND sreg { assembler.assemble(OPCODE_AND_R | $2); }
+  | OP_XOR sreg { assembler.assemble(OPCODE_XOR_R | $2); }
+  | OP_OR sreg { assembler.assemble(OPCODE_OR_R | $2); }
+  | OP_CP sreg { assembler.assemble(OPCODE_CP_R | $2); }
+
+  | OP_ADD snum { assembler.assemble(OPCODE_ADD_N, (u8)$2); }
+  | OP_ADC snum { assembler.assemble(OPCODE_ADC_N, (u8)$2); }
+  | OP_SUB snum { assembler.assemble(OPCODE_SUB_N, (u8)$2); }
+  | OP_SBC snum { assembler.assemble(OPCODE_SBC_N, (u8)$2); }
+
+  | OP_AND snum { assembler.assemble(OPCODE_AND_N, (u8)$2); }
+  | OP_XOR snum { assembler.assemble(OPCODE_XOR_N | (u8)$2); }
+  | OP_OR snum { assembler.assemble(OPCODE_OR_N, (u8)$2); }
+  | OP_CP snum { assembler.assemble(OPCODE_CP_N, (u8)$2); }
+
+  | OP_RLCA { assembler.assemble(OPCODE_RLCA); }
+  | OP_RLA { assembler.assemble(OPCODE_RLA); }
+  | OP_RRCA { assembler.assemble(OPCODE_RRCA); }
+  | OP_RRA { assembler.assemble(OPCODE_RRA); }
+
+  | OP_RLC sreg { assembler.assemble(OPCODE_BITS, OPCODE_RLC | $2); }
+  | OP_RL sreg { assembler.assemble(OPCODE_BITS, OPCODE_RL | $2); }
+  | OP_RRC sreg { assembler.assemble(OPCODE_BITS, OPCODE_RRC | $2); }
+  | OP_RR sreg { assembler.assemble(OPCODE_BITS, OPCODE_RR | $2); }
+  | OP_SLA sreg { assembler.assemble(OPCODE_BITS, OPCODE_SLA | $2); }
+  | OP_SRA sreg { assembler.assemble(OPCODE_BITS, OPCODE_SRA | $2); }
+  | OP_SLL sreg { assembler.assemble(OPCODE_BITS, OPCODE_SLL | $2); }
+  | OP_SRL sreg { assembler.assemble(OPCODE_BITS, OPCODE_SRL | $2); }
+  | OP_SWAP sreg { assembler.assemble(OPCODE_BITS, OPCODE_SLL | $2); } // GB
+
+  | OP_BIT snum T_COMMA sreg { assembler.aassert($2 <= 7, "BIT specifier over bounds!"); assembler.assemble(OPCODE_BITS, OPCODE_BIT | ($2 << 3) | $4); }
+  | OP_RES snum T_COMMA sreg { assembler.aassert($2 <= 7, "RES specifier over bounds!"); assembler.assemble(OPCODE_BITS, OPCODE_RES | ($2 << 3) | $4); }
+  | OP_SET snum T_COMMA sreg { assembler.aassert($2 <= 7, "SET specifier over bounds!"); assembler.assemble(OPCODE_BITS, OPCODE_SET | ($2 << 3) | $4); }
+
+  | OP_CPL { assembler.assemble(OPCODE_CPL); }
+  | OP_SCF { assembler.assemble(OPCODE_SCF); }
+  | OP_CCF { assembler.assemble(OPCODE_CCF); }
+
+  | OP_ADD RD_HL T_COMMA dreg { assembler.assemble(OPCODE_ADD_HL_RR | $4 << 4); }
+
+  | OP_DJNZ snum { assembler.assemble(OPCODE_DJNZ_N, (u8)$2); }
+  | OP_JR snum { assembler.assemble(OPCODE_JR_N, (u8)$2); }
+  | OP_JRNZ snum { assembler.assemble(OPCODE_JRNZ_N, (u8)$2); }
+  | OP_JRZ snum { assembler.assemble(OPCODE_JRZ_N, (u8)$2); }
+  | OP_JRNC snum { assembler.assemble(OPCODE_JRNC_N, (u8)$2); }
+  | OP_JRC snum { assembler.assemble(OPCODE_JRC_N, (u8)$2); }
+
+  | OP_JP snum { assembler.assemble(OPCODE_JP_NN, (u8)($2 & 0xFF), (u8)(($2 >> 8) & 0xFF)); }
+  | OP_JP CC_COND snum { assembler.assemble(OPCODE_JP_CC_NN | ($2 << 3), (u8)($3 & 0xFF), (u8)(($3 >> 8) & 0xFF)); }
+  | OP_JP RS_HL { assembler.assemble(OPCODE_JP_HL); }
+
+  | OP_CALL snum { assembler.assemble(OPCODE_CALL_NN, (u8)($2 & 0xFF), (u8)(($2 >> 8) & 0xFF)); }
+  | OP_CALL CC_COND snum { assembler.assemble(OPCODE_CALL_CC_NN | ($2 << 3), (u8)($3 & 0xFF), (u8)(($3 >> 8) & 0xFF)); }
+
+  | OP_RST snum { assembler.aassert(assembler.correctRSTAddress($2), "RST Address over bounds!"); assembler.assemble(OPCODE_RST | (($2/8) << 3)); }
+
+  | OP_RET { assembler.assemble(OPCODE_RET); }
+  | OP_RET CC_COND { assembler.assemble(OPCODE_RET_CC | ($2 << 3)); }
+  | OP_RETI { assembler.assemble(OPCODE_EXX); } /* GB */
+
+  | OP_PUSH dregaf { assembler.assemble(OPCODE_PUSH | ($2 << 4)); }
+  | OP_POP dregaf { assembler.assemble(OPCODE_POP | ($2 << 4)); }
+
+  | OP_EI { assembler.assemble(OPCODE_EI); }
+  | OP_DI { assembler.assemble(OPCODE_DI); }
+
+  | OP_INC sreg { assembler.assemble(OPCODE_INC_R | ($2 << 3)); }
+  | OP_DEC sreg { assembler.assemble(OPCODE_DEC_R | ($2 << 3)); }
+
+  | OP_INC dreg { assembler.assemble(OPCODE_INC_RR | ($2 << 4)); }
+  | OP_DEC dreg { assembler.assemble(OPCODE_DEC_RR | ($2 << 4)); }
+
+  | OP_OUT snum T_COMMA RS_A { assembler.assemble(OPCODE_OUT_N_A, $2); }
+  | OP_IN RS_A T_COMMA snum { assembler.assemble(OPCODE_IN_N_A, $4); }
+
+  | OP_EX RD_AF T_COMMA RD_AF T_QUOTE { assembler.assemble(OPCODE_EX_AF_AF); }
+  | OP_EXX { assembler.assemble(OPCODE_EXX); }
+  | OP_EX RDP_SP T_COMMA RD_HL { assembler.assemble(OPCODE_EX_SP_HL); }
+  | OP_EX RD_DE T_COMMA RD_HL { assembler.assemble(OPCODE_EX_DE_HL); }
+
+  | OP_HALT { assembler.assemble(OPCODE_HALT); }
+
+/*  | T_JUMP STRING T_EOL { ASSEMBLER->asmJump($2, false); }
+  | T_JUMPC STRING T_EOL { ASSEMBLER->asmJump($2, true); }*/
+
+;
+
+sreg:
+  RS_B { $$ = $1; }
+| RS_C { $$ = $1; }
+| RS_D { $$ = $1; }
+| RS_E { $$ = $1; }
+| RS_H { $$ = $1; }
+| RS_L { $$ = $1; }
+| RS_HL { $$ = $1; }
+| RS_A { $$ = $1; }
+;
+
+dreg:
+  RD_BC { $$ = $1; }
+| RD_DE { $$ = $1; }
+| RD_HL { $$ = $1; }
+| RD_SP { $$ = $1; }
+;
+
+dregaf:
+  RD_BC { $$ = $1; }
+| RD_DE { $$ = $1; }
+| RD_HL { $$ = $1; }
+| RD_AF { $$ = $1; }
+;
+
+snum:
+  U16 { $$ = $1; }
+;
+
+pnum:
+  T_LPAREN U16 T_RPAREN { $$ = $2; }
+;
+
+/*
+label:
+  STRING T_COLON { ASSEMBLER->addLabelHere($1); }
+;*/
+
+%%
+
+void assembler::Parser::error(const location_type& l, const std::string& m)
+{
+  assembler.error(l,m);
+}

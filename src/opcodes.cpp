@@ -128,11 +128,11 @@ OpcodeGB Opcodes::opcodesSpecs[] =
   {           "LD L, A", 1, { 4,  0},  0, 0}, //6F
   
   {        "LD (HL), B", 1, { 8,  0},  0, 0}, //70
-  {        "LD (HL), B", 1, { 8,  0},  0, 0}, //71
-  {        "LD (HL), B", 1, { 8,  0},  0, 0}, //72
-  {        "LD (HL), B", 1, { 8,  0},  0, 0}, //73
-  {        "LD (HL), B", 1, { 8,  0},  0, 0}, //74
-  {        "LD (HL), B", 1, { 8,  0},  0, 0}, //75
+  {        "LD (HL), C", 1, { 8,  0},  0, 0}, //71
+  {        "LD (HL), D", 1, { 8,  0},  0, 0}, //72
+  {        "LD (HL), E", 1, { 8,  0},  0, 0}, //73
+  {        "LD (HL), H", 1, { 8,  0},  0, 0}, //74
+  {        "LD (HL), L", 1, { 8,  0},  0, 0}, //75
   {              "HALT", 1, { 0,  0},  0, 0}, //76
   {        "LD (HL), A", 1, { 8,  0},  0, 0}, //77
   {           "LD A, B", 1, { 4,  0},  0, 0}, //78
@@ -592,3 +592,23 @@ u16 Opcodes::daaTable[4096] = {
   0x6410,0x6410,0x6410,0x6410,0xFE40,0x9E50,0xF840,0x9850,0x6410,0x6410,0x6410,0x6410,0xFE40,0x9E50,0xF840,0x9850,
   0x6510,0x6510,0x6510,0x6510,0xFF40,0x9F50,0xF940,0x9950,0x6510,0x6510,0x6510,0x6510,0xFF40,0x9F50,0xF940,0x9950
 };
+
+void Opcodes::visualOpcode(char *buffer, u8 d1, u8 d2, u8 d3)
+{  
+  if (d1 != gb::OPCODE_BITS)
+  {
+    gb::OpcodeGB params = gb::Opcodes::opcodesSpecs[d1];
+    int length = params.length;
+    
+    if (length == 1)
+      sprintf(buffer, "%s", params.name);
+    else if (length == 2)
+      sprintf(buffer, params.name, params.paramsSign ? (s8)d2 : d2);
+    else if (length == 3)
+      sprintf(buffer, params.name, (d3 << 8) | d2);
+  }
+  else
+  {
+    sprintf(buffer, "%s", gb::Opcodes::cbMnemonics[d2]);
+  }
+}

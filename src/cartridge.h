@@ -20,6 +20,7 @@ namespace gb {
 #define MBC_MBC3 0x80
 #define MBC_MBC4 0x100
 #define MBC_MBC5 0x200
+#define MBC_SIMPLE 0x400
 
 /*
   questo file dovrebbe preoccuparsi anche di essere interfacciato dallo Z80 per scrivere e leggere valori della ROM.
@@ -131,6 +132,8 @@ class Cartridge
   
     /* legge un valore ad un determinato indirizzo */
     u8 read(u16 address) const;
+  
+    void loadRaw(u8 *code, u32 length);
   
     void dumpSave();
 };

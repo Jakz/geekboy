@@ -167,7 +167,11 @@ u8 Memory::trapPortRead(u16 address)
 void Memory::trapPortWrite(u16 address, u8 value)
 {
   if (address >= PORT_NR10 && address <= 0xFF3F)
+  {
+#ifndef DEBUGGER
     emu.sound.write(address, value);
+#endif
+  }
   
   switch (address)
   {
@@ -295,8 +299,8 @@ void Memory::trapPortWrite(u16 address, u8 value)
       // clamp address, lower 4 bits are ignored, 3 higher bits are ignored since destination is always VRAM (8000-9FF0)
       dest = (dest & 0x7FF0) | 0x8000;
       
-      // length is lower 7 bit of this register + 1 multiplied by 10
-      u16 length = ((value & 0x7F) + 1) * 10;
+      // length is lower 7 bit of this register + 1 multiplied by 16
+      u16 length = ((value & 0x7F) + 1);
       
       // hblank DMA (16 bytes for every HBLANK)
       if (Utils::bit(value,7))
@@ -322,7 +326,7 @@ void Memory::trapPortWrite(u16 address, u8 value)
         else
         {
         
-          for (int i = 0; i < length; ++i)
+          for (int i = 0; i < length * 0x10; ++i)
             write(dest+i, read(source+i));
         
           value = 0xFF;
@@ -332,6 +336,11 @@ void Memory::trapPortWrite(u16 address, u8 value)
     }
     case PORT_LCDC:
     {
+      u8 lcdc = rawPortRead(PORT_LCDC);
+      
+      if (Utils::bit(lcdc, 7) ^ Utils::bit(value, 7))
+        emu.toggleLcdState();
+      
       //printf("LCDC %.2x\n", value); break;
 
       break;
@@ -356,7 +365,12 @@ void Memory::rawPortWrite(u16 address, u8 value)
 u8 Memory::rawPortRead(u16 address) const
 {
   if (address >= 0xFF10 && address <= 0xFF3F)
+  {
+#ifndef DEBUGGER
     return emu.sound.read(address);
+#endif
+  }
+
   
   //if (address == PORT_LCDC && rand()%10000 == 0)
   //  printf("LCDC READ: %.2x\n", memory.ports_table[address - 0xFF00]);

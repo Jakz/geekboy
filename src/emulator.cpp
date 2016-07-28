@@ -6,7 +6,10 @@ using namespace gb;
 
 constexpr u32 Emulator::timerFrequencies[4];
 
-Emulator::Emulator() : mem(Memory(*this)), cpu(CpuGB(*this)), sound(GBSound())
+Emulator::Emulator() : mem(Memory(*this)), cpu(CpuGB(*this))
+#ifndef DEBUGGER
+, sound(GBSound())
+#endif
 {
   this->timerCounter = 1024;
   this->cycles = 0;
@@ -21,11 +24,38 @@ Emulator::Emulator() : mem(Memory(*this)), cpu(CpuGB(*this)), sound(GBSound())
 
 void Emulator::setupSound(int sampleRate)
 {
+#ifndef DEBUGGER
   sound.start(sampleRate);
+#endif
 }
 
 u8 Emulator::step()
 {
+  static char buffer[128];
+  
+  u8 d1 = mem.read(cpu.regs()->PC);
+  u8 d2 = mem.read(cpu.regs()->PC+1);
+  u8 d3 = mem.read(cpu.regs()->PC+2);
+  
+  if (d1 != gb::OPCODE_BITS)
+  {
+    gb::OpcodeGB params = gb::Opcodes::opcodesSpecs[d1];
+    int length = params.length;
+    
+    if (length == 1)
+      sprintf(buffer, "%s", params.name);
+    else if (length == 2)
+      sprintf(buffer, params.name, params.paramsSign ? (s8)d2 : d2);
+    else if (length == 3)
+      sprintf(buffer, params.name, (d3 << 8) | d2);
+  }
+  else
+  {
+    sprintf(buffer, "%s", gb::Opcodes::cbMnemonics[d2]);
+  }
+  
+  printf("%04X: %s\n", cpu.regs()->PC, buffer);
+  
   u8 cycles;
   
   if (!cpu.halted)
@@ -38,9 +68,27 @@ u8 Emulator::step()
   updateTimers(cycles);
   display->update(cycles);
   cpu.manageInterrupts();
-  
   return cycles;
 }
+
+
+/*
+ 
+ ++pc;
+ cycles += 4;
+ updateTimers(4);
+ ++pc;
+ cycles += 4;
+ updateTimers(2);
+ u8 v = mem.read(cpu.regs()->HL.HL);
+ cycles += 4;
+ updateTimers(4);
+ updateTimers(2);
+ u8 b = 0;
+ cpu.setFlag(FLAG_Z, (v & (1 << b)) == 0);
+ cpu.setFlag(FLAG_H, 1);
+ cpu.setFlag(FLAG_N, 0);
+ */
 
 bool Emulator::run(u32 maxCycles)
 {
@@ -48,25 +96,58 @@ bool Emulator::run(u32 maxCycles)
   
   u32 cyclesTotal = 0;
   
-  if (doubleSpeed) maxCycles *= 2;
-
-  while (cyclesTotal < maxCycles)
+  if (doubleSpeed)
+    maxCycles *= 2;
+  
+  lcdChangedState = false;
+  
+  while (cyclesTotal < maxCycles && !lcdChangedState)
   {
-    u8 cycles;
+    u8 cycles = 0;
+    
+    u16& pc = cpu.regs()->PC;
+    
+    u8 opcode = mem.read(pc);
+
+    /*if (opcode == 0xF0)
+    {
+      //salcazzo
+      cycles += 4;
+      ++pc;
+      
+      updateTimers(4);
+
+      u8 value = mem.read(pc);
+      ++pc;
+      cycles += 4;
+      
+      updateTimers(2);
+      
+      cpu.regs()->AF.A = mem.read(0xFF00 | value);
+
+      cycles += 4;
+      
+      updateTimers(6);
+    }
+    else*/
+    {
+    
     
     if (cpu.manageInterrupts())
       cycles = 12;
     else
-      cycles = 0;
-    
-    if (!cpu.halted)
-      cycles += cpu.executeSingle();
-    else
-      cycles += 4;
+    {
+      if (!cpu.halted)
+        cycles += cpu.executeSingle();
+      else
+        cycles += 4;
+    }
 
     cyclesTotal += cycles;
     
     updateTimers(cycles);
+      
+    }
     
     if (doubleSpeed)
     {
@@ -79,9 +160,10 @@ bool Emulator::run(u32 maxCycles)
 
   }
   
-  sound.update();
+  //sound.update();
   
-  cyclesAdjust = cyclesTotal - maxCycles;
+  if (!lcdChangedState)
+    cyclesAdjust = cyclesTotal - maxCycles;
   
   cycles += cyclesTotal;
   return true;
@@ -201,7 +283,7 @@ void Emulator::updateTimers(u16 cycles)
   }
 }
 
-void Emulator::requestInterrupt(u8 interrupt)
+void Emulator::requestInterrupt(Interrupt interrupt)
 {
   cpu.enableInterrupt(interrupt);
 }

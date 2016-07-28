@@ -23,7 +23,12 @@ Cartridge::Cartridge(Emulator& emu) : emu(emu)
 /* scrive un byte nella ROM */
 void Cartridge::write(u16 address, u8 value)
 {
-	if ((status.flags & MBC_MBC1) == MBC_MBC1)
+#ifdef DEBUGGER
+	if ((status.flags & MBC_SIMPLE) == MBC_SIMPLE)
+    status.rom[address] = value;
+#endif
+  
+  if ((status.flags & MBC_MBC1) == MBC_MBC1)
 	{
 		/* this enables or less the RAM */
 		if (address <= 0x1FFF)
@@ -401,6 +406,22 @@ void Cartridge::load(const char *rom_name)
     fread(status.ram, ramSize(), sizeof(u8), in);
     fclose(in);
   }*/
+}
+
+void Cartridge::loadRaw(u8 *code, u32 length)
+{
+  status.flags |= MBC_ROM | MBC_SIMPLE;
+  
+  status.rom = (u8*)calloc(KB32, sizeof(u8));
+  status.rom_bank_0 = status.rom;
+  status.rom_bank_1 = &status.rom[KB16];
+  
+  status.ram = (u8*)calloc(KB8, sizeof(u8));
+  status.ram_bank = status.ram;
+  
+  u8 jump[4] = {0x00, 0xC3, 0x50, 0x01};
+  memcpy(&status.rom_bank_0[0x100], jump, 4);
+  memcpy(&status.rom_bank_0[0x150], code, length);
 }
 
 void Cartridge::dump()

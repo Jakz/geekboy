@@ -53,7 +53,7 @@ Display<PixelFormat::ARGB8>::Pixel::type Display<PixelFormat::ARGB8>::ccc(u8 r, 
 template<>
 Display<PixelFormat::ARGB51>::Pixel::type Display<PixelFormat::ARGB51>::ccc(u8 r, u8 g, u8 b)
 {
-  return ((r) << 11) | ((g) << 6) | ((b) << 1);
+  return ((r) << 11) | ((g) << 6) | ((b) << 1) | 1;
 }
 
 template<>
@@ -90,16 +90,20 @@ void Display<T>::colorsForPalette(DrawLayer layer, u8 index, typename Pixel::typ
   }
   else if (emu.mode == MODE_CGB)
   {
+    constexpr size_t BYTES_PER_COLOR = 2;
+    constexpr size_t COLORS_PER_PALETTE = 4;
+    constexpr size_t PALETTE_SIZE = BYTES_PER_COLOR * COLORS_PER_PALETTE;
+    
     // color palette is made by 2 bytes per color, 4 colors so 8 bytes per palette
     // bg color palettes are stored starting at 0x00 of palette ram
     // sprite color palettes are stored starting at 0x40
     // since it's little endian we first fetch lower byte, then higher one and compose together to form the specific color
-    u8 offset = (layer == LAYER_BACKGROUND ? 0x00 : 0x40) + index*4*2;
+    u8 offset = (layer == LAYER_BACKGROUND ? 0x00 : 0x40) + index * PALETTE_SIZE;
     
     u16 colors16[4];
     
     for (int i = 0; i < 4; ++i)
-      colors16[i] = (mem.paletteRam(offset + 2*i)) | (mem.paletteRam(offset + 2*i + 1)<<8);
+      colors16[i] = (mem.paletteRam(offset + 2*i)) | (mem.paletteRam(offset + 2*i + 1) << 8);
     
     // color layout is XXBBBBBGG GGGRRRRR so 5 bits per component = 32*32*32 colors
     // conversion to rgb is made by multiplying by 8 the raw value even it should be improved
@@ -164,7 +168,6 @@ void Display<T>::update(u8 cycles)
       mem.rawPortWrite(PORT_LY, 0);
       memset(priorityMap, PRIORITY_NONE, width*height*sizeof(PriorityType));
       //memset(buffer, 0, width*height*sizeof(Pixel));
-
       drawScanline(0);
     }
     
@@ -207,7 +210,7 @@ void Display<T>::manageSTAT()
     // update status port
     status = Utils::set(status, 0);
     status = Utils::res(status, 1);
-    
+
     willRequestInterrupt = Utils::bit(status, 4);
   }
   else
@@ -222,7 +225,7 @@ void Display<T>::manageSTAT()
       
       status = Utils::set(status, 1);
       status = Utils::res(status, 0);
-      
+
       willRequestInterrupt = Utils::bit(status, 5);
     }
     // we're in mode 3 (oam/vram transfer), no interrupt here
@@ -248,7 +251,7 @@ void Display<T>::manageSTAT()
       HDMA *hdma = mem.hdmaInfo();
       if (hdma->active)
       {
-        hdma->length -= 0x10;
+        --hdma->length;
         
         // transfer 16 bytes
         for (int i = 0; i < 0x10; ++i)
@@ -263,38 +266,43 @@ void Display<T>::manageSTAT()
           hdma->active = false;
           mem.rawPortWrite(PORT_HDMA5, 0xFF);
         }
+        else
+        {
+          mem.rawPortWrite(PORT_HDMA5, hdma->length);
+        }
       }
     }
+  }
+  
+  // if  we switched to a new mode and its interrupt was enabled
+  if (willRequestInterrupt && currentMode != mode)
+  {
+    emu.requestInterrupt(INT_STAT);
+  }
+  
+  // if LY == LYC we should set coincidence bit and request interrupt if the bit is enabled
+  if (currentLine == mem.read(PORT_LYC))
+  {
+    status = Utils::set(status,2);
     
-    // if  we switched to a new mode and its interrupt was enabled
-    if (willRequestInterrupt && currentMode != mode)
+    if (Utils::bit(status, 6))
     {
       emu.requestInterrupt(INT_STAT);
     }
-    
-    // if LY == LYC we should set coincidence bit and request interrupt if the bit is enabled
-    if (currentLine == mem.read(PORT_LYC))
-    {
-      status = Utils::set(status,2);
-      
-      if (Utils::bit(status, 6))
-      {
-        emu.requestInterrupt(INT_STAT);
-      }
-    }
-    else
-    {
-      status = Utils::res(status,2);
-    }
-    
-    mem.rawPortWrite(PORT_STAT, status);
-    
   }
+  else
+  {
+    status = Utils::res(status,2);
+  }
+  
+  mem.rawPortWrite(PORT_STAT, status);
 }
 
 template<PixelFormat T>
 void Display<T>::drawScanline(u8 line)
 {
+  //printf("scanline: %d\n", line);
+  
   u8 lcdc = mem.read(PORT_LCDC);
   
   if (!isEnabled())
@@ -354,7 +362,7 @@ template<PixelFormat T>
 void Display<T>::drawTiles(u8 line)
 {
   u8 lcdc = mem.read(PORT_LCDC);
-  bool priorityEnabled = emu.mode == MODE_CGB && Utils::bit(lcdc, LCDC_BG_DISPLAY_MODE);
+  bool priorityEnabled = false; /* seems to be not the real thing  && emu.mode == MODE_CGB && Utils::bit(lcdc, LCDC_BG_DISPLAY_MODE); */
   
   const u8 *vram = mem.memoryMap()->vram;
   
@@ -402,8 +410,6 @@ void Display<T>::drawTiles(u8 line)
   // for every pixel of the current line
   for (int i = 0; i < width; ++i)
   {
-    PriorityType priority = PRIORITY_NONE;
-    
     // compute the pixel position inside the tilemap and wrap it around edges if needed
     u8 y = (line + scy) % (TILE_MAP_HEIGHT*TILE_HEIGHT);
     u8 x = (i + scx) % (TILE_MAP_WIDTH*TILE_WIDTH);
@@ -478,15 +484,12 @@ void Display<T>::drawTiles(u8 line)
       else
         index = ((byte2 >> px) & 0x01) << 1 | ((byte1 >> px) & 0x01);
       
-      //printf("%d", index);
+      PriorityType priority = PRIORITY_NONE;
       
-      if (priority == PRIORITY_NONE && priorityEnabled)
-      {
-        if (index == 0)
-          priority = PRIORITY_MAYBE_SPRITE;
-        else
-          priority = PRIORITY_BG;
-      }
+      if (priorityEnabled)
+        priority = PRIORITY_BG;
+      else if (index == 0)
+        priority = PRIORITY_MAYBE_SPRITE;
       
       u32 color = colors[index];
       
@@ -514,7 +517,7 @@ template<PixelFormat T>
 void Display<T>::drawWindow(u8 line)
 {
   u8 lcdc = mem.read(PORT_LCDC);
-  bool priorityEnabled = emu.mode == MODE_CGB && Utils::bit(lcdc, LCDC_BG_DISPLAY_MODE);
+  bool priorityEnabled = false; /* seems to be not the real thing  && emu.mode == MODE_CGB && Utils::bit(lcdc, LCDC_BG_DISPLAY_MODE); */
   
   u16 tileData;
   u16 tileMap;
@@ -637,14 +640,11 @@ void Display<T>::drawWindow(u8 line)
         
         priority = priorityMap[line*width+i];
         
-        if (priority == PRIORITY_NONE && priorityEnabled)
-        {
-          if (index == 0)
-            priority = PRIORITY_MAYBE_SPRITE;
-          else
-            priority = PRIORITY_BG;
-        }
-          
+        if (priorityEnabled)
+          priority = PRIORITY_BG;
+        else if (index == 0)
+          priority = PRIORITY_MAYBE_SPRITE;
+        
         u32 color = colors[index];
         
         // place pixel on buffer at (i, line)
@@ -683,8 +683,10 @@ void Display<T>::drawSprites(u8 line)
   bool doubleSize = Utils::bit(mem.read(PORT_LCDC), LCDC_SPRITE_SIZE);
   u8 height = doubleSize ? TILE_HEIGHT*2 : TILE_HEIGHT;
   
+  int drawn = 0;
   
-  for (int i = SPRITE_MAX_COUNT; i >= 0; --i)
+  
+  for (int i = 0; i < SPRITE_MAX_COUNT && drawn < 10; ++i)
   //for (int i = 0; i < SPRITE_MAX_COUNT; ++i)
   {
     s16 y = oam[4*i];
@@ -718,6 +720,7 @@ void Display<T>::drawSprites(u8 line)
     if (line >= y && line < y+height)
     {
       typename Pixel::type colors[4];
+      ++drawn;
       
       // if mode is gb mono then just a bit is used for sprite palette, otherwise
       // lower 3 bits are used
@@ -773,7 +776,7 @@ void Display<T>::drawSprites(u8 line)
           u32 color = colors[index];
           
           PriorityType priority = priorityMap[line*width+x+sx];
-          if (priority == PRIORITY_BG && hasBgPriority)
+          if (priority == PRIORITY_BG || (hasBgPriority && priority != PRIORITY_MAYBE_SPRITE))
             continue;
           
           //if (/*priorityMap[line*width+x+sx] == PRIORITY_FORCED ||*/ (priorityMap[line*width+x+sx] == PRIORITY_POSSIBLE))

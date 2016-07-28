@@ -718,12 +718,12 @@ u8 CpuGB::executeInstruction(u8 opcode)
       if (Utils::bit(speed, 7))
       {
         emu.toggleDoubleSpeed(false);
-        mem.rawPortWrite(PORT_KEY1, 0x00);
+        mem.rawPortWrite(PORT_KEY1, speed & 0x7E);
       }
       else
       {
         emu.toggleDoubleSpeed(true);
-        mem.rawPortWrite(PORT_KEY1, 0x80);
+        mem.rawPortWrite(PORT_KEY1, (speed | 0x80) & 0xFE);
       }
       
       //s.interruptsEnabled = true;

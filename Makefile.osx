@@ -20,7 +20,7 @@ VPATH = src
 #BINARIES:= $(foreach source, $(SOURCES), $(source:%.cpp=%.o) )
 BINDIR := obj
 BASESRC := src
-SOURCE := $(BASESRC) $(BASESRC)/blarrg $(BASESRC)/blarrg/gb_apu
+SOURCE := $(BASESRC) $(BASESRC)/blarrg $(BASESRC)/blarrg/gb_apu  $(BASESRC)/assembler
 SOURCES := $(patsubst $(BASESRC)/%, %, $(foreach dir, $(SOURCE), $(wildcard $(dir)/*.cpp)))
 BINARIES := $(patsubst %.cpp, %.o, $(SOURCES))
 EXECUTABLE := geekboy

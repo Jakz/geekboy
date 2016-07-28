@@ -4,7 +4,9 @@
 #include "utils.h"
 
 #include "display.h"
+#ifndef DEBUGGER
 #include "sound.h"
+#endif
 #include "cpu.h"
 
 namespace gb {
@@ -39,6 +41,7 @@ private:
   void timerTrigger();
 
   bool doubleSpeed;
+  bool lcdChangedState;
 
 public:
   Emulator();
@@ -56,7 +59,7 @@ public:
   u8 step();
   bool run(u32 cycles);
 
-  void requestInterrupt(u8 interrupt);
+  void requestInterrupt(Interrupt interrupt);
 
   u64 cycles;
   Mode mode;
@@ -71,10 +74,13 @@ public:
   CpuGB cpu;
   Memory mem;
   Display<PixelFormat::ARGB51>* display;
+#ifndef DEBUGGER
   GBSound sound;
+#endif
 
   const EmuSpec spec = {160,144};
   
+  void toggleLcdState() { lcdChangedState = true; }
   
   void toggleDoubleSpeed(bool value) { doubleSpeed = value; }
   bool isDoubleSpeedEnabled() const;

@@ -16,6 +16,18 @@ struct OpcodeGB
   
   u8 paramsSign;
 };
+  
+enum Conditions
+{
+  COND_NZ = 0x00,
+  COND_Z = 0x01,
+  COND_NC = 0x02,
+  COND_C = 0x03,
+  COND_PO = 0x04,
+  COND_PE = 0x05,
+  COND_SP = 0x06,
+  COND_SN = 0x07
+};
 
 enum OpCodes
 {
@@ -143,6 +155,8 @@ class Opcodes
     static u8 cpuCycles(u8 opcode, u8 opcode2, bool branchTaken);
   
     static u16 daaTable[4096];
+  
+    static void visualOpcode(char* buffer, u8 d1, u8 d2, u8 d3);
   
     /* rispetto allo z80 completo alcuni opcode sono cambiati, altri non esistono (quelli con NO come commento), e alcune istruzioni da due byte
      (quelle che iniziano con DD- ED- e FD-) non esistono perché non ci sono registri IX e IY

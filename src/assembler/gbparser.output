@@ -1,0 +1,2038 @@
+Terminals unused in grammar
+
+   T_COLON
+   FLOAT
+   LITERAL
+   IDENTIFIER
+
+
+Grammar
+
+    0 $accept: start "end of file"
+
+    1 $@1: %empty
+
+    2 start: $@1 instructions
+
+    3 instructions: %empty
+    4             | instructions instruction
+    5             | instructions "\n"
+
+    6 instruction: OP_NOP
+    7            | OP_STOP
+    8            | OP_LD sreg T_COMMA sreg
+    9            | OP_LD sreg T_COMMA snum
+   10            | OP_LD dreg T_COMMA snum
+   11            | OP_LD RDP_BC T_COMMA RS_A
+   12            | OP_LD RDP_DE T_COMMA RS_A
+   13            | OP_LD sreg T_COMMA RDP_BC
+   14            | OP_LD sreg T_COMMA RDP_DE
+   15            | OP_LD dreg T_COMMA RD_HL
+   16            | OP_LD T_LPAREN snum T_RPAREN T_COMMA RS_A
+   17            | OP_LD sreg T_COMMA pnum
+   18            | OP_LD dreg T_COMMA pnum
+   19            | OP_LD T_LPAREN snum T_RPAREN T_COMMA RD_HL
+   20            | OP_LDI RS_HL T_COMMA RS_A
+   21            | OP_LDI RS_A T_COMMA RS_HL
+   22            | OP_LDD RS_HL T_COMMA RS_A
+   23            | OP_LDD RS_A T_COMMA RS_HL
+   24            | OP_LD T_LPAREN snum T_RPAREN T_COMMA RD_SP
+   25            | OP_ADD sreg
+   26            | OP_ADC sreg
+   27            | OP_SUB sreg
+   28            | OP_SBC sreg
+   29            | OP_DAA
+   30            | OP_AND sreg
+   31            | OP_XOR sreg
+   32            | OP_OR sreg
+   33            | OP_CP sreg
+   34            | OP_ADD snum
+   35            | OP_ADC snum
+   36            | OP_SUB snum
+   37            | OP_SBC snum
+   38            | OP_AND snum
+   39            | OP_XOR snum
+   40            | OP_OR snum
+   41            | OP_CP snum
+   42            | OP_RLCA
+   43            | OP_RLA
+   44            | OP_RRCA
+   45            | OP_RRA
+   46            | OP_RLC sreg
+   47            | OP_RL sreg
+   48            | OP_RRC sreg
+   49            | OP_RR sreg
+   50            | OP_SLA sreg
+   51            | OP_SRA sreg
+   52            | OP_SLL sreg
+   53            | OP_SRL sreg
+   54            | OP_SWAP sreg
+   55            | OP_BIT snum T_COMMA sreg
+   56            | OP_RES snum T_COMMA sreg
+   57            | OP_SET snum T_COMMA sreg
+   58            | OP_CPL
+   59            | OP_SCF
+   60            | OP_CCF
+   61            | OP_ADD RD_HL T_COMMA dreg
+   62            | OP_DJNZ snum
+   63            | OP_JR snum
+   64            | OP_JRNZ snum
+   65            | OP_JRZ snum
+   66            | OP_JRNC snum
+   67            | OP_JRC snum
+   68            | OP_JP snum
+   69            | OP_JP CC_COND snum
+   70            | OP_JP RS_HL
+   71            | OP_CALL snum
+   72            | OP_CALL CC_COND snum
+   73            | OP_RST snum
+   74            | OP_RET
+   75            | OP_RET CC_COND
+   76            | OP_RETI
+   77            | OP_PUSH dregaf
+   78            | OP_POP dregaf
+   79            | OP_EI
+   80            | OP_DI
+   81            | OP_INC sreg
+   82            | OP_DEC sreg
+   83            | OP_INC dreg
+   84            | OP_DEC dreg
+   85            | OP_OUT snum T_COMMA RS_A
+   86            | OP_IN RS_A T_COMMA snum
+   87            | OP_EX RD_AF T_COMMA RD_AF T_QUOTE
+   88            | OP_EXX
+   89            | OP_EX RDP_SP T_COMMA RD_HL
+   90            | OP_EX RD_DE T_COMMA RD_HL
+   91            | OP_HALT
+
+   92 sreg: RS_B
+   93     | RS_C
+   94     | RS_D
+   95     | RS_E
+   96     | RS_H
+   97     | RS_L
+   98     | RS_HL
+   99     | RS_A
+
+  100 dreg: RD_BC
+  101     | RD_DE
+  102     | RD_HL
+  103     | RD_SP
+
+  104 dregaf: RD_BC
+  105       | RD_DE
+  106       | RD_HL
+  107       | RD_AF
+
+  108 snum: U16
+
+  109 pnum: T_LPAREN U16 T_RPAREN
+
+
+Terminals, with rules where they appear
+
+"end of file" (0) 0
+error (256)
+T_COLON (258)
+T_COMMA (259) 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 55 56
+    57 61 85 86 87 89 90
+T_LPAREN (260) 16 19 24 109
+T_RPAREN (261) 16 19 24 109
+T_QUOTE (262) 87
+RDP_BC (263) 11 13
+RDP_DE (264) 12 14
+RDP_SP (265) 89
+"\n" (266) 5
+OP_NOP (267) 6
+OP_STOP (268) 7
+OP_LD (269) 8 9 10 11 12 13 14 15 16 17 18 19 24
+OP_LDI (270) 20 21
+OP_LDD (271) 22 23
+OP_HALT (272) 91
+OP_ADD (273) 25 34 61
+OP_ADC (274) 26 35
+OP_SUB (275) 27 36
+OP_SBC (276) 28 37
+OP_AND (277) 30 38
+OP_XOR (278) 31 39
+OP_OR (279) 32 40
+OP_INC (280) 81 83
+OP_DEC (281) 82 84
+OP_CP (282) 33 41
+OP_DAA (283) 29
+OP_RLCA (284) 42
+OP_RLA (285) 43
+OP_RRCA (286) 44
+OP_RRA (287) 45
+OP_CPL (288) 58
+OP_CCF (289) 60
+OP_SCF (290) 59
+OP_DJNZ (291) 62
+OP_JR (292) 63
+OP_JRNZ (293) 64
+OP_JRZ (294) 65
+OP_JRNC (295) 66
+OP_JRC (296) 67
+OP_CALL (297) 71 72
+OP_RET (298) 74 75
+OP_JP (299) 68 69 70
+OP_PUSH (300) 77
+OP_POP (301) 78
+OP_RST (302) 73
+OP_RETI (303) 76
+OP_BIT (304) 55
+OP_RES (305) 56
+OP_SET (306) 57
+OP_RLC (307) 46
+OP_RL (308) 47
+OP_RRC (309) 48
+OP_RR (310) 49
+OP_SLA (311) 50
+OP_SRA (312) 51
+OP_SLL (313) 52
+OP_SRL (314) 53
+OP_SWAP (315) 54
+OP_EI (316) 79
+OP_DI (317) 80
+OP_OUT (318) 85
+OP_IN (319) 86
+OP_EX (320) 87 89 90
+OP_EXX (321) 88
+U16 (322) 108 109
+RS_B (323) 92
+RS_C (324) 93
+RS_D (325) 94
+RS_E (326) 95
+RS_H (327) 96
+RS_L (328) 97
+RS_HL (329) 20 21 22 23 70 98
+RS_A (330) 11 12 16 20 21 22 23 85 86 99
+RD_BC (331) 100 104
+RD_DE (332) 90 101 105
+RD_HL (333) 15 19 61 89 90 102 106
+RD_SP (334) 24 103
+RD_AF (335) 87 107
+CC_COND (336) 69 72 75
+FLOAT (337)
+LITERAL (338)
+IDENTIFIER (339)
+
+
+Nonterminals, with rules where they appear
+
+$accept (85)
+    on left: 0
+start (86)
+    on left: 2, on right: 0
+$@1 (87)
+    on left: 1, on right: 2
+instructions (88)
+    on left: 3 4 5, on right: 2 4 5
+instruction (89)
+    on left: 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25
+    26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46
+    47 48 49 50 51 52 53 54 55 56 57 58 59 60 61 62 63 64 65 66 67
+    68 69 70 71 72 73 74 75 76 77 78 79 80 81 82 83 84 85 86 87 88
+    89 90 91, on right: 4
+sreg (90)
+    on left: 92 93 94 95 96 97 98 99, on right: 8 9 13 14 17 25 26
+    27 28 30 31 32 33 46 47 48 49 50 51 52 53 54 55 56 57 81 82
+dreg (91)
+    on left: 100 101 102 103, on right: 10 15 18 61 83 84
+dregaf (92)
+    on left: 104 105 106 107, on right: 77 78
+snum (93)
+    on left: 108, on right: 9 10 16 19 24 34 35 36 37 38 39 40 41 55
+    56 57 62 63 64 65 66 67 68 69 71 72 73 85 86
+pnum (94)
+    on left: 109, on right: 17 18
+
+
+State 0
+
+    0 $accept: . start "end of file"
+
+    $default  reduce using rule 1 ($@1)
+
+    start  go to state 1
+    $@1    go to state 2
+
+
+State 1
+
+    0 $accept: start . "end of file"
+
+    "end of file"  shift, and go to state 3
+
+
+State 2
+
+    2 start: $@1 . instructions
+
+    $default  reduce using rule 3 (instructions)
+
+    instructions  go to state 4
+
+
+State 3
+
+    0 $accept: start "end of file" .
+
+    $default  accept
+
+
+State 4
+
+    2 start: $@1 instructions .
+    4 instructions: instructions . instruction
+    5             | instructions . "\n"
+
+    "\n"     shift, and go to state 5
+    OP_NOP   shift, and go to state 6
+    OP_STOP  shift, and go to state 7
+    OP_LD    shift, and go to state 8
+    OP_LDI   shift, and go to state 9
+    OP_LDD   shift, and go to state 10
+    OP_HALT  shift, and go to state 11
+    OP_ADD   shift, and go to state 12
+    OP_ADC   shift, and go to state 13
+    OP_SUB   shift, and go to state 14
+    OP_SBC   shift, and go to state 15
+    OP_AND   shift, and go to state 16
+    OP_XOR   shift, and go to state 17
+    OP_OR    shift, and go to state 18
+    OP_INC   shift, and go to state 19
+    OP_DEC   shift, and go to state 20
+    OP_CP    shift, and go to state 21
+    OP_DAA   shift, and go to state 22
+    OP_RLCA  shift, and go to state 23
+    OP_RLA   shift, and go to state 24
+    OP_RRCA  shift, and go to state 25
+    OP_RRA   shift, and go to state 26
+    OP_CPL   shift, and go to state 27
+    OP_CCF   shift, and go to state 28
+    OP_SCF   shift, and go to state 29
+    OP_DJNZ  shift, and go to state 30
+    OP_JR    shift, and go to state 31
+    OP_JRNZ  shift, and go to state 32
+    OP_JRZ   shift, and go to state 33
+    OP_JRNC  shift, and go to state 34
+    OP_JRC   shift, and go to state 35
+    OP_CALL  shift, and go to state 36
+    OP_RET   shift, and go to state 37
+    OP_JP    shift, and go to state 38
+    OP_PUSH  shift, and go to state 39
+    OP_POP   shift, and go to state 40
+    OP_RST   shift, and go to state 41
+    OP_RETI  shift, and go to state 42
+    OP_BIT   shift, and go to state 43
+    OP_RES   shift, and go to state 44
+    OP_SET   shift, and go to state 45
+    OP_RLC   shift, and go to state 46
+    OP_RL    shift, and go to state 47
+    OP_RRC   shift, and go to state 48
+    OP_RR    shift, and go to state 49
+    OP_SLA   shift, and go to state 50
+    OP_SRA   shift, and go to state 51
+    OP_SLL   shift, and go to state 52
+    OP_SRL   shift, and go to state 53
+    OP_SWAP  shift, and go to state 54
+    OP_EI    shift, and go to state 55
+    OP_DI    shift, and go to state 56
+    OP_OUT   shift, and go to state 57
+    OP_IN    shift, and go to state 58
+    OP_EX    shift, and go to state 59
+    OP_EXX   shift, and go to state 60
+
+    $default  reduce using rule 2 (start)
+
+    instruction  go to state 61
+
+
+State 5
+
+    5 instructions: instructions "\n" .
+
+    $default  reduce using rule 5 (instructions)
+
+
+State 6
+
+    6 instruction: OP_NOP .
+
+    $default  reduce using rule 6 (instruction)
+
+
+State 7
+
+    7 instruction: OP_STOP .
+
+    $default  reduce using rule 7 (instruction)
+
+
+State 8
+
+    8 instruction: OP_LD . sreg T_COMMA sreg
+    9            | OP_LD . sreg T_COMMA snum
+   10            | OP_LD . dreg T_COMMA snum
+   11            | OP_LD . RDP_BC T_COMMA RS_A
+   12            | OP_LD . RDP_DE T_COMMA RS_A
+   13            | OP_LD . sreg T_COMMA RDP_BC
+   14            | OP_LD . sreg T_COMMA RDP_DE
+   15            | OP_LD . dreg T_COMMA RD_HL
+   16            | OP_LD . T_LPAREN snum T_RPAREN T_COMMA RS_A
+   17            | OP_LD . sreg T_COMMA pnum
+   18            | OP_LD . dreg T_COMMA pnum
+   19            | OP_LD . T_LPAREN snum T_RPAREN T_COMMA RD_HL
+   24            | OP_LD . T_LPAREN snum T_RPAREN T_COMMA RD_SP
+
+    T_LPAREN  shift, and go to state 62
+    RDP_BC    shift, and go to state 63
+    RDP_DE    shift, and go to state 64
+    RS_B      shift, and go to state 65
+    RS_C      shift, and go to state 66
+    RS_D      shift, and go to state 67
+    RS_E      shift, and go to state 68
+    RS_H      shift, and go to state 69
+    RS_L      shift, and go to state 70
+    RS_HL     shift, and go to state 71
+    RS_A      shift, and go to state 72
+    RD_BC     shift, and go to state 73
+    RD_DE     shift, and go to state 74
+    RD_HL     shift, and go to state 75
+    RD_SP     shift, and go to state 76
+
+    sreg  go to state 77
+    dreg  go to state 78
+
+
+State 9
+
+   20 instruction: OP_LDI . RS_HL T_COMMA RS_A
+   21            | OP_LDI . RS_A T_COMMA RS_HL
+
+    RS_HL  shift, and go to state 79
+    RS_A   shift, and go to state 80
+
+
+State 10
+
+   22 instruction: OP_LDD . RS_HL T_COMMA RS_A
+   23            | OP_LDD . RS_A T_COMMA RS_HL
+
+    RS_HL  shift, and go to state 81
+    RS_A   shift, and go to state 82
+
+
+State 11
+
+   91 instruction: OP_HALT .
+
+    $default  reduce using rule 91 (instruction)
+
+
+State 12
+
+   25 instruction: OP_ADD . sreg
+   34            | OP_ADD . snum
+   61            | OP_ADD . RD_HL T_COMMA dreg
+
+    U16    shift, and go to state 83
+    RS_B   shift, and go to state 65
+    RS_C   shift, and go to state 66
+    RS_D   shift, and go to state 67
+    RS_E   shift, and go to state 68
+    RS_H   shift, and go to state 69
+    RS_L   shift, and go to state 70
+    RS_HL  shift, and go to state 71
+    RS_A   shift, and go to state 72
+    RD_HL  shift, and go to state 84
+
+    sreg  go to state 85
+    snum  go to state 86
+
+
+State 13
+
+   26 instruction: OP_ADC . sreg
+   35            | OP_ADC . snum
+
+    U16    shift, and go to state 83
+    RS_B   shift, and go to state 65
+    RS_C   shift, and go to state 66
+    RS_D   shift, and go to state 67
+    RS_E   shift, and go to state 68
+    RS_H   shift, and go to state 69
+    RS_L   shift, and go to state 70
+    RS_HL  shift, and go to state 71
+    RS_A   shift, and go to state 72
+
+    sreg  go to state 87
+    snum  go to state 88
+
+
+State 14
+
+   27 instruction: OP_SUB . sreg
+   36            | OP_SUB . snum
+
+    U16    shift, and go to state 83
+    RS_B   shift, and go to state 65
+    RS_C   shift, and go to state 66
+    RS_D   shift, and go to state 67
+    RS_E   shift, and go to state 68
+    RS_H   shift, and go to state 69
+    RS_L   shift, and go to state 70
+    RS_HL  shift, and go to state 71
+    RS_A   shift, and go to state 72
+
+    sreg  go to state 89
+    snum  go to state 90
+
+
+State 15
+
+   28 instruction: OP_SBC . sreg
+   37            | OP_SBC . snum
+
+    U16    shift, and go to state 83
+    RS_B   shift, and go to state 65
+    RS_C   shift, and go to state 66
+    RS_D   shift, and go to state 67
+    RS_E   shift, and go to state 68
+    RS_H   shift, and go to state 69
+    RS_L   shift, and go to state 70
+    RS_HL  shift, and go to state 71
+    RS_A   shift, and go to state 72
+
+    sreg  go to state 91
+    snum  go to state 92
+
+
+State 16
+
+   30 instruction: OP_AND . sreg
+   38            | OP_AND . snum
+
+    U16    shift, and go to state 83
+    RS_B   shift, and go to state 65
+    RS_C   shift, and go to state 66
+    RS_D   shift, and go to state 67
+    RS_E   shift, and go to state 68
+    RS_H   shift, and go to state 69
+    RS_L   shift, and go to state 70
+    RS_HL  shift, and go to state 71
+    RS_A   shift, and go to state 72
+
+    sreg  go to state 93
+    snum  go to state 94
+
+
+State 17
+
+   31 instruction: OP_XOR . sreg
+   39            | OP_XOR . snum
+
+    U16    shift, and go to state 83
+    RS_B   shift, and go to state 65
+    RS_C   shift, and go to state 66
+    RS_D   shift, and go to state 67
+    RS_E   shift, and go to state 68
+    RS_H   shift, and go to state 69
+    RS_L   shift, and go to state 70
+    RS_HL  shift, and go to state 71
+    RS_A   shift, and go to state 72
+
+    sreg  go to state 95
+    snum  go to state 96
+
+
+State 18
+
+   32 instruction: OP_OR . sreg
+   40            | OP_OR . snum
+
+    U16    shift, and go to state 83
+    RS_B   shift, and go to state 65
+    RS_C   shift, and go to state 66
+    RS_D   shift, and go to state 67
+    RS_E   shift, and go to state 68
+    RS_H   shift, and go to state 69
+    RS_L   shift, and go to state 70
+    RS_HL  shift, and go to state 71
+    RS_A   shift, and go to state 72
+
+    sreg  go to state 97
+    snum  go to state 98
+
+
+State 19
+
+   81 instruction: OP_INC . sreg
+   83            | OP_INC . dreg
+
+    RS_B   shift, and go to state 65
+    RS_C   shift, and go to state 66
+    RS_D   shift, and go to state 67
+    RS_E   shift, and go to state 68
+    RS_H   shift, and go to state 69
+    RS_L   shift, and go to state 70
+    RS_HL  shift, and go to state 71
+    RS_A   shift, and go to state 72
+    RD_BC  shift, and go to state 73
+    RD_DE  shift, and go to state 74
+    RD_HL  shift, and go to state 75
+    RD_SP  shift, and go to state 76
+
+    sreg  go to state 99
+    dreg  go to state 100
+
+
+State 20
+
+   82 instruction: OP_DEC . sreg
+   84            | OP_DEC . dreg
+
+    RS_B   shift, and go to state 65
+    RS_C   shift, and go to state 66
+    RS_D   shift, and go to state 67
+    RS_E   shift, and go to state 68
+    RS_H   shift, and go to state 69
+    RS_L   shift, and go to state 70
+    RS_HL  shift, and go to state 71
+    RS_A   shift, and go to state 72
+    RD_BC  shift, and go to state 73
+    RD_DE  shift, and go to state 74
+    RD_HL  shift, and go to state 75
+    RD_SP  shift, and go to state 76
+
+    sreg  go to state 101
+    dreg  go to state 102
+
+
+State 21
+
+   33 instruction: OP_CP . sreg
+   41            | OP_CP . snum
+
+    U16    shift, and go to state 83
+    RS_B   shift, and go to state 65
+    RS_C   shift, and go to state 66
+    RS_D   shift, and go to state 67
+    RS_E   shift, and go to state 68
+    RS_H   shift, and go to state 69
+    RS_L   shift, and go to state 70
+    RS_HL  shift, and go to state 71
+    RS_A   shift, and go to state 72
+
+    sreg  go to state 103
+    snum  go to state 104
+
+
+State 22
+
+   29 instruction: OP_DAA .
+
+    $default  reduce using rule 29 (instruction)
+
+
+State 23
+
+   42 instruction: OP_RLCA .
+
+    $default  reduce using rule 42 (instruction)
+
+
+State 24
+
+   43 instruction: OP_RLA .
+
+    $default  reduce using rule 43 (instruction)
+
+
+State 25
+
+   44 instruction: OP_RRCA .
+
+    $default  reduce using rule 44 (instruction)
+
+
+State 26
+
+   45 instruction: OP_RRA .
+
+    $default  reduce using rule 45 (instruction)
+
+
+State 27
+
+   58 instruction: OP_CPL .
+
+    $default  reduce using rule 58 (instruction)
+
+
+State 28
+
+   60 instruction: OP_CCF .
+
+    $default  reduce using rule 60 (instruction)
+
+
+State 29
+
+   59 instruction: OP_SCF .
+
+    $default  reduce using rule 59 (instruction)
+
+
+State 30
+
+   62 instruction: OP_DJNZ . snum
+
+    U16  shift, and go to state 83
+
+    snum  go to state 105
+
+
+State 31
+
+   63 instruction: OP_JR . snum
+
+    U16  shift, and go to state 83
+
+    snum  go to state 106
+
+
+State 32
+
+   64 instruction: OP_JRNZ . snum
+
+    U16  shift, and go to state 83
+
+    snum  go to state 107
+
+
+State 33
+
+   65 instruction: OP_JRZ . snum
+
+    U16  shift, and go to state 83
+
+    snum  go to state 108
+
+
+State 34
+
+   66 instruction: OP_JRNC . snum
+
+    U16  shift, and go to state 83
+
+    snum  go to state 109
+
+
+State 35
+
+   67 instruction: OP_JRC . snum
+
+    U16  shift, and go to state 83
+
+    snum  go to state 110
+
+
+State 36
+
+   71 instruction: OP_CALL . snum
+   72            | OP_CALL . CC_COND snum
+
+    U16      shift, and go to state 83
+    CC_COND  shift, and go to state 111
+
+    snum  go to state 112
+
+
+State 37
+
+   74 instruction: OP_RET .
+   75            | OP_RET . CC_COND
+
+    CC_COND  shift, and go to state 113
+
+    $default  reduce using rule 74 (instruction)
+
+
+State 38
+
+   68 instruction: OP_JP . snum
+   69            | OP_JP . CC_COND snum
+   70            | OP_JP . RS_HL
+
+    U16      shift, and go to state 83
+    RS_HL    shift, and go to state 114
+    CC_COND  shift, and go to state 115
+
+    snum  go to state 116
+
+
+State 39
+
+   77 instruction: OP_PUSH . dregaf
+
+    RD_BC  shift, and go to state 117
+    RD_DE  shift, and go to state 118
+    RD_HL  shift, and go to state 119
+    RD_AF  shift, and go to state 120
+
+    dregaf  go to state 121
+
+
+State 40
+
+   78 instruction: OP_POP . dregaf
+
+    RD_BC  shift, and go to state 117
+    RD_DE  shift, and go to state 118
+    RD_HL  shift, and go to state 119
+    RD_AF  shift, and go to state 120
+
+    dregaf  go to state 122
+
+
+State 41
+
+   73 instruction: OP_RST . snum
+
+    U16  shift, and go to state 83
+
+    snum  go to state 123
+
+
+State 42
+
+   76 instruction: OP_RETI .
+
+    $default  reduce using rule 76 (instruction)
+
+
+State 43
+
+   55 instruction: OP_BIT . snum T_COMMA sreg
+
+    U16  shift, and go to state 83
+
+    snum  go to state 124
+
+
+State 44
+
+   56 instruction: OP_RES . snum T_COMMA sreg
+
+    U16  shift, and go to state 83
+
+    snum  go to state 125
+
+
+State 45
+
+   57 instruction: OP_SET . snum T_COMMA sreg
+
+    U16  shift, and go to state 83
+
+    snum  go to state 126
+
+
+State 46
+
+   46 instruction: OP_RLC . sreg
+
+    RS_B   shift, and go to state 65
+    RS_C   shift, and go to state 66
+    RS_D   shift, and go to state 67
+    RS_E   shift, and go to state 68
+    RS_H   shift, and go to state 69
+    RS_L   shift, and go to state 70
+    RS_HL  shift, and go to state 71
+    RS_A   shift, and go to state 72
+
+    sreg  go to state 127
+
+
+State 47
+
+   47 instruction: OP_RL . sreg
+
+    RS_B   shift, and go to state 65
+    RS_C   shift, and go to state 66
+    RS_D   shift, and go to state 67
+    RS_E   shift, and go to state 68
+    RS_H   shift, and go to state 69
+    RS_L   shift, and go to state 70
+    RS_HL  shift, and go to state 71
+    RS_A   shift, and go to state 72
+
+    sreg  go to state 128
+
+
+State 48
+
+   48 instruction: OP_RRC . sreg
+
+    RS_B   shift, and go to state 65
+    RS_C   shift, and go to state 66
+    RS_D   shift, and go to state 67
+    RS_E   shift, and go to state 68
+    RS_H   shift, and go to state 69
+    RS_L   shift, and go to state 70
+    RS_HL  shift, and go to state 71
+    RS_A   shift, and go to state 72
+
+    sreg  go to state 129
+
+
+State 49
+
+   49 instruction: OP_RR . sreg
+
+    RS_B   shift, and go to state 65
+    RS_C   shift, and go to state 66
+    RS_D   shift, and go to state 67
+    RS_E   shift, and go to state 68
+    RS_H   shift, and go to state 69
+    RS_L   shift, and go to state 70
+    RS_HL  shift, and go to state 71
+    RS_A   shift, and go to state 72
+
+    sreg  go to state 130
+
+
+State 50
+
+   50 instruction: OP_SLA . sreg
+
+    RS_B   shift, and go to state 65
+    RS_C   shift, and go to state 66
+    RS_D   shift, and go to state 67
+    RS_E   shift, and go to state 68
+    RS_H   shift, and go to state 69
+    RS_L   shift, and go to state 70
+    RS_HL  shift, and go to state 71
+    RS_A   shift, and go to state 72
+
+    sreg  go to state 131
+
+
+State 51
+
+   51 instruction: OP_SRA . sreg
+
+    RS_B   shift, and go to state 65
+    RS_C   shift, and go to state 66
+    RS_D   shift, and go to state 67
+    RS_E   shift, and go to state 68
+    RS_H   shift, and go to state 69
+    RS_L   shift, and go to state 70
+    RS_HL  shift, and go to state 71
+    RS_A   shift, and go to state 72
+
+    sreg  go to state 132
+
+
+State 52
+
+   52 instruction: OP_SLL . sreg
+
+    RS_B   shift, and go to state 65
+    RS_C   shift, and go to state 66
+    RS_D   shift, and go to state 67
+    RS_E   shift, and go to state 68
+    RS_H   shift, and go to state 69
+    RS_L   shift, and go to state 70
+    RS_HL  shift, and go to state 71
+    RS_A   shift, and go to state 72
+
+    sreg  go to state 133
+
+
+State 53
+
+   53 instruction: OP_SRL . sreg
+
+    RS_B   shift, and go to state 65
+    RS_C   shift, and go to state 66
+    RS_D   shift, and go to state 67
+    RS_E   shift, and go to state 68
+    RS_H   shift, and go to state 69
+    RS_L   shift, and go to state 70
+    RS_HL  shift, and go to state 71
+    RS_A   shift, and go to state 72
+
+    sreg  go to state 134
+
+
+State 54
+
+   54 instruction: OP_SWAP . sreg
+
+    RS_B   shift, and go to state 65
+    RS_C   shift, and go to state 66
+    RS_D   shift, and go to state 67
+    RS_E   shift, and go to state 68
+    RS_H   shift, and go to state 69
+    RS_L   shift, and go to state 70
+    RS_HL  shift, and go to state 71
+    RS_A   shift, and go to state 72
+
+    sreg  go to state 135
+
+
+State 55
+
+   79 instruction: OP_EI .
+
+    $default  reduce using rule 79 (instruction)
+
+
+State 56
+
+   80 instruction: OP_DI .
+
+    $default  reduce using rule 80 (instruction)
+
+
+State 57
+
+   85 instruction: OP_OUT . snum T_COMMA RS_A
+
+    U16  shift, and go to state 83
+
+    snum  go to state 136
+
+
+State 58
+
+   86 instruction: OP_IN . RS_A T_COMMA snum
+
+    RS_A  shift, and go to state 137
+
+
+State 59
+
+   87 instruction: OP_EX . RD_AF T_COMMA RD_AF T_QUOTE
+   89            | OP_EX . RDP_SP T_COMMA RD_HL
+   90            | OP_EX . RD_DE T_COMMA RD_HL
+
+    RDP_SP  shift, and go to state 138
+    RD_DE   shift, and go to state 139
+    RD_AF   shift, and go to state 140
+
+
+State 60
+
+   88 instruction: OP_EXX .
+
+    $default  reduce using rule 88 (instruction)
+
+
+State 61
+
+    4 instructions: instructions instruction .
+
+    $default  reduce using rule 4 (instructions)
+
+
+State 62
+
+   16 instruction: OP_LD T_LPAREN . snum T_RPAREN T_COMMA RS_A
+   19            | OP_LD T_LPAREN . snum T_RPAREN T_COMMA RD_HL
+   24            | OP_LD T_LPAREN . snum T_RPAREN T_COMMA RD_SP
+
+    U16  shift, and go to state 83
+
+    snum  go to state 141
+
+
+State 63
+
+   11 instruction: OP_LD RDP_BC . T_COMMA RS_A
+
+    T_COMMA  shift, and go to state 142
+
+
+State 64
+
+   12 instruction: OP_LD RDP_DE . T_COMMA RS_A
+
+    T_COMMA  shift, and go to state 143
+
+
+State 65
+
+   92 sreg: RS_B .
+
+    $default  reduce using rule 92 (sreg)
+
+
+State 66
+
+   93 sreg: RS_C .
+
+    $default  reduce using rule 93 (sreg)
+
+
+State 67
+
+   94 sreg: RS_D .
+
+    $default  reduce using rule 94 (sreg)
+
+
+State 68
+
+   95 sreg: RS_E .
+
+    $default  reduce using rule 95 (sreg)
+
+
+State 69
+
+   96 sreg: RS_H .
+
+    $default  reduce using rule 96 (sreg)
+
+
+State 70
+
+   97 sreg: RS_L .
+
+    $default  reduce using rule 97 (sreg)
+
+
+State 71
+
+   98 sreg: RS_HL .
+
+    $default  reduce using rule 98 (sreg)
+
+
+State 72
+
+   99 sreg: RS_A .
+
+    $default  reduce using rule 99 (sreg)
+
+
+State 73
+
+  100 dreg: RD_BC .
+
+    $default  reduce using rule 100 (dreg)
+
+
+State 74
+
+  101 dreg: RD_DE .
+
+    $default  reduce using rule 101 (dreg)
+
+
+State 75
+
+  102 dreg: RD_HL .
+
+    $default  reduce using rule 102 (dreg)
+
+
+State 76
+
+  103 dreg: RD_SP .
+
+    $default  reduce using rule 103 (dreg)
+
+
+State 77
+
+    8 instruction: OP_LD sreg . T_COMMA sreg
+    9            | OP_LD sreg . T_COMMA snum
+   13            | OP_LD sreg . T_COMMA RDP_BC
+   14            | OP_LD sreg . T_COMMA RDP_DE
+   17            | OP_LD sreg . T_COMMA pnum
+
+    T_COMMA  shift, and go to state 144
+
+
+State 78
+
+   10 instruction: OP_LD dreg . T_COMMA snum
+   15            | OP_LD dreg . T_COMMA RD_HL
+   18            | OP_LD dreg . T_COMMA pnum
+
+    T_COMMA  shift, and go to state 145
+
+
+State 79
+
+   20 instruction: OP_LDI RS_HL . T_COMMA RS_A
+
+    T_COMMA  shift, and go to state 146
+
+
+State 80
+
+   21 instruction: OP_LDI RS_A . T_COMMA RS_HL
+
+    T_COMMA  shift, and go to state 147
+
+
+State 81
+
+   22 instruction: OP_LDD RS_HL . T_COMMA RS_A
+
+    T_COMMA  shift, and go to state 148
+
+
+State 82
+
+   23 instruction: OP_LDD RS_A . T_COMMA RS_HL
+
+    T_COMMA  shift, and go to state 149
+
+
+State 83
+
+  108 snum: U16 .
+
+    $default  reduce using rule 108 (snum)
+
+
+State 84
+
+   61 instruction: OP_ADD RD_HL . T_COMMA dreg
+
+    T_COMMA  shift, and go to state 150
+
+
+State 85
+
+   25 instruction: OP_ADD sreg .
+
+    $default  reduce using rule 25 (instruction)
+
+
+State 86
+
+   34 instruction: OP_ADD snum .
+
+    $default  reduce using rule 34 (instruction)
+
+
+State 87
+
+   26 instruction: OP_ADC sreg .
+
+    $default  reduce using rule 26 (instruction)
+
+
+State 88
+
+   35 instruction: OP_ADC snum .
+
+    $default  reduce using rule 35 (instruction)
+
+
+State 89
+
+   27 instruction: OP_SUB sreg .
+
+    $default  reduce using rule 27 (instruction)
+
+
+State 90
+
+   36 instruction: OP_SUB snum .
+
+    $default  reduce using rule 36 (instruction)
+
+
+State 91
+
+   28 instruction: OP_SBC sreg .
+
+    $default  reduce using rule 28 (instruction)
+
+
+State 92
+
+   37 instruction: OP_SBC snum .
+
+    $default  reduce using rule 37 (instruction)
+
+
+State 93
+
+   30 instruction: OP_AND sreg .
+
+    $default  reduce using rule 30 (instruction)
+
+
+State 94
+
+   38 instruction: OP_AND snum .
+
+    $default  reduce using rule 38 (instruction)
+
+
+State 95
+
+   31 instruction: OP_XOR sreg .
+
+    $default  reduce using rule 31 (instruction)
+
+
+State 96
+
+   39 instruction: OP_XOR snum .
+
+    $default  reduce using rule 39 (instruction)
+
+
+State 97
+
+   32 instruction: OP_OR sreg .
+
+    $default  reduce using rule 32 (instruction)
+
+
+State 98
+
+   40 instruction: OP_OR snum .
+
+    $default  reduce using rule 40 (instruction)
+
+
+State 99
+
+   81 instruction: OP_INC sreg .
+
+    $default  reduce using rule 81 (instruction)
+
+
+State 100
+
+   83 instruction: OP_INC dreg .
+
+    $default  reduce using rule 83 (instruction)
+
+
+State 101
+
+   82 instruction: OP_DEC sreg .
+
+    $default  reduce using rule 82 (instruction)
+
+
+State 102
+
+   84 instruction: OP_DEC dreg .
+
+    $default  reduce using rule 84 (instruction)
+
+
+State 103
+
+   33 instruction: OP_CP sreg .
+
+    $default  reduce using rule 33 (instruction)
+
+
+State 104
+
+   41 instruction: OP_CP snum .
+
+    $default  reduce using rule 41 (instruction)
+
+
+State 105
+
+   62 instruction: OP_DJNZ snum .
+
+    $default  reduce using rule 62 (instruction)
+
+
+State 106
+
+   63 instruction: OP_JR snum .
+
+    $default  reduce using rule 63 (instruction)
+
+
+State 107
+
+   64 instruction: OP_JRNZ snum .
+
+    $default  reduce using rule 64 (instruction)
+
+
+State 108
+
+   65 instruction: OP_JRZ snum .
+
+    $default  reduce using rule 65 (instruction)
+
+
+State 109
+
+   66 instruction: OP_JRNC snum .
+
+    $default  reduce using rule 66 (instruction)
+
+
+State 110
+
+   67 instruction: OP_JRC snum .
+
+    $default  reduce using rule 67 (instruction)
+
+
+State 111
+
+   72 instruction: OP_CALL CC_COND . snum
+
+    U16  shift, and go to state 83
+
+    snum  go to state 151
+
+
+State 112
+
+   71 instruction: OP_CALL snum .
+
+    $default  reduce using rule 71 (instruction)
+
+
+State 113
+
+   75 instruction: OP_RET CC_COND .
+
+    $default  reduce using rule 75 (instruction)
+
+
+State 114
+
+   70 instruction: OP_JP RS_HL .
+
+    $default  reduce using rule 70 (instruction)
+
+
+State 115
+
+   69 instruction: OP_JP CC_COND . snum
+
+    U16  shift, and go to state 83
+
+    snum  go to state 152
+
+
+State 116
+
+   68 instruction: OP_JP snum .
+
+    $default  reduce using rule 68 (instruction)
+
+
+State 117
+
+  104 dregaf: RD_BC .
+
+    $default  reduce using rule 104 (dregaf)
+
+
+State 118
+
+  105 dregaf: RD_DE .
+
+    $default  reduce using rule 105 (dregaf)
+
+
+State 119
+
+  106 dregaf: RD_HL .
+
+    $default  reduce using rule 106 (dregaf)
+
+
+State 120
+
+  107 dregaf: RD_AF .
+
+    $default  reduce using rule 107 (dregaf)
+
+
+State 121
+
+   77 instruction: OP_PUSH dregaf .
+
+    $default  reduce using rule 77 (instruction)
+
+
+State 122
+
+   78 instruction: OP_POP dregaf .
+
+    $default  reduce using rule 78 (instruction)
+
+
+State 123
+
+   73 instruction: OP_RST snum .
+
+    $default  reduce using rule 73 (instruction)
+
+
+State 124
+
+   55 instruction: OP_BIT snum . T_COMMA sreg
+
+    T_COMMA  shift, and go to state 153
+
+
+State 125
+
+   56 instruction: OP_RES snum . T_COMMA sreg
+
+    T_COMMA  shift, and go to state 154
+
+
+State 126
+
+   57 instruction: OP_SET snum . T_COMMA sreg
+
+    T_COMMA  shift, and go to state 155
+
+
+State 127
+
+   46 instruction: OP_RLC sreg .
+
+    $default  reduce using rule 46 (instruction)
+
+
+State 128
+
+   47 instruction: OP_RL sreg .
+
+    $default  reduce using rule 47 (instruction)
+
+
+State 129
+
+   48 instruction: OP_RRC sreg .
+
+    $default  reduce using rule 48 (instruction)
+
+
+State 130
+
+   49 instruction: OP_RR sreg .
+
+    $default  reduce using rule 49 (instruction)
+
+
+State 131
+
+   50 instruction: OP_SLA sreg .
+
+    $default  reduce using rule 50 (instruction)
+
+
+State 132
+
+   51 instruction: OP_SRA sreg .
+
+    $default  reduce using rule 51 (instruction)
+
+
+State 133
+
+   52 instruction: OP_SLL sreg .
+
+    $default  reduce using rule 52 (instruction)
+
+
+State 134
+
+   53 instruction: OP_SRL sreg .
+
+    $default  reduce using rule 53 (instruction)
+
+
+State 135
+
+   54 instruction: OP_SWAP sreg .
+
+    $default  reduce using rule 54 (instruction)
+
+
+State 136
+
+   85 instruction: OP_OUT snum . T_COMMA RS_A
+
+    T_COMMA  shift, and go to state 156
+
+
+State 137
+
+   86 instruction: OP_IN RS_A . T_COMMA snum
+
+    T_COMMA  shift, and go to state 157
+
+
+State 138
+
+   89 instruction: OP_EX RDP_SP . T_COMMA RD_HL
+
+    T_COMMA  shift, and go to state 158
+
+
+State 139
+
+   90 instruction: OP_EX RD_DE . T_COMMA RD_HL
+
+    T_COMMA  shift, and go to state 159
+
+
+State 140
+
+   87 instruction: OP_EX RD_AF . T_COMMA RD_AF T_QUOTE
+
+    T_COMMA  shift, and go to state 160
+
+
+State 141
+
+   16 instruction: OP_LD T_LPAREN snum . T_RPAREN T_COMMA RS_A
+   19            | OP_LD T_LPAREN snum . T_RPAREN T_COMMA RD_HL
+   24            | OP_LD T_LPAREN snum . T_RPAREN T_COMMA RD_SP
+
+    T_RPAREN  shift, and go to state 161
+
+
+State 142
+
+   11 instruction: OP_LD RDP_BC T_COMMA . RS_A
+
+    RS_A  shift, and go to state 162
+
+
+State 143
+
+   12 instruction: OP_LD RDP_DE T_COMMA . RS_A
+
+    RS_A  shift, and go to state 163
+
+
+State 144
+
+    8 instruction: OP_LD sreg T_COMMA . sreg
+    9            | OP_LD sreg T_COMMA . snum
+   13            | OP_LD sreg T_COMMA . RDP_BC
+   14            | OP_LD sreg T_COMMA . RDP_DE
+   17            | OP_LD sreg T_COMMA . pnum
+
+    T_LPAREN  shift, and go to state 164
+    RDP_BC    shift, and go to state 165
+    RDP_DE    shift, and go to state 166
+    U16       shift, and go to state 83
+    RS_B      shift, and go to state 65
+    RS_C      shift, and go to state 66
+    RS_D      shift, and go to state 67
+    RS_E      shift, and go to state 68
+    RS_H      shift, and go to state 69
+    RS_L      shift, and go to state 70
+    RS_HL     shift, and go to state 71
+    RS_A      shift, and go to state 72
+
+    sreg  go to state 167
+    snum  go to state 168
+    pnum  go to state 169
+
+
+State 145
+
+   10 instruction: OP_LD dreg T_COMMA . snum
+   15            | OP_LD dreg T_COMMA . RD_HL
+   18            | OP_LD dreg T_COMMA . pnum
+
+    T_LPAREN  shift, and go to state 164
+    U16       shift, and go to state 83
+    RD_HL     shift, and go to state 170
+
+    snum  go to state 171
+    pnum  go to state 172
+
+
+State 146
+
+   20 instruction: OP_LDI RS_HL T_COMMA . RS_A
+
+    RS_A  shift, and go to state 173
+
+
+State 147
+
+   21 instruction: OP_LDI RS_A T_COMMA . RS_HL
+
+    RS_HL  shift, and go to state 174
+
+
+State 148
+
+   22 instruction: OP_LDD RS_HL T_COMMA . RS_A
+
+    RS_A  shift, and go to state 175
+
+
+State 149
+
+   23 instruction: OP_LDD RS_A T_COMMA . RS_HL
+
+    RS_HL  shift, and go to state 176
+
+
+State 150
+
+   61 instruction: OP_ADD RD_HL T_COMMA . dreg
+
+    RD_BC  shift, and go to state 73
+    RD_DE  shift, and go to state 74
+    RD_HL  shift, and go to state 75
+    RD_SP  shift, and go to state 76
+
+    dreg  go to state 177
+
+
+State 151
+
+   72 instruction: OP_CALL CC_COND snum .
+
+    $default  reduce using rule 72 (instruction)
+
+
+State 152
+
+   69 instruction: OP_JP CC_COND snum .
+
+    $default  reduce using rule 69 (instruction)
+
+
+State 153
+
+   55 instruction: OP_BIT snum T_COMMA . sreg
+
+    RS_B   shift, and go to state 65
+    RS_C   shift, and go to state 66
+    RS_D   shift, and go to state 67
+    RS_E   shift, and go to state 68
+    RS_H   shift, and go to state 69
+    RS_L   shift, and go to state 70
+    RS_HL  shift, and go to state 71
+    RS_A   shift, and go to state 72
+
+    sreg  go to state 178
+
+
+State 154
+
+   56 instruction: OP_RES snum T_COMMA . sreg
+
+    RS_B   shift, and go to state 65
+    RS_C   shift, and go to state 66
+    RS_D   shift, and go to state 67
+    RS_E   shift, and go to state 68
+    RS_H   shift, and go to state 69
+    RS_L   shift, and go to state 70
+    RS_HL  shift, and go to state 71
+    RS_A   shift, and go to state 72
+
+    sreg  go to state 179
+
+
+State 155
+
+   57 instruction: OP_SET snum T_COMMA . sreg
+
+    RS_B   shift, and go to state 65
+    RS_C   shift, and go to state 66
+    RS_D   shift, and go to state 67
+    RS_E   shift, and go to state 68
+    RS_H   shift, and go to state 69
+    RS_L   shift, and go to state 70
+    RS_HL  shift, and go to state 71
+    RS_A   shift, and go to state 72
+
+    sreg  go to state 180
+
+
+State 156
+
+   85 instruction: OP_OUT snum T_COMMA . RS_A
+
+    RS_A  shift, and go to state 181
+
+
+State 157
+
+   86 instruction: OP_IN RS_A T_COMMA . snum
+
+    U16  shift, and go to state 83
+
+    snum  go to state 182
+
+
+State 158
+
+   89 instruction: OP_EX RDP_SP T_COMMA . RD_HL
+
+    RD_HL  shift, and go to state 183
+
+
+State 159
+
+   90 instruction: OP_EX RD_DE T_COMMA . RD_HL
+
+    RD_HL  shift, and go to state 184
+
+
+State 160
+
+   87 instruction: OP_EX RD_AF T_COMMA . RD_AF T_QUOTE
+
+    RD_AF  shift, and go to state 185
+
+
+State 161
+
+   16 instruction: OP_LD T_LPAREN snum T_RPAREN . T_COMMA RS_A
+   19            | OP_LD T_LPAREN snum T_RPAREN . T_COMMA RD_HL
+   24            | OP_LD T_LPAREN snum T_RPAREN . T_COMMA RD_SP
+
+    T_COMMA  shift, and go to state 186
+
+
+State 162
+
+   11 instruction: OP_LD RDP_BC T_COMMA RS_A .
+
+    $default  reduce using rule 11 (instruction)
+
+
+State 163
+
+   12 instruction: OP_LD RDP_DE T_COMMA RS_A .
+
+    $default  reduce using rule 12 (instruction)
+
+
+State 164
+
+  109 pnum: T_LPAREN . U16 T_RPAREN
+
+    U16  shift, and go to state 187
+
+
+State 165
+
+   13 instruction: OP_LD sreg T_COMMA RDP_BC .
+
+    $default  reduce using rule 13 (instruction)
+
+
+State 166
+
+   14 instruction: OP_LD sreg T_COMMA RDP_DE .
+
+    $default  reduce using rule 14 (instruction)
+
+
+State 167
+
+    8 instruction: OP_LD sreg T_COMMA sreg .
+
+    $default  reduce using rule 8 (instruction)
+
+
+State 168
+
+    9 instruction: OP_LD sreg T_COMMA snum .
+
+    $default  reduce using rule 9 (instruction)
+
+
+State 169
+
+   17 instruction: OP_LD sreg T_COMMA pnum .
+
+    $default  reduce using rule 17 (instruction)
+
+
+State 170
+
+   15 instruction: OP_LD dreg T_COMMA RD_HL .
+
+    $default  reduce using rule 15 (instruction)
+
+
+State 171
+
+   10 instruction: OP_LD dreg T_COMMA snum .
+
+    $default  reduce using rule 10 (instruction)
+
+
+State 172
+
+   18 instruction: OP_LD dreg T_COMMA pnum .
+
+    $default  reduce using rule 18 (instruction)
+
+
+State 173
+
+   20 instruction: OP_LDI RS_HL T_COMMA RS_A .
+
+    $default  reduce using rule 20 (instruction)
+
+
+State 174
+
+   21 instruction: OP_LDI RS_A T_COMMA RS_HL .
+
+    $default  reduce using rule 21 (instruction)
+
+
+State 175
+
+   22 instruction: OP_LDD RS_HL T_COMMA RS_A .
+
+    $default  reduce using rule 22 (instruction)
+
+
+State 176
+
+   23 instruction: OP_LDD RS_A T_COMMA RS_HL .
+
+    $default  reduce using rule 23 (instruction)
+
+
+State 177
+
+   61 instruction: OP_ADD RD_HL T_COMMA dreg .
+
+    $default  reduce using rule 61 (instruction)
+
+
+State 178
+
+   55 instruction: OP_BIT snum T_COMMA sreg .
+
+    $default  reduce using rule 55 (instruction)
+
+
+State 179
+
+   56 instruction: OP_RES snum T_COMMA sreg .
+
+    $default  reduce using rule 56 (instruction)
+
+
+State 180
+
+   57 instruction: OP_SET snum T_COMMA sreg .
+
+    $default  reduce using rule 57 (instruction)
+
+
+State 181
+
+   85 instruction: OP_OUT snum T_COMMA RS_A .
+
+    $default  reduce using rule 85 (instruction)
+
+
+State 182
+
+   86 instruction: OP_IN RS_A T_COMMA snum .
+
+    $default  reduce using rule 86 (instruction)
+
+
+State 183
+
+   89 instruction: OP_EX RDP_SP T_COMMA RD_HL .
+
+    $default  reduce using rule 89 (instruction)
+
+
+State 184
+
+   90 instruction: OP_EX RD_DE T_COMMA RD_HL .
+
+    $default  reduce using rule 90 (instruction)
+
+
+State 185
+
+   87 instruction: OP_EX RD_AF T_COMMA RD_AF . T_QUOTE
+
+    T_QUOTE  shift, and go to state 188
+
+
+State 186
+
+   16 instruction: OP_LD T_LPAREN snum T_RPAREN T_COMMA . RS_A
+   19            | OP_LD T_LPAREN snum T_RPAREN T_COMMA . RD_HL
+   24            | OP_LD T_LPAREN snum T_RPAREN T_COMMA . RD_SP
+
+    RS_A   shift, and go to state 189
+    RD_HL  shift, and go to state 190
+    RD_SP  shift, and go to state 191
+
+
+State 187
+
+  109 pnum: T_LPAREN U16 . T_RPAREN
+
+    T_RPAREN  shift, and go to state 192
+
+
+State 188
+
+   87 instruction: OP_EX RD_AF T_COMMA RD_AF T_QUOTE .
+
+    $default  reduce using rule 87 (instruction)
+
+
+State 189
+
+   16 instruction: OP_LD T_LPAREN snum T_RPAREN T_COMMA RS_A .
+
+    $default  reduce using rule 16 (instruction)
+
+
+State 190
+
+   19 instruction: OP_LD T_LPAREN snum T_RPAREN T_COMMA RD_HL .
+
+    $default  reduce using rule 19 (instruction)
+
+
+State 191
+
+   24 instruction: OP_LD T_LPAREN snum T_RPAREN T_COMMA RD_SP .
+
+    $default  reduce using rule 24 (instruction)
+
+
+State 192
+
+  109 pnum: T_LPAREN U16 T_RPAREN .
+
+    $default  reduce using rule 109 (pnum)

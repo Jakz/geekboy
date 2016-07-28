@@ -4,7 +4,6 @@
 #include "utils.h"
 
 #include "display.h"
-#include "sound.h"
 #include "cpu.h"
 
 #include <array>
