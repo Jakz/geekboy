@@ -48,6 +48,7 @@ void CpuGB::reset()
 	r.rrraf[3] = &r.AF.AF;
   
   s.running = true;
+  s.interruptsEnabled = true;
   
   halted = false;
 

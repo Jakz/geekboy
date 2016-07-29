@@ -199,9 +199,7 @@ void Memory::trapPortWrite(u16 address, u8 value)
     case PORT_JOYP:
     {
       /* writes to lower 4 bits JOYP are inhibited */
-      u8 oldValue = rawPortRead(PORT_JOYP);
-      
-      value = (value & 0xF0) | (oldValue & 0x0F);
+      value = (value & 0xF0) | 0x0F;
       break;
     }
     // switch vram bank in CGB

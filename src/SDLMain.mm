@@ -182,7 +182,7 @@ static void CustomApplicationMain (int argc, char **argv)
     /* Hand off to main application code */
     gCalledAppMainline = TRUE;
 
-    Screen::i()->execute(std::string("roms/pokemon-gold.gbc"));
+    Screen::i()->execute(std::string("roms/seasons.gbc"));
 
     /* We're done, thank you for playing */
     exit(status);

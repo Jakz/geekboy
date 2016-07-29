@@ -310,6 +310,15 @@ void Screen::draw(int xx, int yy, float scale, const void* data, int width, int 
   glDrawPixels(width, height, GL_RGBA, GL_UNSIGNED_SHORT_5_5_5_1, data);
 }
 
+void Screen::draw(int xx, int yy, const Surface& surface, float scale)
+{
+  glRasterPos2f(x(xx), y(yy));
+  glPixelZoom(scale, -scale);
+  glPixelStoref(GL_UNPACK_ALIGNMENT, 1);
+  glDrawPixels(surface.width, surface.height, GL_RGBA, GL_UNSIGNED_SHORT_5_5_5_1, surface.data());
+}
+
+
 void Screen::drawString(const std::string& txt, int x, int y, float scale)
 {
   int sx = x;
@@ -360,8 +369,38 @@ void Screen::render()
 }
 
 #if VRAM_DEBUG
+
+void Screen::computeTileMaps()
+{
+  for (int i = 0; i < 2; ++i)
+  {
+    constexpr ptrdiff_t BASE_FROM_VRAM = 0x1800;
+    constexpr size_t TILE_MAP_SIZE_IN_BYTES = 0x400;
+    
+    u8* base = emu->mem.memoryMap()->vram + BASE_FROM_VRAM + i*TILE_MAP_SIZE_IN_BYTES;
+    u8* attrs = base + KB8;
+    
+    for (int x = 0; x < TILE_MAP_WIDTH; ++x)
+    {
+      for (int y = 0; y < TILE_MAP_HEIGHT; ++y)
+      {
+        tileMaps[i][y][x].index = base[x + y*TILE_MAP_WIDTH];
+        u8 attribs = attrs[x+y*TILE_MAP_WIDTH];
+        
+        tileMaps[i][y][x].vram1 = Utils::bit(attribs, 3);
+        tileMaps[i][y][x].hflip = Utils::bit(attribs, 5);
+        tileMaps[i][y][x].vflip = Utils::bit(attribs, 6);
+        tileMaps[i][y][x].palette = attribs & 0x07;
+      }
+    }
+    
+  }
+}
+
 void Screen::renderVRAM()
 {
+  computeTileMaps();
+  
   renderTileData(tileData1, emu->mem.memoryMap()->vram);
   glRasterPos2f(0.0, 1);
 	glPixelZoom(static_cast<float>(2), -static_cast<float>(2));
@@ -372,15 +411,15 @@ void Screen::renderVRAM()
 	glPixelZoom(static_cast<float>(2), -static_cast<float>(2));
  	glDrawPixels(128, 192, GL_RGBA, GL_UNSIGNED_SHORT_5_5_5_1, tileData2);
 
-  renderTileMap(tileMap1, TILE_MAP1);
+  renderTileMap(maps[0], tileMaps[0], 0);
   glRasterPos2f(-1, 0.1);
 	glPixelZoom(static_cast<float>(2), -static_cast<float>(2));
- 	glDrawPixels(256, 256, GL_RGBA, GL_UNSIGNED_SHORT_5_5_5_1, tileMap1);
+ 	glDrawPixels(256, 256, GL_RGBA, GL_UNSIGNED_SHORT_5_5_5_1, maps[0].data());
   
-  renderTileMap(tileMap2, TILE_MAP2);
+  renderTileMap(maps[1], tileMaps[1], 1);
   glRasterPos2f(-0.25f, 0.1);
 	glPixelZoom(static_cast<float>(2), -static_cast<float>(2));
- 	glDrawPixels(256, 256, GL_RGBA, GL_UNSIGNED_SHORT_5_5_5_1, tileMap2);
+ 	glDrawPixels(256, 256, GL_RGBA, GL_UNSIGNED_SHORT_5_5_5_1, maps[1].data());
   
   renderSpriteInfo(20, height - 50);
 
@@ -491,31 +530,41 @@ void Screen::renderTileData(pixel_type *dest, u8 *data)
   }
 }
 
-void Screen::renderTileMap(pixel_type *dest, u16 address)
+
+void Screen::renderTileMap(Surface& surface, const TileMapData& tileMap, int index)
 {
   u8 lcdc = emu->mem.read(PORT_LCDC);
   bool isUnsigned = Utils::bit(lcdc, 4);
+  bool isCGB = emu->mode == MODE_CGB;
   
-  pixel_type* tileData = tileData1;//emu->mem.memoryMap()->vram_bank;
+  Display<PixelFormat::ARGB51>::Pixel::type colors[4];
   
-  for (int i = 0; i < 32; ++i)
-    for (int j = 0; j < 32; ++j)
+  for (int i = 0; i < TILE_MAP_HEIGHT; ++i)
+    for (int j = 0; j < TILE_MAP_WIDTH; ++j)
     {
-      s16 index;
-      if (isUnsigned) index = emu->mem.readVram0(address+32*i+j);
-      else index = (s8)emu->mem.readVram0(address+32*i+j) + 256;
+      const TileInfo& ti = tileMap[i][j];
       
-      for (int k = 0; k < 8; ++k)
+      s16 index = isUnsigned ? ti.index : ((s8)ti.index + 256);
+      emu->display->colorsForPalette(LAYER_BACKGROUND, isCGB ? ti.palette : 0, colors);
+      
+      u8* address = emu->mem.memoryMap()->vram + (ti.vram1 && isCGB ? KB8 : 0) + TILE_BYTES_SIZE*index;
+      
+      for (int y = 0; y < 8; ++y)
       {
-        int sp = ((index/16)*8+k)*128 + (index%16)*8;
-        int dp = (i*8+k)*256 + j*8;
+        u8 byte1 = address[y*2];
+        u8 byte2 = address[y*2 + 1];
         
-        memcpy(&dest[dp], &tileData[sp], sizeof(pixel_type)*8);
+        for (int x = 0; x < 8; ++x)
+        {
+          u8 index = ((byte2 >> (7 - x)) & 0x01) << 1 | ((byte1 >> (7 - x)) & 0x01);
+          const pixel_type& color = colors[index];
+          surface.set(j*TILE_SIZE + x, i*TILE_SIZE + y, color);
+        }
       }
       //SDL_BlitSurface(tileData,&src,total,&dest);
     }
   
-  if (!(Utils::bit(lcdc, 3) ^ (address == TILE_MAP2)))
+  if (!(Utils::bit(lcdc, 3) ^ (index == 1)))
   {
     pixel_type edge = gb::Display<gb::PixelFormat::ARGB51>::ccc(31, 0, 0);
     
@@ -526,9 +575,9 @@ void Screen::renderTileMap(pixel_type *dest, u16 address)
     {
       int fx = (x + scx)%256;
       int fy = scy, sy = (scy+144)%256;
-
-      dest[fy*256 + fx] = edge;
-      dest[sy*256 + fx] = edge;
+      
+      surface.set(fx, fy, edge);
+      surface.set(fx, sy, edge);
     }
     
     for (int y = 0; y < 144; ++y)
@@ -536,12 +585,12 @@ void Screen::renderTileMap(pixel_type *dest, u16 address)
       int fy = (y + scy)%256;
       int fx = scx, sx = (scx+160)%256;
       
-      dest[fy*256 + fx] = edge;
-      dest[fy*256 + sx] = edge;
+      surface.set(fx, fy, edge);
+      surface.set(sx, fy, edge);
     }
   }
   
-  if (!(Utils::bit(lcdc, 6) ^ (address == TILE_MAP2)) && Utils::bit(lcdc, 5))
+  if (!(Utils::bit(lcdc, 6) ^ (index == 1)) && Utils::bit(lcdc, 5))
   {
     pixel_type edge = gb::Display<gb::PixelFormat::ARGB51>::ccc(0, 31, 0);
 
@@ -554,8 +603,8 @@ void Screen::renderTileMap(pixel_type *dest, u16 address)
       int fx = (x + wx)%256;
       int fy = wy, sy = (wy+144)%256;
       
-      dest[fy*256 + fx] = edge;
-      dest[sy*256 + fx] = edge;
+      surface.set(fx, fy, edge);
+      surface.set(fx, sy, edge);
     }
     
     for (int y = 0; y < 144; ++y)
@@ -563,8 +612,8 @@ void Screen::renderTileMap(pixel_type *dest, u16 address)
       int fy = (y + wy)%256;
       int fx = wx, sx = (wx+160)%256;
       
-      dest[fy*256 + fx] = edge;
-      dest[fy*256 + sx] = edge;
+      surface.set(fx, fy, edge);
+      surface.set(sx, fy, edge);
     }
   }
 
@@ -576,8 +625,8 @@ void Screen::renderSpriteInfo(int x, int y)
   const u8* oam = emu->mem.oam();
   constexpr float SCALE = 2;
   
-  renderSprites(sprites, oam, emu->mem.memoryMap()->vram);
-  draw(x, y, SCALE, sprites, SPRITE_MAX_COUNT*(SPRITE_SIZE+SPRITE_MARGIN), SPRITE_SIZE*2);
+  renderSprites(oam, emu->mem.memoryMap()->vram);
+  draw(x, y, sprites, SCALE);
   
   for (int i = 0; i < SPRITE_MAX_COUNT; ++i)
   {
@@ -592,14 +641,12 @@ void Screen::renderSpriteInfo(int x, int y)
   }
 }
 
-void Screen::renderSprites(pixel_type* dest, const u8* oams, u8* vram_total)
+void Screen::renderSprites(const u8* oams, u8* vram_total)
 {
   static const pixel_type black = gb::Display<gb::PixelFormat::ARGB51>::ccc(0, 0, 0);
   
-  for (size_t i = 0; i < SPRITE_MAX_COUNT*SPRITE_SIZE*(SPRITE_SIZE+SPRITE_MARGIN)*2; ++i)
-    dest[i] = black;
-  
-  
+  sprites.fill(black);
+
   pixel_type colors[4];
   
   bool doubleSize = Utils::bit(emu->mem.read(PORT_LCDC), 2);
@@ -657,9 +704,8 @@ void Screen::renderSprites(pixel_type* dest, const u8* oams, u8* vram_total)
         
         int xx = i*(SPRITE_SIZE+SPRITE_MARGIN) + (!flipX ? (8 - x - 1) : x);
         int yy = y;
-        int value = yy*(SPRITE_MAX_COUNT*(SPRITE_SIZE+SPRITE_MARGIN)) + xx;
         
-        dest[value] = colors[colorIndex];
+        sprites.set(xx, yy, colors[colorIndex]);
       }
     }
     
@@ -689,9 +735,8 @@ void Screen::renderSprites(pixel_type* dest, const u8* oams, u8* vram_total)
           
           int xx = i*(SPRITE_SIZE+SPRITE_MARGIN) + (!flipX ? (8 - x - 1) : x);
           int yy = y+8;
-          int value = yy*(SPRITE_MAX_COUNT*(SPRITE_SIZE+SPRITE_MARGIN)) + xx;
           
-          dest[value] = colors[colorIndex];
+          sprites.set(xx, yy, colors[colorIndex]);
         }
       }
     }

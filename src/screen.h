@@ -16,9 +16,39 @@ using pixel_type = gb::Display<gb::PixelFormat::ARGB51>::Pixel::type;
 
 #define VRAM_DEBUG true
 
+
+#ifdef VRAM_DEBUG
+
+struct Surface
+{
+  std::unique_ptr<pixel_type[]> _data;
+  const GLsizei width, height;
+  
+  Surface(Surface&& other) : width(other.width), height(other.height), _data(std::move(other._data)) { }
+  Surface& operator=(Surface&& other)
+  {
+    _data = std::move(other._data);
+    return *this;
+  }
+  
+  Surface(const Surface& other) = delete;
+  Surface& operator=(Surface& other) = delete;
+  
+  Surface(GLsizei width, GLsizei height) : _data(new pixel_type[width*height]), width(width), height(height) { }
+  
+  
+  void set(GLsizei x, GLsizei y, pixel_type p) { _data[x+y*width] = p; }
+  void fill(pixel_type p) { std::fill(_data.get(), _data.get()+width*height, p); }
+  
+  pixel_type* data() { return _data.get(); }
+  const pixel_type* data() const { return _data.get(); }
+};
+
 constexpr size_t SPRITE_SIZE = 8;
 constexpr size_t SPRITE_MARGIN = 4;
+constexpr size_t TILE_SIZE = 8;
 
+#endif
 
 using namespace gb;
 
@@ -55,12 +85,25 @@ class Screen
   u16 *screenBuffer;
 
 #if VRAM_DEBUG
+  struct TileInfo
+  {
+    u8 index;
+    bool vram1 : 1;
+    bool hflip : 1;
+    bool vflip : 1;
+    u8 palette : 3;
+  };
+  
+  using TileMapData = std::array<std::array<TileInfo, 32>, 32>;
+  
+  std::array<TileMapData, 2> tileMaps;
+
   pixel_type tileData1[128*192*sizeof(pixel_type)];
   pixel_type tileData2[128*192*sizeof(pixel_type)];
-  pixel_type tileMap1[256*256*sizeof(pixel_type)];
-  pixel_type tileMap2[256*256*sizeof(pixel_type)];
-  pixel_type sprites[(SPRITE_SIZE+SPRITE_MARGIN)*SPRITE_SIZE*SPRITE_MAX_COUNT*2*sizeof(pixel_type)];
-
+  
+  Surface maps[2] = { Surface(256, 256), Surface(256, 256) };
+  Surface sprites = Surface((SPRITE_SIZE+SPRITE_MARGIN)*SPRITE_MAX_COUNT, SPRITE_SIZE*2);
+  
   pixel_type gbpal[32*2*sizeof(pixel_type)];
   
   bool consoleMode;
@@ -81,6 +124,8 @@ class Screen
   clock_t crender, cloop;
 
   void draw(int x, int y, float scale, const void* data, int width, int height);
+  void draw(int x, int y, const Surface& surface, float scale);
+  
   void drawString(const std::string& txt, int x, int y, float scale);
 
 public:
@@ -103,9 +148,11 @@ public:
   void renderRegs();
   template<size_t SIZE> void renderPorts(const std::array<PortSpec, SIZE>& ports, int x, int y);
   
+  void computeTileMaps();
+  
   void renderTileData(pixel_type *dest, u8 *tileData);
-  void renderTileMap(pixel_type *dest, u16 address);
-  void renderSprites(pixel_type* dest, const u8* oam, u8 *vram);
+  void renderTileMap(Surface& surface, const TileMapData& tileMap, int index);
+  void renderSprites(const u8* oam, u8 *vram);
   
   void renderCurrentScanline();
   
