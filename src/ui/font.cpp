@@ -701,6 +701,17 @@ static bool letter_space[] = {
   0,0,0,0,0,
 };
 
+static bool letter_dot[] = {
+  0,0,0,0,0,
+  0,0,0,0,0,
+  0,0,0,0,0,
+  0,0,0,0,0,
+  0,0,0,0,0,
+  0,0,0,0,0,
+  0,0,1,0,0,
+  0,0,0,0,0,
+};
+
 static bool letter_lparen[] = {
   0,0,0,1,0,
   0,0,1,0,0,
@@ -845,6 +856,7 @@ void Font::init()
   glyphData[':'] = letter_dcol;
   glyphData['<'] = letter_less;
   glyphData['>'] = letter_greater;
+  glyphData['.'] = letter_dot;
   
   glyphData[' '] = letter_space;
 }

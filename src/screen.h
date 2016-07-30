@@ -59,12 +59,14 @@ class Timer
   std::chrono::steady_clock clock;
   std::chrono::microseconds ticksForFrame;
   
+  float rate;
   u32 totalFrames;
   std::chrono::time_point<std::chrono::steady_clock> base;
   
 public:
-  Timer() : ticksForFrame(static_cast<u32>(1000000 / DEFAULT_FPS)), totalFrames(0) { }
+  Timer() : rate(DEFAULT_FPS), ticksForFrame(static_cast<u32>(1000000 / DEFAULT_FPS)), totalFrames(0) { }
   
+  float frameRate() const { return rate; }
   void setFrameRate(float rate);
   void frameRateDelay();
 };

@@ -17,6 +17,7 @@ using namespace std::chrono;
 void Timer::setFrameRate(float rate)
 {
   totalFrames = 0;
+  this->rate = rate;
   ticksForFrame = microseconds(static_cast<u32>(1000000 / rate));
   base = clock.now();
 }
@@ -263,6 +264,9 @@ void Screen::handleEvent(SDL_Event *event)
         case SDLK_KP_PLUS: { if (speed != speeds.begin()) --speed; break; }
         case SDLK_KP_MINUS: { if (speed != speeds.end()-1) ++speed; break; }
           
+        case SDLK_KP_MULTIPLY: { if (timer.frameRate() < 59.73f) timer.setFrameRate(std::min(59.73f, timer.frameRate()+10.0f)); break; }
+        case SDLK_KP_DIVIDE: { if (timer.frameRate() > 1.0f) timer.setFrameRate(std::max(1.0f, timer.frameRate()-10.0f)); break; }
+          
         case SDLK_n: { if (!paused) emu->step(); break; }
           
 #if VRAM_DEBUG
@@ -461,7 +465,7 @@ void Screen::renderRegs()
   Opcodes::visualOpcode(buffer, mem.read(regs.PC), mem.read(regs.PC+1), mem.read(regs.PC+2));
   drawString(buffer, 1100, 650, 1);
 
-  sprintf(buffer, "SPEED %u", *speed);
+  sprintf(buffer, "SPEED %u (%2.2f)", *speed, timer.frameRate());
   drawString(buffer, 1100, 660, 1);
   
   sprintf(buffer, "PC %04xh", regs.PC);
