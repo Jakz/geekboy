@@ -153,10 +153,27 @@ void Cartridge::write(u16 address, u8 value)
       else if (value >= 0x08 && value <= 0x0C)
       {
         /* selects RTC register and mark that writes/read will occur there */
-        status.rtc_register = &status.rtc[value - 0x08];
+        rtc.select(value);
         status.rtc_override = true;
       }
     }
+    /* RCT latch, this will freeze RTC registers until latched again */
+    else if (address >= 0x6000 && address <= 0x7FFF)
+    {
+      rtc.writeLatch(value);
+    }
+    else if (address >= 0xA000 && address <= 0xBFFF)
+    {
+      // scrive basandosi sull'offset nel banco di RAM selezionato
+      if (status.ram_enabled)
+      {
+        if (status.rtc_override)
+          rtc.writeData(value);
+        else
+          status.ram_bank[address - 0xA000] = value;
+      }
+    }
+    
   }
   
   
@@ -207,7 +224,12 @@ u8 Cartridge::read(u16 address) const
     return status.rom_bank_1[address-0x4000];
   // external ram 8k -> ram_bank
   else if (address >= 0xA000 && address <= 0xBFFF)
-    return status.ram_bank[address-0xA000];
+  {
+    if (status.rtc_override)
+      return rtc.read();
+    else
+      return status.ram_bank[address-0xA000];
+  }
 
 	return 0;
 }

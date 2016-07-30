@@ -95,6 +95,7 @@ class Screen
   };
   
   using TileMapData = std::array<std::array<TileInfo, 32>, 32>;
+  std::array<s8[384], 2> guessedPalettes;
   
   std::array<TileMapData, 2> tileMaps;
 
@@ -150,10 +151,11 @@ public:
   
   void computeTileMaps();
   
-  void renderTileData(pixel_type *dest, u8 *tileData);
+  void renderTileData(pixel_type *dest, u8 *tileData, int index);
   void renderTileMap(Surface& surface, const TileMapData& tileMap, int index);
   void renderSprites(const u8* oam, u8 *vram);
   
+  void renderRect(Surface& surface, int w, int h, int x, int y, pixel_type color);
   void renderCurrentScanline();
   
   void renderSpriteInfo(int x, int y);

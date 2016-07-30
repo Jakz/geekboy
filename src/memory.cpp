@@ -345,6 +345,8 @@ void Memory::trapPortWrite(u16 address, u8 value)
     {
       u8 lcdc = rawPortRead(PORT_LCDC);
       
+      //value |= 0x80;
+      
       if (Utils::bit(lcdc, 7) ^ Utils::bit(value, 7))
         emu.toggleLcdState();
       
@@ -378,10 +380,6 @@ u8 Memory::rawPortRead(u16 address) const
 #endif
   }
 
-  
-  //if (address == PORT_LCDC && rand()%10000 == 0)
-  //  printf("LCDC READ: %.2x\n", memory.ports_table[address - 0xFF00]);
-  
   return memory.ports_table[address - 0xFF00];
 }
 

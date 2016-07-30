@@ -3,9 +3,6 @@
 
 #include "utils.h"
 
-#include "display.h"
-#include "cpu.h"
-
 #include <array>
 
 namespace gb
@@ -31,10 +28,13 @@ namespace gb
       selectedReg = value - BASE_REG;
     }
     
-    u8 read() { return latched[selectedReg]; }
+    u8 read() const { return latched[selectedReg]; }
     
     void writeData(u8 value)
     {
+      latched[selectedReg] = value;
+      
+      printf("RTC Write at %02x: %02x\n", BASE_REG+selectedReg, value);
       
     }
     

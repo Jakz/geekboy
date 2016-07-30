@@ -6,6 +6,7 @@
 #include <cstdlib>
 
 #include "utils.h"
+#include "rtc.h"
 
 namespace gb {
 
@@ -80,8 +81,6 @@ struct GB_CART_STATUS
 	u8 *rom_bank_1;	
 	/* puntatore ai tot kb di RAM (in base al tipo di cart) */
 	u8 *ram_bank;
-  /* pointer to selected RTC register */
-  u8 *rtc_register;
   
 	/* whole ROM */
 	u8 *rom;
@@ -107,35 +106,37 @@ struct GB_CART_STATUS
 
 class Cartridge
 {
-  private:
-    Emulator& emu;
+private:
+  Emulator& emu;
+
+  GB_CART_HEADER header;
+  GB_CART_STATUS status;
+
+  u32 romSize();
+  u32 ramSize();
   
-    GB_CART_HEADER header;
-    GB_CART_STATUS status;
+  RTC rtc;
   
-    u32 romSize();
-    u32 ramSize();
-  
-  public:
-    Cartridge(Emulator& emu);
-    ~Cartridge();
-  
-    /* carica una rom in memoria */
-    void load(const char *romName);
-    void dump();
-    /* inizializza i valori (tipo banco selezionato, puntatori ai banchi) */
-    void init();
-  
-    /* scrive un valore ad un determinato indirizzo, gestisce il cambio di pagina secondo il protocollo
-     dell'MBC interno alla cart */
-    void write(u16 address, u8 value);
-  
-    /* legge un valore ad un determinato indirizzo */
-    u8 read(u16 address) const;
-  
-    void loadRaw(u8 *code, u32 length);
-  
-    void dumpSave();
+public:
+  Cartridge(Emulator& emu);
+  ~Cartridge();
+
+  /* carica una rom in memoria */
+  void load(const char *romName);
+  void dump();
+  /* inizializza i valori (tipo banco selezionato, puntatori ai banchi) */
+  void init();
+
+  /* scrive un valore ad un determinato indirizzo, gestisce il cambio di pagina secondo il protocollo
+   dell'MBC interno alla cart */
+  void write(u16 address, u8 value);
+
+  /* legge un valore ad un determinato indirizzo */
+  u8 read(u16 address) const;
+
+  void loadRaw(u8 *code, u32 length);
+
+  void dumpSave();
 };
   
 }
