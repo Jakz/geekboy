@@ -261,11 +261,19 @@ void Screen::handleEvent(SDL_Event *event)
         case SDLK_SPACE: { fpsCap = false; break; }
         case SDLK_p: { paused = !paused; break; }
           
-        case SDLK_KP_PLUS: { if (speed != speeds.begin()) --speed; break; }
-        case SDLK_KP_MINUS: { if (speed != speeds.end()-1) ++speed; break; }
+        case SDLK_KP_PLUS:
+        case SDLK_i:
+        { if (speed != speeds.begin()) --speed; break; }
+        case SDLK_KP_MINUS:
+        case SDLK_k:
+        { if (speed != speeds.end()-1) ++speed; break; }
           
-        case SDLK_KP_MULTIPLY: { if (timer.frameRate() < 59.73f) timer.setFrameRate(std::min(59.73f, timer.frameRate()+10.0f)); break; }
-        case SDLK_KP_DIVIDE: { if (timer.frameRate() > 1.0f) timer.setFrameRate(std::max(1.0f, timer.frameRate()-10.0f)); break; }
+        case SDLK_KP_MULTIPLY:
+        case SDLK_o:
+        { if (timer.frameRate() < 59.73f) timer.setFrameRate(std::min(59.73f, timer.frameRate()+10.0f)); break; }
+        case SDLK_KP_DIVIDE:
+        case SDLK_l:
+        { if (timer.frameRate() > 1.0f) timer.setFrameRate(std::max(1.0f, timer.frameRate()-10.0f)); break; }
           
         case SDLK_n: { if (!paused) emu->step(); break; }
           
