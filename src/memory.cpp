@@ -254,7 +254,7 @@ void Memory::trapPortWrite(u16 address, u8 value)
       // it should autoincrement its value after a write
       memory.cgbPaletteAutoIncr[0] = (value & 0x80) != 0;
       
-      printf("Selecting palette %02x, autoincrement: %d\n", value & 0x3f, memory.cgbPaletteAutoIncr[0]);
+      //printf("Selecting palette %02x, autoincrement: %d\n", value & 0x3f, memory.cgbPaletteAutoIncr[0]);
       
       break;
     }
@@ -264,7 +264,7 @@ void Memory::trapPortWrite(u16 address, u8 value)
       
       memory.color_palette_ram[paletteByte] = value;
       
-      printf("Writing %02x at palette %02x\n", value, paletteByte);
+      //printf("Writing %02x at palette %02x\n", value, paletteByte);
       
       // TODO maybe index should wrap?
       if (memory.cgbPaletteAutoIncr[0] /*&& paletteByte < 0x40*/)

@@ -100,10 +100,8 @@ class Screen
   std::array<s8[384], 2> guessedPalettes;
   
   std::array<TileMapData, 2> tileMaps;
-
-  pixel_type tileData1[128*192*sizeof(pixel_type)];
-  pixel_type tileData2[128*192*sizeof(pixel_type)];
-  
+ 
+  Surface tileDatas[2] = { Surface(128,192), Surface(128, 192) };
   Surface maps[2] = { Surface(256, 256), Surface(256, 256) };
   Surface sprites = Surface((SPRITE_SIZE+SPRITE_MARGIN)*SPRITE_MAX_COUNT, SPRITE_SIZE*2);
   
@@ -153,7 +151,7 @@ public:
   
   void computeTileMaps();
   
-  void renderTileData(pixel_type *dest, u8 *tileData, int index);
+  void renderTileData(Surface& dest, u8 *tileData, int index);
   void renderTileMap(Surface& surface, const TileMapData& tileMap, int index);
   void renderSprites(const u8* oam, u8 *vram);
   

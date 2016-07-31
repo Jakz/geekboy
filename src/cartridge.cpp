@@ -419,15 +419,19 @@ void Cartridge::load(const char *rom_name)
 	fclose(in);
   
   
-  /*if (ramSize() > 0)
+  if (ramSize() > 0)
   {
     char buffer[128];
     sprintf(buffer, "%s.sav", status.fileName);
     
     FILE *in = fopen(buffer, "rb");
-    fread(status.ram, ramSize(), sizeof(u8), in);
-    fclose(in);
-  }*/
+    
+    if (in)
+    {
+      fread(status.ram, ramSize(), sizeof(u8), in);
+      fclose(in);
+    }
+  }
 }
 
 void Cartridge::loadRaw(u8 *code, u32 length)

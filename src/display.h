@@ -77,6 +77,14 @@ private:
 
   // current scanline progression counter from CYCLES_PER_SCANLINE to 0
   s16 scanlineCounter;
+  
+  enum Mode
+  {
+    HBLANK = 0,
+    VBLANK = 1,
+    OAM_TRANSFER = 2,
+    OAM_VRAM_TRANSFER = 3
+  };
 
 
   const typename Pixel::type bcolors[4];
@@ -87,6 +95,8 @@ public:
   void setBuffer(typename Pixel::type* buffer) { this->buffer = buffer; }
   void init();
   void reset();
+  
+  void setMode(u8& reg, Mode mode) const { reg &= ~0x03; reg |= mode; }
 
   bool isEnabled();
 
@@ -104,6 +114,7 @@ public:
 
   void colorsForPalette(DrawLayer layer, u8 index, typename Pixel::type (&palette)[4]);
 
+  s16 getScanlineCounter() { return scanlineCounter; }
   
   static typename Pixel::type ccc(u8 r, u8 g, u8 b);
 };

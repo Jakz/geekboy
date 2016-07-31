@@ -26,6 +26,18 @@ enum TileAttributeMask : u8
   ATTRIB_PALETTE_CGB_MASK = 0x07
 };
 
+enum STAT_Mask
+{
+  STAT_INTERRUPT_COINCIDENCE = 6,
+  STAT_INTERRUPT_OAM = 5,
+  STAT_INTERRUPT_VBLANK = 4,
+  STAT_INTERRUPT_HBLANK = 3,
+  STAT_COINCIDENCE_FLAG = 2,
+  STAT_BIT1_MODE = 1,
+  STAT_BIT0_MODE = 0,
+  STAT_MODE_MASK = 0x03
+};
+
 template<PixelFormat T>
 Display<T>::Display(CpuGB& cpu, Memory& memory, Emulator& emu) : cpu(cpu), mem(memory), emu(emu), width(emu.spec.displayWidth), height(emu.spec.displayHeight),
 bcolors{ccc(28, 31, 26),ccc(17, 24, 14),ccc(4, 13, 11),ccc(1,3,4)}
@@ -133,42 +145,44 @@ void Display<T>::reset()
 template<PixelFormat T>
 bool Display<T>::isEnabled()
 {
-  return Utils::bit(mem.read(PORT_LCDC), 7);
+  return Utils::bit(mem.read(PORT_LCDC), LCDC_DISPLAY_ENABLE);
 }
 
 template<PixelFormat T>
 void Display<T>::update(u8 cycles)
 {
+  Mode oldMode = static_cast<Mode>(mem.rawPortRead(PORT_STAT) & STAT_MODE_MASK);
+  u8 line = mem.read(PORT_LY);
+  
+  scanlineCounter -= cycles;
+ 
   manageSTAT();
+  
+  Mode mode = static_cast<Mode>(mem.rawPortRead(PORT_STAT) & STAT_MODE_MASK);
   
   if (!isEnabled())
     return;
-  
-  scanlineCounter -= cycles;
-  
+    
+  if (mode == Mode::HBLANK && oldMode != mode && line < VBLANK_START_LINE)
+    drawScanline(line);
+
   // cycles for a scanline expired, move to next one
   if (scanlineCounter <= 0)
   {
-    u8 line = mem.read(PORT_LY) + 1;
-    
+    ++line;
     mem.rawPortWrite(PORT_LY, line);
     
     // reset scanlineCounter to beginning of next line, we subtract the excess cycles just to be more precise
     scanlineCounter = CYCLES_PER_SCANLINE + scanlineCounter;
     
-    // if it's a normal line then just draw it
-    if (line < VBLANK_START_LINE)
-      drawScanline(line);
     // if we reached V-BLANK then raise the interrupt
-    else if (line == VBLANK_START_LINE)
+    if (line == VBLANK_START_LINE)
       emu.requestInterrupt(INT_VBLANK);
     // if we got over V-BLANK then reset the counter
     else if (line > VBLANK_END_LINE)
     {
       mem.rawPortWrite(PORT_LY, 0);
       memset(priorityMap, PRIORITY_NONE, width*height*sizeof(PriorityType));
-      //memset(buffer, 0, width*height*sizeof(Pixel));
-      drawScanline(0);
     }
     
   }
@@ -187,8 +201,7 @@ void Display<T>::manageSTAT()
     mem.rawPortWrite(PORT_LY, 0);
     
     // clear current mode by clearing 2 lower bits and then set mode 1
-    status &= ~0x03;
-    status = Utils::set(status, 0);
+    setMode(status, Mode::VBLANK);
     
     // write status back
     mem.rawPortWrite(PORT_STAT, status);
@@ -197,55 +210,39 @@ void Display<T>::manageSTAT()
   }
   
   u8 currentLine = mem.read(PORT_LY);
-  u8 currentMode = status & 0x03;
+  Mode currentMode = static_cast<Mode>(status & STAT_MODE_MASK);
   
-  u8 mode = 0;
+  Mode mode;
   bool willRequestInterrupt = false;
   
   // if we're over line 144 then V-BLANK has started, set mode 1
   if (currentLine >= VBLANK_START_LINE)
   {
-    mode = 1;
-    
-    // update status port
-    status = Utils::set(status, 0);
-    status = Utils::res(status, 1);
-
-    willRequestInterrupt = Utils::bit(status, 4);
+    mode = VBLANK;
+    willRequestInterrupt = Utils::bit(status, STAT_INTERRUPT_VBLANK);
   }
   else
   {
-    u32 boundToMode2 = CYCLES_PER_SCANLINE - CYCLES_PER_OAV_TRANSFER;
-    u32 boundToMode3 = boundToMode2 - CYCLES_PER_OAV_VRAM_TRANSFER;
+    constexpr u32 boundToMode2 = CYCLES_PER_SCANLINE - CYCLES_PER_OAV_TRANSFER;
+    constexpr u32 boundToMode3 = boundToMode2 - CYCLES_PER_OAV_VRAM_TRANSFER;
     
     // we're in mode 2 (oam transfer)
     if (scanlineCounter > boundToMode2)
     {
-      mode = 2;
-      
-      status = Utils::set(status, 1);
-      status = Utils::res(status, 0);
-
-      willRequestInterrupt = Utils::bit(status, 5);
+      mode = OAM_TRANSFER;
+      willRequestInterrupt = Utils::bit(status, STAT_INTERRUPT_OAM);
     }
     // we're in mode 3 (oam/vram transfer), no interrupt here
     else if (scanlineCounter > boundToMode3)
     {
-      mode = 3;
-      
-      status = Utils::set(status, 1);
-      status = Utils::set(status, 0);
-
+      mode = OAM_VRAM_TRANSFER;
     }
     // we're in mode 0, which is H-BLANK
     else
     {
-      mode = 0;
+      mode = HBLANK;
       
-      status = Utils::res(status, 1);
-      status = Utils::res(status, 0);
-      
-      willRequestInterrupt = Utils::bit(status, 3);
+      willRequestInterrupt = Utils::bit(status, STAT_INTERRUPT_HBLANK);
       
       // manage HDMA if it's active
       HDMA *hdma = mem.hdmaInfo();
@@ -274,6 +271,8 @@ void Display<T>::manageSTAT()
     }
   }
   
+  setMode(status, mode);
+  
   // if  we switched to a new mode and its interrupt was enabled
   if (willRequestInterrupt && currentMode != mode)
   {
@@ -283,16 +282,16 @@ void Display<T>::manageSTAT()
   // if LY == LYC we should set coincidence bit and request interrupt if the bit is enabled
   if (currentLine == mem.read(PORT_LYC))
   {
-    status = Utils::set(status,2);
+    status = Utils::set(status, STAT_COINCIDENCE_FLAG);
     
-    if (Utils::bit(status, 6))
+    if (Utils::bit(status, STAT_INTERRUPT_COINCIDENCE))
     {
       emu.requestInterrupt(INT_STAT);
     }
   }
   else
   {
-    status = Utils::res(status,2);
+    status = Utils::res(status, STAT_COINCIDENCE_FLAG);
   }
   
   mem.rawPortWrite(PORT_STAT, status);
@@ -673,7 +672,7 @@ void Display<T>::drawSprites(u8 line)
   bool hasBgPriority = false;
   
   
-  u16 tileData;
+  u16 tileData = 0x0000;
   
   // if mode is GB then tile data is always 0x8000, so 0x0000 since we're reading directly from VRAM
   if (emu.mode == MODE_GB)

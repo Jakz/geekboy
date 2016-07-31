@@ -74,7 +74,7 @@ bool Screen::init()
   
   #if VRAM_DEBUG
     width = 1440;
-    height = 1100;
+    height = 800;
     Font::init();
     consoleMode = false;
   #endif
@@ -275,7 +275,7 @@ void Screen::handleEvent(SDL_Event *event)
         case SDLK_l:
         { if (timer.frameRate() > 1.0f) timer.setFrameRate(std::max(1.0f, timer.frameRate()-10.0f)); break; }
           
-        case SDLK_n: { if (!paused) emu->step(); break; }
+        case SDLK_n: { if (paused) emu->step(); break; }
           
 #if VRAM_DEBUG
         case SDLK_WORLD_0: { consoleMode = !consoleMode; console = ">"; break; }
@@ -421,27 +421,21 @@ void Screen::renderVRAM()
 {
   computeTileMaps();
   
-  renderTileData(tileData1, emu->mem.memoryMap()->vram, 0);
-  glRasterPos2f(0.0, 1);
-	glPixelZoom(static_cast<float>(2), -static_cast<float>(2));
- 	glDrawPixels(128, 192, GL_RGBA, GL_UNSIGNED_SHORT_5_5_5_1, tileData1);
+  constexpr float TILE_DATA_SCALE = 2.0f;
+  constexpr float TILE_MAP_SCALE = 1.0f;
   
-  renderTileData(tileData2, &emu->mem.memoryMap()->vram[KB8], 1);
-  glRasterPos2f(0.5, 1);
-	glPixelZoom(static_cast<float>(2), -static_cast<float>(2));
- 	glDrawPixels(128, 192, GL_RGBA, GL_UNSIGNED_SHORT_5_5_5_1, tileData2);
+  renderTileData(tileDatas[0], emu->mem.memoryMap()->vram, 0);
+  draw(160*scaleFactor + 20, 20, tileDatas[0], TILE_DATA_SCALE);
+
+  renderTileData(tileDatas[1], &emu->mem.memoryMap()->vram[KB8], 1);
+  draw(160*scaleFactor + 20 + 10 + 128*TILE_DATA_SCALE, 20, tileDatas[1], TILE_DATA_SCALE);
 
   renderTileMap(maps[0], tileMaps[0], 0);
-  glRasterPos2f(-1, 0.1);
-	glPixelZoom(static_cast<float>(2), -static_cast<float>(2));
- 	glDrawPixels(256, 256, GL_RGBA, GL_UNSIGNED_SHORT_5_5_5_1, maps[0].data());
-  
+  draw(0, 144*scaleFactor + 10, maps[0], TILE_MAP_SCALE);
   renderTileMap(maps[1], tileMaps[1], 1);
-  glRasterPos2f(-0.25f, 0.1);
-	glPixelZoom(static_cast<float>(2), -static_cast<float>(2));
- 	glDrawPixels(256, 256, GL_RGBA, GL_UNSIGNED_SHORT_5_5_5_1, maps[1].data());
-  
-  renderSpriteInfo(20, height - 50);
+  draw(256*TILE_MAP_SCALE+10, 144*scaleFactor + 10, maps[1], TILE_MAP_SCALE);
+
+  renderSpriteInfo(20, 144*scaleFactor + 256*TILE_MAP_SCALE + 40);
 
   if (emu->mode == MODE_GB)
     renderGbPalette();
@@ -470,29 +464,34 @@ void Screen::renderRegs()
   const auto& regs = *emu->cpu.regs();
   auto& mem = emu->mem;
   
+  constexpr int BASE_Y = 50;
+  
   Opcodes::visualOpcode(buffer, mem.read(regs.PC), mem.read(regs.PC+1), mem.read(regs.PC+2));
-  drawString(buffer, 1100, 650, 1);
+  drawString(buffer, 1100, BASE_Y, 1);
 
   sprintf(buffer, "SPEED %u (%2.2f)", *speed, timer.frameRate());
-  drawString(buffer, 1100, 660, 1);
+  drawString(buffer, 1100, BASE_Y+10, 1);
+  
+  sprintf(buffer, "SCANLINE %d (%d)\n", emu->display->getScanlineCounter(), emu->mem.rawPortRead(PORT_STAT) & 0x03);
+  drawString(buffer, 1100, BASE_Y+20, 1);
   
   sprintf(buffer, "PC %04xh", regs.PC);
-  drawString(buffer, 1100, 700, 1);
+  drawString(buffer, 1100, BASE_Y+50, 1);
   
   sprintf(buffer, "AF %04xh BC %04xh", regs.AF.AF, regs.BC.BC);
-  drawString(buffer, 1100, 710, 1);
+  drawString(buffer, 1100, BASE_Y+60, 1);
   
   sprintf(buffer, "DE %04xh HL %04xh", regs.DE.DE, regs.HL.HL);
-  drawString(buffer, 1100, 720, 1);
+  drawString(buffer, 1100, BASE_Y+70, 1);
   
   sprintf(buffer, "SP %04xh IF %02xh IE %02xh", regs.SP, mem.read(PORT_IF), mem.read(PORT_EF));
-  drawString(buffer, 1100, 730, 1);
+  drawString(buffer, 1100, BASE_Y+80, 1);
   
   std::array<PortSpec, 5> specst = { { {PORT_DIV, "DIV"}, {PORT_TIMA, "TIMA"}, {PORT_TMA, "TMA"}, {PORT_TAC, "TAC"}, {PORT_JOYP, "JOYP"} } };
-  renderPorts(specst, 1100, 750);
+  renderPorts(specst, 1100, BASE_Y+100);
   
   std::array<PortSpec, 8> specsd = { { {PORT_LCDC, "LCDC"}, {PORT_STAT, "STAT"}, {PORT_SCY, "SCY"}, {PORT_SCX, "SCX"}, {PORT_LY, "LY"}, {PORT_LYC, "LYC"}, {PORT_WY, "WY"}, {PORT_WX, "WX"} } };
-  renderPorts(specsd, 1100, 810);
+  renderPorts(specsd, 1100, BASE_Y+160);
   
   u8 lcdc = mem.rawPortRead(PORT_LCDC);
   
@@ -506,7 +505,7 @@ void Screen::renderRegs()
           Utils::bit(lcdc, 1) ? "on" : "off",
           Utils::bit(lcdc, 0) ? 1 : 0
   );
-  drawString(buffer, 1200, 810, 1);
+  drawString(buffer, 1200, BASE_Y+160, 1);
   
 }
 
@@ -538,7 +537,7 @@ void Screen::renderRect(Surface &surface, int w, int h, int x, int y, pixel_type
 }
 
 
-void Screen::renderTileData(pixel_type *dest, u8 *data, int index)
+void Screen::renderTileData(Surface& dest, u8 *data, int index)
 {
   Display<PixelFormat::ARGB51>::Pixel::type colors[4];
   u16 address;
@@ -566,7 +565,7 @@ void Screen::renderTileData(pixel_type *dest, u8 *data, int index)
         int fx = (i%16)*8 + x;
         int fy = (i/16)*8 + y;
         
-        dest[(fy)*128 + fx] = color;
+        dest.set(fx, fy, color);
       }
     }
   }

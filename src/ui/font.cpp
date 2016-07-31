@@ -712,6 +712,17 @@ static bool letter_dot[] = {
   0,0,0,0,0,
 };
 
+static bool letter_comma[] = {
+  0,0,0,0,0,
+  0,0,0,0,0,
+  0,0,0,0,0,
+  0,0,0,0,0,
+  0,0,0,0,0,
+  0,0,1,0,0,
+  0,0,1,0,0,
+  0,1,0,0,0,
+};
+
 static bool letter_lparen[] = {
   0,0,0,1,0,
   0,0,1,0,0,
@@ -741,6 +752,17 @@ static bool letter_plus[] = {
   1,1,1,1,1,
   0,0,1,0,0,
   0,0,1,0,0,
+  0,0,0,0,0,
+  0,0,0,0,0,
+};
+
+static bool letter_minus[] = {
+  0,0,0,0,0,
+  0,0,0,0,0,
+  0,0,0,0,0,
+  0,1,1,1,0,
+  0,0,0,0,0,
+  0,0,0,0,0,
   0,0,0,0,0,
   0,0,0,0,0,
 };
@@ -853,10 +875,13 @@ void Font::init()
   glyphData['('] = letter_lparen;
   glyphData[')'] = letter_rparen;
   glyphData['+'] = letter_plus;
+  glyphData['-'] = letter_minus;
   glyphData[':'] = letter_dcol;
   glyphData['<'] = letter_less;
   glyphData['>'] = letter_greater;
   glyphData['.'] = letter_dot;
+  glyphData[','] = letter_comma;
+
   
   glyphData[' '] = letter_space;
 }
