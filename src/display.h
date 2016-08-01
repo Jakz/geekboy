@@ -77,6 +77,7 @@ private:
 
   // current scanline progression counter from CYCLES_PER_SCANLINE to 0
   s16 scanlineCounter;
+  u8 line;
   
   enum Mode
   {

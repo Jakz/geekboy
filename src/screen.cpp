@@ -68,6 +68,7 @@ bool Screen::init()
   }
   
   SDL_EnableUNICODE(true);
+  SDL_EnableKeyRepeat(500, 10);
   
   width = emu->spec.displayWidth*scaleFactor;
   height = emu->spec.displayHeight*scaleFactor;
@@ -475,10 +476,10 @@ void Screen::renderRegs()
   sprintf(buffer, "SCANLINE %d (%d)\n", emu->display->getScanlineCounter(), emu->mem.rawPortRead(PORT_STAT) & 0x03);
   drawString(buffer, 1100, BASE_Y+20, 1);
   
-  sprintf(buffer, "PC %04xh", regs.PC);
+  sprintf(buffer, "PC %04xh Z%d N%d H%d C%d", regs.PC, (regs.AF.F & FLAG_Z) != 0, (regs.AF.F & FLAG_N) != 0, (regs.AF.F & FLAG_H) != 0, (regs.AF.F & FLAG_C) != 0);
   drawString(buffer, 1100, BASE_Y+50, 1);
   
-  sprintf(buffer, "AF %04xh BC %04xh", regs.AF.AF, regs.BC.BC);
+  sprintf(buffer, "AF %02xh BC %04xh", regs.AF.A, regs.BC.BC);
   drawString(buffer, 1100, BASE_Y+60, 1);
   
   sprintf(buffer, "DE %04xh HL %04xh", regs.DE.DE, regs.HL.HL);

@@ -19,7 +19,7 @@ Emulator::Emulator() : mem(Memory(*this)), cpu(CpuGB(*this))
   
   keysState = 0xFF;
   doubleSpeed = false;
-  cyclesAdjust = 0;
+  cyclesLeft = 0;
 }
 
 void Emulator::setupSound(int sampleRate)
@@ -66,7 +66,8 @@ u8 Emulator::step()
   this->cycles += cycles;
   
   updateTimers(cycles);
-  display->update(cycles);
+  
+  display->update(doubleSpeed ? cycles/2 : cycles);
   cpu.manageInterrupts();
   return cycles;
 }
@@ -92,16 +93,14 @@ u8 Emulator::step()
 
 bool Emulator::run(u32 maxCycles)
 {
-  maxCycles -= cyclesAdjust;
-  
-  u32 cyclesTotal = 0;
-  
   if (doubleSpeed)
     maxCycles *= 2;
   
+  cyclesLeft += maxCycles;
+  
   lcdChangedState = false;
   
-  while (cyclesTotal < maxCycles && !lcdChangedState)
+  while (cyclesLeft >= 0 && !lcdChangedState)
   {
     u8 cycles = 0;
     
@@ -143,7 +142,7 @@ bool Emulator::run(u32 maxCycles)
         cycles += 4;
     }
 
-    cyclesTotal += cycles;
+    cyclesLeft -= cycles;
     
     updateTimers(cycles);
       
@@ -160,13 +159,25 @@ bool Emulator::run(u32 maxCycles)
 
   }
   
+  
+  cycles += maxCycles + cyclesLeft;
   //sound.update();
   
-  if (!lcdChangedState)
-    cyclesAdjust = cyclesTotal - maxCycles;
-  
-  cycles += cyclesTotal;
   return true;
+}
+
+void Emulator::toggleDoubleSpeed(bool value)
+{
+  doubleSpeed = value;
+  
+  if (value)
+  {
+    cyclesLeft *= 2;
+  }
+  else
+  {
+    cyclesLeft /= 2;
+  }
 }
 
 void Emulator::init()

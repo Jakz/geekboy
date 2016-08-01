@@ -90,6 +90,7 @@ class Memory
     // this write overrides the normal write function to ports address space to skip any side effect
     void rawPortWrite(u16 address, u8 value);
     u8 rawPortRead(u16 address) const;
+    u8& rawPort(u16 address) { return memory.ports_table[address - 0xFF00]; }
   
     void init();
     

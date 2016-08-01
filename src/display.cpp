@@ -133,7 +133,7 @@ void Display<T>::colorsForPalette(DrawLayer layer, u8 index, typename Pixel::typ
 template<PixelFormat T>
 void Display<T>::init()
 {
-
+  line = 0;
 }
 
 template<PixelFormat T>
@@ -152,7 +152,6 @@ template<PixelFormat T>
 void Display<T>::update(u8 cycles)
 {
   Mode oldMode = static_cast<Mode>(mem.rawPortRead(PORT_STAT) & STAT_MODE_MASK);
-  u8 line = mem.read(PORT_LY);
   
   scanlineCounter -= cycles;
  
@@ -165,6 +164,9 @@ void Display<T>::update(u8 cycles)
     
   if (mode == Mode::HBLANK && oldMode != mode && line < VBLANK_START_LINE)
     drawScanline(line);
+  
+  if (scanlineCounter < 450 && line == VBLANK_END_LINE)
+    mem.rawPort(PORT_LY) = 0;
 
   // cycles for a scanline expired, move to next one
   if (scanlineCounter <= 0)
@@ -179,9 +181,13 @@ void Display<T>::update(u8 cycles)
     if (line == VBLANK_START_LINE)
       emu.requestInterrupt(INT_VBLANK);
     // if we got over V-BLANK then reset the counter
+    else if (line == VBLANK_END_LINE)
+      mem.rawPortWrite(PORT_LY, VBLANK_END_LINE);
     else if (line > VBLANK_END_LINE)
     {
-      mem.rawPortWrite(PORT_LY, 0);
+      line = 0;
+      mem.rawPort(PORT_LY) = 0;
+      setMode(mem.rawPort(PORT_STAT), Mode::OAM_TRANSFER);
       memset(priorityMap, PRIORITY_NONE, width*height*sizeof(PriorityType));
     }
     
@@ -209,14 +215,13 @@ void Display<T>::manageSTAT()
     return;
   }
   
-  u8 currentLine = mem.read(PORT_LY);
   Mode currentMode = static_cast<Mode>(status & STAT_MODE_MASK);
   
-  Mode mode;
+  Mode mode = currentMode;
   bool willRequestInterrupt = false;
   
   // if we're over line 144 then V-BLANK has started, set mode 1
-  if (currentLine >= VBLANK_START_LINE)
+  if (line >= VBLANK_START_LINE)
   {
     mode = VBLANK;
     willRequestInterrupt = Utils::bit(status, STAT_INTERRUPT_VBLANK);
@@ -280,7 +285,7 @@ void Display<T>::manageSTAT()
   }
   
   // if LY == LYC we should set coincidence bit and request interrupt if the bit is enabled
-  if (currentLine == mem.read(PORT_LYC))
+  if (line == mem.read(PORT_LYC))
   {
     status = Utils::set(status, STAT_COINCIDENCE_FLAG);
     

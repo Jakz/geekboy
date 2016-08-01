@@ -32,7 +32,7 @@ private:
   s32 dividerCounter;
   s32 timerCounter;
 
-  u32 cyclesAdjust;
+  s32 cyclesLeft;
 
   u8 keysState;
 
@@ -82,7 +82,7 @@ public:
   
   void toggleLcdState() { lcdChangedState = true; }
   
-  void toggleDoubleSpeed(bool value) { doubleSpeed = value; }
+  void toggleDoubleSpeed(bool value);
   bool isDoubleSpeedEnabled() const;
   
 };
