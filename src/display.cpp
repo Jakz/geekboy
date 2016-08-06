@@ -165,14 +165,14 @@ void Display<T>::update(u8 cycles)
   if (mode == Mode::HBLANK && oldMode != mode && line < VBLANK_START_LINE)
     drawScanline(line);
   
-  if (scanlineCounter < 450 && line == VBLANK_END_LINE)
+  if (scanlineCounter < CYCLES_PER_SCANLINE - VBLANK_CYCLES_BEFORE_LY_RESET && line == VBLANK_END_LINE)
     mem.rawPort(PORT_LY) = 0;
 
   // cycles for a scanline expired, move to next one
   if (scanlineCounter <= 0)
   {
     ++line;
-    mem.rawPortWrite(PORT_LY, line);
+    mem.rawPort(PORT_LY)++;
     
     // reset scanlineCounter to beginning of next line, we subtract the excess cycles just to be more precise
     scanlineCounter = CYCLES_PER_SCANLINE + scanlineCounter;

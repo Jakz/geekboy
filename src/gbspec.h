@@ -89,6 +89,7 @@ namespace gb
 
   constexpr u32 VBLANK_START_LINE = 144;
   constexpr u32 VBLANK_END_LINE = 153;
+  constexpr u32 VBLANK_CYCLES_BEFORE_LY_RESET = 8;
 
   constexpr u16 TILE_BYTES_SIZE = 16;
   constexpr u16 TILE_WIDTH = 8;
