@@ -6,9 +6,13 @@
 #include <array>
 #include <string>
 #include <chrono>
+#if __APPLE__
 #include <OpenGL/OpenGL.h>
+#else
+#include <GL/gl.h>
+#endif
 #include "emulator.h"
-#include "font.h"
+#include "ui/font.h"
 
 using pixel_type = gb::Display<gb::PixelFormat::ARGB51>::Pixel::type;
 
@@ -23,23 +27,23 @@ struct Surface
 {
   std::unique_ptr<pixel_type[]> _data;
   const GLsizei width, height;
-  
+
   Surface(Surface&& other) : width(other.width), height(other.height), _data(std::move(other._data)) { }
   Surface& operator=(Surface&& other)
   {
     _data = std::move(other._data);
     return *this;
   }
-  
+
   Surface(const Surface& other) = delete;
   Surface& operator=(Surface& other) = delete;
-  
+
   Surface(GLsizei width, GLsizei height) : _data(new pixel_type[width*height]), width(width), height(height) { }
-  
-  
+
+
   void set(GLsizei x, GLsizei y, pixel_type p) { _data[x+y*width] = p; }
   void fill(pixel_type p) { std::fill(_data.get(), _data.get()+width*height, p); }
-  
+
   pixel_type* data() { return _data.get(); }
   const pixel_type* data() const { return _data.get(); }
 };
@@ -55,17 +59,17 @@ using namespace gb;
 class Timer
 {
   const float DEFAULT_FPS = 60.0f;
-  
+
   std::chrono::steady_clock clock;
   std::chrono::microseconds ticksForFrame;
-  
+
   float rate;
   u32 totalFrames;
   std::chrono::time_point<std::chrono::steady_clock> base;
-  
+
 public:
   Timer() : rate(DEFAULT_FPS), ticksForFrame(static_cast<u32>(1000000 / DEFAULT_FPS)), totalFrames(0) { }
-  
+
   float frameRate() const { return rate; }
   void setFrameRate(float rate);
   void frameRateDelay();
@@ -95,21 +99,21 @@ class Screen
     bool vflip : 1;
     u8 palette : 3;
   };
-  
+
   using TileMapData = std::array<std::array<TileInfo, 32>, 32>;
   std::array<s8[384], 2> guessedPalettes;
-  
+
   std::array<TileMapData, 2> tileMaps;
- 
+
   Surface tileDatas[2] = { Surface(128,192), Surface(128, 192) };
   Surface maps[2] = { Surface(256, 256), Surface(256, 256) };
   Surface sprites = Surface((SPRITE_SIZE+SPRITE_MARGIN)*SPRITE_MAX_COUNT, SPRITE_SIZE*2);
-  
+
   pixel_type gbpal[32*2*sizeof(pixel_type)];
-  
+
   bool consoleMode;
   std::string console;
-  
+
   struct PortSpec
   {
     u16 address;
@@ -126,7 +130,7 @@ class Screen
 
   void draw(int x, int y, float scale, const void* data, int width, int height);
   void draw(int x, int y, const Surface& surface, float scale);
-  
+
   void drawString(const std::string& txt, int x, int y, float scale);
 
 public:
@@ -148,16 +152,16 @@ public:
   void renderVRAM();
   void renderRegs();
   template<size_t SIZE> void renderPorts(const std::array<PortSpec, SIZE>& ports, int x, int y);
-  
+
   void computeTileMaps();
-  
+
   void renderTileData(Surface& dest, u8 *tileData, int index);
   void renderTileMap(Surface& surface, const TileMapData& tileMap, int index);
   void renderSprites(const u8* oam, u8 *vram);
-  
+
   void renderRect(Surface& surface, int w, int h, int x, int y, pixel_type color);
   void renderCurrentScanline();
-  
+
   void renderSpriteInfo(int x, int y);
 
   void renderGbPalette();

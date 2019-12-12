@@ -10,6 +10,7 @@
 #include <SDL_audio.h>
 #include <queue>
 #include <cmath>
+#include <memory>
 
 #include "blarrg/Basic_Gb_Apu.h"
 #include "blarrg/Sound_Queue.h"
@@ -25,7 +26,7 @@ class GBSound
   public:
     GBSound();
     void reset();
-  
+
     void start(const int sampleRate);
 
     void write(u16 address, u8 value);
@@ -36,7 +37,7 @@ class GBSound
       bApu->end_frame();
       writeBlarggSamples();
     }
-  
+
     void writeBlarggSamples()
     {
       constexpr int buf_size = 2048;
@@ -46,7 +47,7 @@ class GBSound
       bQueue.write( buf, count );
     }
 };
-  
+
 }
 
 #endif
