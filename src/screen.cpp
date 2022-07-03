@@ -108,6 +108,7 @@ bool Screen::init()
   maps[1].init(renderer);
 
   sprites.init(renderer);
+  palette.init(renderer);
 
   emu->init();
 
@@ -436,21 +437,15 @@ void Screen::renderVRAM()
   renderTileMap(maps[1], tileMaps[0], 0);
   maps[1].render(20 + maps[0].width * TILE_MAP_SCALE + 10, height * scaleFactor + 10, TILE_MAP_SCALE);
 
-  /*
-  draw(0, 144*scaleFactor + 10, maps[0], TILE_MAP_SCALE);
-  renderTileMap(maps[1], tileMaps[1], 1);
-  draw(256*TILE_MAP_SCALE+10, 144*scaleFactor + 10, maps[1], TILE_MAP_SCALE);
-  */
-
   renderSpriteInfo(20, height * scaleFactor + maps[0].height * TILE_MAP_SCALE + 40);
 
-  /*
+  
   if (emu->mode == MODE_GB)
     renderGbPalette();
   else
     renderCgbPalette();
 
-  renderCurrentScanline();*/
+  //renderCurrentScanline();
 }
 
 static char buffer[256];

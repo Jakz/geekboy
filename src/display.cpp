@@ -145,7 +145,7 @@ void Display<T>::reset()
 template<PixelFormat T>
 bool Display<T>::isEnabled()
 {
-  return Utils::bit(mem.read(PORT_LCDC), LCDC_DISPLAY_ENABLE);
+  return Utils::bit(mem.rawPortRead(PORT_LCDC), LCDC_DISPLAY_ENABLE);
 }
 
 template<PixelFormat T>

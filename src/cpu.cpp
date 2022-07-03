@@ -196,8 +196,8 @@ bool CpuGB::manageInterrupts()
 {
   if (s.interruptsEnabled)
   {
-    u8 ifreg = mem.read(PORT_IF);
-    u8 efreg = mem.read(PORT_EF);
+    u8 ifreg = mem.rawPortRead(PORT_IF);
+    u8 efreg = mem.rawPortRead(PORT_EF);
     
     // if there is at least one interrupt to handle
     if (ifreg)
@@ -218,7 +218,7 @@ bool CpuGB::manageInterrupts()
           
           r.PC = 0x40 + 0x08*i;
           
-          mem.write(PORT_IF, ifreg);
+          mem.rawPortWrite(PORT_IF, ifreg);
           
           return true;
         }

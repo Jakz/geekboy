@@ -119,7 +119,7 @@ class Screen
   Surface maps[2] = { Surface(256, 256), Surface(256, 256) };
   Surface sprites = Surface((SPRITE_SIZE+SPRITE_MARGIN)*SPRITE_MAX_COUNT, SPRITE_SIZE*2);
 
-  pixel_type gbpal[32*2*sizeof(pixel_type)];
+  Surface palette = Surface(32, 2);
 
   bool consoleMode;
   std::string console;
