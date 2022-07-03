@@ -8,13 +8,16 @@
 #include <chrono>
 #if __APPLE__
 #include <OpenGL/OpenGL.h>
+#elif _WIN32
+//#include <gl/glut.h>
+#include <gl/GL.h>
 #else
 #include <GL/gl.h>
 #endif
 #include "emulator.h"
 #include "ui/font.h"
 
-using pixel_type = gb::Display<gb::PixelFormat::ARGB51>::Pixel::type;
+using pixel_type = gb::Display<gb::PixelFormat::ARGB8>::Pixel::type;
 
 #define FPS (60)
 
@@ -85,7 +88,12 @@ class Screen
 
   Emulator *emu;
 
-  SDL_Surface *total;
+  SDL_Window* window;
+  SDL_Renderer* renderer;
+
+  SDL_Surface* display;
+  SDL_Texture* displayTexture;
+
   const u32 scaleFactor;
 
   u16 *screenBuffer;

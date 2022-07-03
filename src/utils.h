@@ -1,10 +1,16 @@
 #ifndef _UTILS_H_
 #define _UTILS_H_
 
+#ifdef _WIN32
+#define NOMINMAX
+#include <Windows.h>
+#define strdup _strdup
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
-#include <unistd.h>
+//#include <unistd.h>
 
 typedef unsigned char u8;
 typedef unsigned short u16;

@@ -10,7 +10,7 @@
 #include <GLUT/GLUT.h>
 #else
 #include <GL/gl.h>
-#include <GL/glut.h>
+//#include <GL/glut.h>
 #endif
 #include <thread>
 #include <string>
@@ -72,8 +72,8 @@ bool Screen::init()
     return false;
   }
 
-  SDL_EnableUNICODE(true);
-  SDL_EnableKeyRepeat(500, 10);
+  /*SDL_EnableUNICODE(true);
+  SDL_EnableKeyRepeat(500, 10);*/
 
   width = emu->spec.displayWidth*scaleFactor;
   height = emu->spec.displayHeight*scaleFactor;
@@ -85,29 +85,14 @@ bool Screen::init()
     consoleMode = false;
   #endif
 
-  if((total = SDL_SetVideoMode(width, height, 32, SDL_OPENGL | SDL_HWSURFACE | SDL_DOUBLEBUF)) == NULL) {
+  if ((window = SDL_CreateWindow("", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, 0)) == nullptr)
     return false;
-  }
 
+  if ((renderer = SDL_CreateRenderer(window, -1, 0)) == nullptr)
+    return false;
 
-  glViewport(0, 0, width, height);
-	glMatrixMode(GL_PROJECTION);
-  //glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-  glOrtho(0, width, 0, height, 0, 1.0);
-
-  glClearColor(0, 0, 0, 1.0);
-	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
-	glShadeModel(GL_FLAT);
-
-	glEnable(GL_TEXTURE_2D);
-	glDisable(GL_DEPTH_TEST);
-	glDisable(GL_CULL_FACE);
-	glDisable(GL_DITHER);
-	glDisable(GL_BLEND);
-
-  glEnable(GL_ALPHA_TEST);
-  glAlphaFunc(GL_GREATER, 0.5f);
+  display = SDL_CreateRGBSurface(0, emu->spec.displayWidth, emu->spec.displayHeight, 32, 0, 0, 0, 0);
+  displayTexture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING, display->w, display->h);
 
   emu->init();
 
@@ -128,13 +113,14 @@ int Screen::execute(const string& fileName)
 
   screenBuffer = new u16[emu->spec.displayWidth*emu->spec.displayHeight];
 
-  emu->display->setBuffer(screenBuffer);
 
 
   if (!init())
     return -1;
 
-  timer.setFrameRate(59.73);
+  emu->display->setBuffer((uint32_t*)display->pixels);
+
+  timer.setFrameRate(59.73f);
   //timer.setFrameRate(10.00);
 
   while(running)
@@ -217,7 +203,9 @@ void Screen::cleanup()
 
   emu->mem.cart->dumpSave();
 
-  SDL_FreeSurface(total);
+  SDL_FreeSurface(display);
+  SDL_DestroyTexture(displayTexture);
+
   SDL_Quit();
 
   printf("SECONDS LOOP: %f\n",cloop/(float)CLOCKS_PER_SEC);
@@ -247,7 +235,7 @@ void Screen::handleEvent(SDL_Event *event)
           console = ">";
         }
         else
-          console += event->key.keysym.unicode;
+          console += event->key.keysym.sym;
         return;
       }
 #endif
@@ -284,7 +272,7 @@ void Screen::handleEvent(SDL_Event *event)
         case SDLK_n: { if (paused) emu->step(); break; }
 
 #if VRAM_DEBUG
-        case SDLK_WORLD_0: { consoleMode = !consoleMode; console = ">"; break; }
+        //case SDLK_WORLD_0: { consoleMode = !consoleMode; console = ">"; break; }
 #endif
 
         default: break;
@@ -322,18 +310,29 @@ void Screen::loop()
 
 void Screen::draw(int xx, int yy, float scale, const void* data, int width, int height)
 {
-  glRasterPos2f(x(xx), y(yy));
+  /*uint32_t* dest = (uint32_t*)display->pixels;
+  
+  for (int y = 0; y < height; ++y)
+  {
+    for (int x = 0; x < width; ++x)
+    {
+      auto& d = dest[y * display->w + x];
+    }
+  }*/
+  
+  /*glRasterPos2f(x(xx), y(yy));
   glPixelZoom(scale, -scale);
   glPixelStoref(GL_UNPACK_ALIGNMENT, 1);
   glDrawPixels(width, height, GL_RGBA, GL_UNSIGNED_SHORT_5_5_5_1, data);
+  */
 }
 
 void Screen::draw(int xx, int yy, const Surface& surface, float scale)
 {
-  glRasterPos2f(x(xx), y(yy));
+  /*glRasterPos2f(x(xx), y(yy));
   glPixelZoom(scale, -scale);
   glPixelStoref(GL_UNPACK_ALIGNMENT, 1);
-  glDrawPixels(surface.width, surface.height, GL_RGBA, GL_UNSIGNED_SHORT_5_5_5_1, surface.data());
+  glDrawPixels(surface.width, surface.height, GL_RGBA, GL_UNSIGNED_SHORT_5_5_5_1, surface.data());*/
 }
 
 
@@ -365,10 +364,18 @@ void Screen::drawString(const std::string& txt, int x, int y, float scale)
 
 void Screen::render()
 {
-  #if VRAM_DEBUG
-  glClearColor(0.3, 0.3, 0.3, 1.0);
-  #endif
+  SDL_RenderClear(renderer);
+#if VRAM_DEBUG
+  SDL_SetRenderDrawColor(renderer, 0.3f * 255, 0.3f * 255, 0.3f * 255, 255);
+  SDL_RenderFillRect(renderer, nullptr);
+#endif
 
+  SDL_UpdateTexture(displayTexture, nullptr, display->pixels, display->pitch);
+
+  SDL_Rect dest = SDL_Rect{ 0, 0, (uint16_t)(display->w * scaleFactor), (uint16_t)(display->h * scaleFactor) };
+  SDL_RenderCopy(renderer, displayTexture, nullptr, &dest);
+
+  /*
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
  	glLoadIdentity();
 
@@ -382,8 +389,9 @@ void Screen::render()
     drawString(console, 1100, 900, 1);
 
   #endif
+  */
 
-	SDL_GL_SwapBuffers();
+  SDL_RenderPresent(renderer);
 }
 
 #if VRAM_DEBUG
@@ -545,7 +553,7 @@ void Screen::renderRect(Surface &surface, int w, int h, int x, int y, pixel_type
 
 void Screen::renderTileData(Surface& dest, u8 *data, int index)
 {
-  Display<PixelFormat::ARGB51>::Pixel::type colors[4];
+  Display<PixelFormat::ARGB8>::Pixel::type colors[4];
   u16 address;
 
   for (int i = 0; i < (0x9800 - 0x8000) / 16; ++i)
@@ -584,7 +592,7 @@ void Screen::renderTileMap(Surface& surface, const TileMapData& tileMap, int ind
   bool isUnsigned = Utils::bit(lcdc, 4);
   bool isCGB = emu->mode == MODE_CGB;
 
-  Display<PixelFormat::ARGB51>::Pixel::type colors[4];
+  Display<PixelFormat::ARGB8>::Pixel::type colors[4];
 
   for (int i = 0; i < TILE_MAP_HEIGHT; ++i)
     for (int j = 0; j < TILE_MAP_WIDTH; ++j)
@@ -662,7 +670,7 @@ void Screen::renderSpriteInfo(int x, int y)
 
 void Screen::renderSprites(const u8* oams, u8* vram_total)
 {
-  static const pixel_type black = gb::Display<gb::PixelFormat::ARGB51>::ccc(0, 0, 0);
+  static const pixel_type black = gb::Display<gb::PixelFormat::ARGB8>::ccc(0, 0, 0);
 
   sprites.fill(black);
 
@@ -766,19 +774,18 @@ void Screen::renderGbPalette()
 {
   pixel_type colors[4];
 
-  emu->display->colorsForPalette(LAYER_BACKGROUND, 0, colors);
+  /*emu->display->colorsForPalette(LAYER_BACKGROUND, 0, colors);
   memcpy(gbpal, &colors, sizeof(pixel_type)*4);
 
   emu->display->colorsForPalette(LAYER_SPRITE, 0, colors);
   memcpy(&gbpal[8*4], &colors, sizeof(pixel_type)*4);
 
   emu->display->colorsForPalette(LAYER_SPRITE, 1, colors);
-  memcpy(&gbpal[9*4], &colors, sizeof(pixel_type)*4);
+  memcpy(&gbpal[9*4], &colors, sizeof(pixel_type)*4);*/
 
-  glRasterPos2f(-0.3, 1);
+  /*glRasterPos2f(-0.3, 1);
 	glPixelZoom(5, -5);
- 	glDrawPixels(32, 2, GL_RGBA, GL_UNSIGNED_SHORT_5_5_5_1, gbpal);
-
+ 	glDrawPixels(32, 2, GL_RGBA, GL_UNSIGNED_SHORT_5_5_5_1, gbpal);*/
 }
 
 void Screen::renderCgbPalette()
@@ -793,7 +800,7 @@ void Screen::renderCgbPalette()
 
   printf("\n\n\n");*/
 
-  pixel_type colors[4];
+  /*pixel_type colors[4];
 
   for (int i = 0; i < 8; ++i)
   {
@@ -805,11 +812,11 @@ void Screen::renderCgbPalette()
   {
     emu->display->colorsForPalette(LAYER_SPRITE, i, colors);
     memcpy(&gbpal[(8+i)*4], &colors, sizeof(pixel_type)*4);
-  }
+  }*/
 
-  glRasterPos2f(-0.3, 1);
+  /*glRasterPos2f(-0.3, 1);
 	glPixelZoom(6, -6);
- 	glDrawPixels(32, 2, GL_RGBA, GL_UNSIGNED_SHORT_5_5_5_1, gbpal);
+ 	glDrawPixels(32, 2, GL_RGBA, GL_UNSIGNED_SHORT_5_5_5_1, gbpal);*/
 
 }
 

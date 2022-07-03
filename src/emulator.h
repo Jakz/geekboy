@@ -73,7 +73,7 @@ public:
 
   CpuGB cpu;
   Memory mem;
-  Display<PixelFormat::ARGB51>* display;
+  Display<PixelFormat::ARGB8>* display;
 #ifndef DEBUGGER
   GBSound sound;
 #endif

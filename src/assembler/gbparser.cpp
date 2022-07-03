@@ -1,8 +1,8 @@
-// A Bison parser, made by GNU Bison 3.0.4.
+// A Bison parser, made by GNU Bison 3.7.1.
 
 // Skeleton implementation for Bison LALR(1) parsers in C++
 
-// Copyright (C) 2002-2015 Free Software Foundation, Inc.
+// Copyright (C) 2002-2015, 2018-2020 Free Software Foundation, Inc.
 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -29,8 +29,13 @@
 
 // This special exception was added by the Free Software Foundation in
 // version 2.2 of Bison.
-// //                    "%code top" blocks.
-#line 40 "src/assembler/gbparser.ypp" // lalr1.cc:397
+
+// DO NOT RELY ON FEATURES THAT ARE NOT DOCUMENTED in the manual,
+// especially those whose name start with YY_ or yy_.  They are
+// private implementation details that can be changed or removed.
+
+// "%code top" blocks.
+#line 40 "src/assembler/gbparser.ypp"
 
   #include "assembler.h"
   #include "gblexer.h"
@@ -44,26 +49,14 @@
 
   using namespace assembler;
 
-#line 48 "src/assembler/gbparser.cpp" // lalr1.cc:397
+#line 53 "src/assembler/gbparser.cpp"
 
 
-// First part of user declarations.
 
-#line 53 "src/assembler/gbparser.cpp" // lalr1.cc:404
-
-# ifndef YY_NULLPTR
-#  if defined __cplusplus && 201103L <= __cplusplus
-#   define YY_NULLPTR nullptr
-#  else
-#   define YY_NULLPTR 0
-#  endif
-# endif
 
 #include "gbparser.hpp"
 
-// User implementation prologue.
 
-#line 67 "src/assembler/gbparser.cpp" // lalr1.cc:412
 
 
 #ifndef YY_
@@ -75,6 +68,16 @@
 # endif
 # ifndef YY_
 #  define YY_(msgid) msgid
+# endif
+#endif
+
+
+// Whether we are compiled with exception support.
+#ifndef YY_EXCEPTIONS
+# if defined __GNUC__ && !defined __EXCEPTIONS
+#  define YY_EXCEPTIONS 0
+# else
+#  define YY_EXCEPTIONS 1
 # endif
 #endif
 
@@ -95,12 +98,9 @@
         {                                                               \
           (Current).begin = (Current).end = YYRHSLOC (Rhs, 0).end;      \
         }                                                               \
-    while (/*CONSTCOND*/ false)
+    while (false)
 # endif
 
-
-// Suppress unused-variable warnings by "using" E.
-#define YYUSE(E) ((void) (E))
 
 // Enable debugging if requested.
 #if YYDEBUG
@@ -114,7 +114,7 @@
     {                                           \
       *yycdebug_ << Title << ' ';               \
       yy_print_ (*yycdebug_, Symbol);           \
-      *yycdebug_ << std::endl;                  \
+      *yycdebug_ << '\n';                       \
     }                                           \
   } while (false)
 
@@ -127,15 +127,15 @@
 # define YY_STACK_PRINT()               \
   do {                                  \
     if (yydebug_)                       \
-      yystack_print_ ();                \
+      yy_stack_print_ ();                \
   } while (false)
 
 #else // !YYDEBUG
 
 # define YYCDEBUG if (false) std::cerr
-# define YY_SYMBOL_PRINT(Title, Symbol)  YYUSE(Symbol)
-# define YY_REDUCE_PRINT(Rule)           static_cast<void>(0)
-# define YY_STACK_PRINT()                static_cast<void>(0)
+# define YY_SYMBOL_PRINT(Title, Symbol)  YYUSE (Symbol)
+# define YY_REDUCE_PRINT(Rule)           static_cast<void> (0)
+# define YY_STACK_PRINT()                static_cast<void> (0)
 
 #endif // !YYDEBUG
 
@@ -147,54 +147,17 @@
 #define YYERROR         goto yyerrorlab
 #define YYRECOVERING()  (!!yyerrstatus_)
 
-#line 5 "src/assembler/gbparser.ypp" // lalr1.cc:479
+#line 5 "src/assembler/gbparser.ypp"
 namespace assembler {
-#line 153 "src/assembler/gbparser.cpp" // lalr1.cc:479
-
-  /* Return YYSTR after stripping away unnecessary quotes and
-     backslashes, so that it's suitable for yyerror.  The heuristic is
-     that double-quoting is unnecessary unless the string contains an
-     apostrophe, a comma, or backslash (other than backslash-backslash).
-     YYSTR is taken from yytname.  */
-  std::string
-  Parser::yytnamerr_ (const char *yystr)
-  {
-    if (*yystr == '"')
-      {
-        std::string yyr = "";
-        char const *yyp = yystr;
-
-        for (;;)
-          switch (*++yyp)
-            {
-            case '\'':
-            case ',':
-              goto do_not_strip_quotes;
-
-            case '\\':
-              if (*++yyp != '\\')
-                goto do_not_strip_quotes;
-              // Fall through.
-            default:
-              yyr += *yyp;
-              break;
-
-            case '"':
-              return yyr;
-            }
-      do_not_strip_quotes: ;
-      }
-
-    return yystr;
-  }
-
+#line 153 "src/assembler/gbparser.cpp"
 
   /// Build a parser object.
   Parser::Parser (assembler::Lexer &lexer_yyarg, assembler::Assembler &assembler_yyarg)
-    :
 #if YYDEBUG
-      yydebug_ (false),
+    : yydebug_ (false),
       yycdebug_ (&std::cerr),
+#else
+    :
 #endif
       lexer (lexer_yyarg),
       assembler (assembler_yyarg)
@@ -203,32 +166,30 @@ namespace assembler {
   Parser::~Parser ()
   {}
 
+  Parser::syntax_error::~syntax_error () YY_NOEXCEPT YY_NOTHROW
+  {}
 
   /*---------------.
-  | Symbol types.  |
+  | symbol kinds.  |
   `---------------*/
 
 
 
   // by_state.
-  inline
-  Parser::by_state::by_state ()
+  Parser::by_state::by_state () YY_NOEXCEPT
     : state (empty_state)
   {}
 
-  inline
-  Parser::by_state::by_state (const by_state& other)
-    : state (other.state)
+  Parser::by_state::by_state (const by_state& that) YY_NOEXCEPT
+    : state (that.state)
   {}
 
-  inline
   void
-  Parser::by_state::clear ()
+  Parser::by_state::clear () YY_NOEXCEPT
   {
     state = empty_state;
   }
 
-  inline
   void
   Parser::by_state::move (by_state& that)
   {
@@ -236,63 +197,106 @@ namespace assembler {
     that.clear ();
   }
 
-  inline
-  Parser::by_state::by_state (state_type s)
+  Parser::by_state::by_state (state_type s) YY_NOEXCEPT
     : state (s)
   {}
 
-  inline
-  Parser::symbol_number_type
-  Parser::by_state::type_get () const
+  Parser::symbol_kind_type
+  Parser::by_state::kind () const YY_NOEXCEPT
   {
     if (state == empty_state)
-      return empty_symbol;
+      return symbol_kind::S_YYEMPTY;
     else
-      return yystos_[state];
+      return YY_CAST (symbol_kind_type, yystos_[+state]);
   }
 
-  inline
   Parser::stack_symbol_type::stack_symbol_type ()
   {}
 
-
-  inline
-  Parser::stack_symbol_type::stack_symbol_type (state_type s, symbol_type& that)
-    : super_type (s, that.location)
+  Parser::stack_symbol_type::stack_symbol_type (YY_RVREF (stack_symbol_type) that)
+    : super_type (YY_MOVE (that.state), YY_MOVE (that.location))
   {
-      switch (that.type_get ())
+    switch (that.kind ())
     {
-      case 82: // FLOAT
-        value.move< float > (that.value);
+      case symbol_kind::S_FLOAT: // FLOAT
+        value.YY_MOVE_OR_COPY< float > (YY_MOVE (that.value));
         break;
 
-      case 83: // LITERAL
-      case 84: // IDENTIFIER
-        value.move< std::string > (that.value);
+      case symbol_kind::S_LITERAL: // LITERAL
+      case symbol_kind::S_IDENTIFIER: // IDENTIFIER
+        value.YY_MOVE_OR_COPY< std::string > (YY_MOVE (that.value));
         break;
 
-      case 67: // U16
-      case 68: // RS_B
-      case 69: // RS_C
-      case 70: // RS_D
-      case 71: // RS_E
-      case 72: // RS_H
-      case 73: // RS_L
-      case 74: // RS_HL
-      case 75: // RS_A
-      case 76: // RD_BC
-      case 77: // RD_DE
-      case 78: // RD_HL
-      case 79: // RD_SP
-      case 80: // RD_AF
-      case 81: // CC_COND
-      case 89: // instruction
-      case 90: // sreg
-      case 91: // dreg
-      case 92: // dregaf
-      case 93: // snum
-      case 94: // pnum
-        value.move< u16 > (that.value);
+      case symbol_kind::S_U16: // U16
+      case symbol_kind::S_RS_B: // RS_B
+      case symbol_kind::S_RS_C: // RS_C
+      case symbol_kind::S_RS_D: // RS_D
+      case symbol_kind::S_RS_E: // RS_E
+      case symbol_kind::S_RS_H: // RS_H
+      case symbol_kind::S_RS_L: // RS_L
+      case symbol_kind::S_RS_HL: // RS_HL
+      case symbol_kind::S_RS_A: // RS_A
+      case symbol_kind::S_RD_BC: // RD_BC
+      case symbol_kind::S_RD_DE: // RD_DE
+      case symbol_kind::S_RD_HL: // RD_HL
+      case symbol_kind::S_RD_SP: // RD_SP
+      case symbol_kind::S_RD_AF: // RD_AF
+      case symbol_kind::S_CC_COND: // CC_COND
+      case symbol_kind::S_instruction: // instruction
+      case symbol_kind::S_sreg: // sreg
+      case symbol_kind::S_dreg: // dreg
+      case symbol_kind::S_dregaf: // dregaf
+      case symbol_kind::S_snum: // snum
+      case symbol_kind::S_pnum: // pnum
+        value.YY_MOVE_OR_COPY< u16 > (YY_MOVE (that.value));
+        break;
+
+      default:
+        break;
+    }
+
+#if 201103L <= YY_CPLUSPLUS
+    // that is emptied.
+    that.state = empty_state;
+#endif
+  }
+
+  Parser::stack_symbol_type::stack_symbol_type (state_type s, YY_MOVE_REF (symbol_type) that)
+    : super_type (s, YY_MOVE (that.location))
+  {
+    switch (that.kind ())
+    {
+      case symbol_kind::S_FLOAT: // FLOAT
+        value.move< float > (YY_MOVE (that.value));
+        break;
+
+      case symbol_kind::S_LITERAL: // LITERAL
+      case symbol_kind::S_IDENTIFIER: // IDENTIFIER
+        value.move< std::string > (YY_MOVE (that.value));
+        break;
+
+      case symbol_kind::S_U16: // U16
+      case symbol_kind::S_RS_B: // RS_B
+      case symbol_kind::S_RS_C: // RS_C
+      case symbol_kind::S_RS_D: // RS_D
+      case symbol_kind::S_RS_E: // RS_E
+      case symbol_kind::S_RS_H: // RS_H
+      case symbol_kind::S_RS_L: // RS_L
+      case symbol_kind::S_RS_HL: // RS_HL
+      case symbol_kind::S_RS_A: // RS_A
+      case symbol_kind::S_RD_BC: // RD_BC
+      case symbol_kind::S_RD_DE: // RD_DE
+      case symbol_kind::S_RD_HL: // RD_HL
+      case symbol_kind::S_RD_SP: // RD_SP
+      case symbol_kind::S_RD_AF: // RD_AF
+      case symbol_kind::S_CC_COND: // CC_COND
+      case symbol_kind::S_instruction: // instruction
+      case symbol_kind::S_sreg: // sreg
+      case symbol_kind::S_dreg: // dreg
+      case symbol_kind::S_dregaf: // dregaf
+      case symbol_kind::S_snum: // snum
+      case symbol_kind::S_pnum: // pnum
+        value.move< u16 > (YY_MOVE (that.value));
         break;
 
       default:
@@ -300,46 +304,46 @@ namespace assembler {
     }
 
     // that is emptied.
-    that.type = empty_symbol;
+    that.kind_ = symbol_kind::S_YYEMPTY;
   }
 
-  inline
+#if YY_CPLUSPLUS < 201103L
   Parser::stack_symbol_type&
   Parser::stack_symbol_type::operator= (const stack_symbol_type& that)
   {
     state = that.state;
-      switch (that.type_get ())
+    switch (that.kind ())
     {
-      case 82: // FLOAT
+      case symbol_kind::S_FLOAT: // FLOAT
         value.copy< float > (that.value);
         break;
 
-      case 83: // LITERAL
-      case 84: // IDENTIFIER
+      case symbol_kind::S_LITERAL: // LITERAL
+      case symbol_kind::S_IDENTIFIER: // IDENTIFIER
         value.copy< std::string > (that.value);
         break;
 
-      case 67: // U16
-      case 68: // RS_B
-      case 69: // RS_C
-      case 70: // RS_D
-      case 71: // RS_E
-      case 72: // RS_H
-      case 73: // RS_L
-      case 74: // RS_HL
-      case 75: // RS_A
-      case 76: // RD_BC
-      case 77: // RD_DE
-      case 78: // RD_HL
-      case 79: // RD_SP
-      case 80: // RD_AF
-      case 81: // CC_COND
-      case 89: // instruction
-      case 90: // sreg
-      case 91: // dreg
-      case 92: // dregaf
-      case 93: // snum
-      case 94: // pnum
+      case symbol_kind::S_U16: // U16
+      case symbol_kind::S_RS_B: // RS_B
+      case symbol_kind::S_RS_C: // RS_C
+      case symbol_kind::S_RS_D: // RS_D
+      case symbol_kind::S_RS_E: // RS_E
+      case symbol_kind::S_RS_H: // RS_H
+      case symbol_kind::S_RS_L: // RS_L
+      case symbol_kind::S_RS_HL: // RS_HL
+      case symbol_kind::S_RS_A: // RS_A
+      case symbol_kind::S_RD_BC: // RD_BC
+      case symbol_kind::S_RD_DE: // RD_DE
+      case symbol_kind::S_RD_HL: // RD_HL
+      case symbol_kind::S_RD_SP: // RD_SP
+      case symbol_kind::S_RD_AF: // RD_AF
+      case symbol_kind::S_CC_COND: // CC_COND
+      case symbol_kind::S_instruction: // instruction
+      case symbol_kind::S_sreg: // sreg
+      case symbol_kind::S_dreg: // dreg
+      case symbol_kind::S_dregaf: // dregaf
+      case symbol_kind::S_snum: // snum
+      case symbol_kind::S_pnum: // pnum
         value.copy< u16 > (that.value);
         break;
 
@@ -351,9 +355,57 @@ namespace assembler {
     return *this;
   }
 
+  Parser::stack_symbol_type&
+  Parser::stack_symbol_type::operator= (stack_symbol_type& that)
+  {
+    state = that.state;
+    switch (that.kind ())
+    {
+      case symbol_kind::S_FLOAT: // FLOAT
+        value.move< float > (that.value);
+        break;
+
+      case symbol_kind::S_LITERAL: // LITERAL
+      case symbol_kind::S_IDENTIFIER: // IDENTIFIER
+        value.move< std::string > (that.value);
+        break;
+
+      case symbol_kind::S_U16: // U16
+      case symbol_kind::S_RS_B: // RS_B
+      case symbol_kind::S_RS_C: // RS_C
+      case symbol_kind::S_RS_D: // RS_D
+      case symbol_kind::S_RS_E: // RS_E
+      case symbol_kind::S_RS_H: // RS_H
+      case symbol_kind::S_RS_L: // RS_L
+      case symbol_kind::S_RS_HL: // RS_HL
+      case symbol_kind::S_RS_A: // RS_A
+      case symbol_kind::S_RD_BC: // RD_BC
+      case symbol_kind::S_RD_DE: // RD_DE
+      case symbol_kind::S_RD_HL: // RD_HL
+      case symbol_kind::S_RD_SP: // RD_SP
+      case symbol_kind::S_RD_AF: // RD_AF
+      case symbol_kind::S_CC_COND: // CC_COND
+      case symbol_kind::S_instruction: // instruction
+      case symbol_kind::S_sreg: // sreg
+      case symbol_kind::S_dreg: // dreg
+      case symbol_kind::S_dregaf: // dregaf
+      case symbol_kind::S_snum: // snum
+      case symbol_kind::S_pnum: // pnum
+        value.move< u16 > (that.value);
+        break;
+
+      default:
+        break;
+    }
+
+    location = that.location;
+    // that is emptied.
+    that.state = empty_state;
+    return *this;
+  }
+#endif
 
   template <typename Base>
-  inline
   void
   Parser::yy_destroy_ (const char* yymsg, basic_symbol<Base>& yysym) const
   {
@@ -364,44 +416,45 @@ namespace assembler {
 #if YYDEBUG
   template <typename Base>
   void
-  Parser::yy_print_ (std::ostream& yyo,
-                                     const basic_symbol<Base>& yysym) const
+  Parser::yy_print_ (std::ostream& yyo, const basic_symbol<Base>& yysym) const
   {
     std::ostream& yyoutput = yyo;
     YYUSE (yyoutput);
-    symbol_number_type yytype = yysym.type_get ();
-    // Avoid a (spurious) G++ 4.8 warning about "array subscript is
-    // below array bounds".
     if (yysym.empty ())
-      std::abort ();
-    yyo << (yytype < yyntokens_ ? "token" : "nterm")
-        << ' ' << yytname_[yytype] << " ("
-        << yysym.location << ": ";
-    YYUSE (yytype);
-    yyo << ')';
+      yyo << "empty symbol";
+    else
+      {
+        symbol_kind_type yykind = yysym.kind ();
+        yyo << (yykind < YYNTOKENS ? "token" : "nterm")
+            << ' ' << yysym.name () << " ("
+            << yysym.location << ": ";
+        YYUSE (yykind);
+        yyo << ')';
+      }
   }
 #endif
 
-  inline
   void
-  Parser::yypush_ (const char* m, state_type s, symbol_type& sym)
-  {
-    stack_symbol_type t (s, sym);
-    yypush_ (m, t);
-  }
-
-  inline
-  void
-  Parser::yypush_ (const char* m, stack_symbol_type& s)
+  Parser::yypush_ (const char* m, YY_MOVE_REF (stack_symbol_type) sym)
   {
     if (m)
-      YY_SYMBOL_PRINT (m, s);
-    yystack_.push (s);
+      YY_SYMBOL_PRINT (m, sym);
+    yystack_.push (YY_MOVE (sym));
   }
 
-  inline
   void
-  Parser::yypop_ (unsigned int n)
+  Parser::yypush_ (const char* m, state_type s, YY_MOVE_REF (symbol_type) sym)
+  {
+#if 201103L <= YY_CPLUSPLUS
+    yypush_ (m, stack_symbol_type (s, std::move (sym)));
+#else
+    stack_symbol_type ss (s, sym);
+    yypush_ (m, ss);
+#endif
+  }
+
+  void
+  Parser::yypop_ (int n)
   {
     yystack_.pop (n);
   }
@@ -433,32 +486,37 @@ namespace assembler {
   }
 #endif // YYDEBUG
 
-  inline Parser::state_type
+  Parser::state_type
   Parser::yy_lr_goto_state_ (state_type yystate, int yysym)
   {
-    int yyr = yypgoto_[yysym - yyntokens_] + yystate;
+    int yyr = yypgoto_[yysym - YYNTOKENS] + yystate;
     if (0 <= yyr && yyr <= yylast_ && yycheck_[yyr] == yystate)
       return yytable_[yyr];
     else
-      return yydefgoto_[yysym - yyntokens_];
+      return yydefgoto_[yysym - YYNTOKENS];
   }
 
-  inline bool
+  bool
   Parser::yy_pact_value_is_default_ (int yyvalue)
   {
     return yyvalue == yypact_ninf_;
   }
 
-  inline bool
+  bool
   Parser::yy_table_value_is_error_ (int yyvalue)
   {
     return yyvalue == yytable_ninf_;
   }
 
   int
+  Parser::operator() ()
+  {
+    return parse ();
+  }
+
+  int
   Parser::parse ()
   {
-    // State.
     int yyn;
     /// Length of the RHS of the rule being reduced.
     int yylen = 0;
@@ -476,68 +534,91 @@ namespace assembler {
     /// The return value of parse ().
     int yyresult;
 
-    // FIXME: This shoud be completely indented.  It is not yet to
-    // avoid gratuitous conflicts when merging into the master branch.
+#if YY_EXCEPTIONS
     try
+#endif // YY_EXCEPTIONS
       {
-    YYCDEBUG << "Starting parse" << std::endl;
+    YYCDEBUG << "Starting parse\n";
 
 
     // User initialization code.
-    #line 32 "src/assembler/gbparser.ypp" // lalr1.cc:745
+#line 32 "src/assembler/gbparser.ypp"
 {
   yyla.location.begin.filename = yyla.location.end.filename = &assembler.file;
 }
 
-#line 493 "src/assembler/gbparser.cpp" // lalr1.cc:745
+#line 551 "src/assembler/gbparser.cpp"
+
 
     /* Initialize the stack.  The initial state will be set in
        yynewstate, since the latter expects the semantical and the
        location values to have been already stored, initialize these
        stacks with a primary value.  */
     yystack_.clear ();
-    yypush_ (YY_NULLPTR, 0, yyla);
+    yypush_ (YY_NULLPTR, 0, YY_MOVE (yyla));
 
-    // A new symbol was pushed on the stack.
+  /*-----------------------------------------------.
+  | yynewstate -- push a new symbol on the stack.  |
+  `-----------------------------------------------*/
   yynewstate:
-    YYCDEBUG << "Entering state " << yystack_[0].state << std::endl;
+    YYCDEBUG << "Entering state " << int (yystack_[0].state) << '\n';
+    YY_STACK_PRINT ();
 
     // Accept?
     if (yystack_[0].state == yyfinal_)
-      goto yyacceptlab;
+      YYACCEPT;
 
     goto yybackup;
 
-    // Backup.
-  yybackup:
 
+  /*-----------.
+  | yybackup.  |
+  `-----------*/
+  yybackup:
     // Try to take a decision without lookahead.
-    yyn = yypact_[yystack_[0].state];
+    yyn = yypact_[+yystack_[0].state];
     if (yy_pact_value_is_default_ (yyn))
       goto yydefault;
 
     // Read a lookahead token.
     if (yyla.empty ())
       {
-        YYCDEBUG << "Reading a token: ";
+        YYCDEBUG << "Reading a token\n";
+#if YY_EXCEPTIONS
         try
+#endif // YY_EXCEPTIONS
           {
             symbol_type yylookahead (yylex (lexer, assembler));
             yyla.move (yylookahead);
           }
+#if YY_EXCEPTIONS
         catch (const syntax_error& yyexc)
           {
+            YYCDEBUG << "Caught exception: " << yyexc.what() << '\n';
             error (yyexc);
             goto yyerrlab1;
           }
+#endif // YY_EXCEPTIONS
       }
     YY_SYMBOL_PRINT ("Next token is", yyla);
 
+    if (yyla.kind () == symbol_kind::S_YYerror)
+    {
+      // The scanner already issued an error message, process directly
+      // to error recovery.  But do not keep the error token as
+      // lookahead, it is too special and may lead us to an endless
+      // loop in error recovery. */
+      yyla.kind_ = symbol_kind::S_YYUNDEF;
+      goto yyerrlab1;
+    }
+
     /* If the proper action on seeing token YYLA.TYPE is to reduce or
        to detect an error, take that action.  */
-    yyn += yyla.type_get ();
-    if (yyn < 0 || yylast_ < yyn || yycheck_[yyn] != yyla.type_get ())
-      goto yydefault;
+    yyn += yyla.kind ();
+    if (yyn < 0 || yylast_ < yyn || yycheck_[yyn] != yyla.kind ())
+      {
+        goto yydefault;
+      }
 
     // Reduce or error.
     yyn = yytable_[yyn];
@@ -554,62 +635,64 @@ namespace assembler {
       --yyerrstatus_;
 
     // Shift the lookahead token.
-    yypush_ ("Shifting", yyn, yyla);
+    yypush_ ("Shifting", state_type (yyn), YY_MOVE (yyla));
     goto yynewstate;
+
 
   /*-----------------------------------------------------------.
   | yydefault -- do the default action for the current state.  |
   `-----------------------------------------------------------*/
   yydefault:
-    yyn = yydefact_[yystack_[0].state];
+    yyn = yydefact_[+yystack_[0].state];
     if (yyn == 0)
       goto yyerrlab;
     goto yyreduce;
 
+
   /*-----------------------------.
-  | yyreduce -- Do a reduction.  |
+  | yyreduce -- do a reduction.  |
   `-----------------------------*/
   yyreduce:
     yylen = yyr2_[yyn];
     {
       stack_symbol_type yylhs;
-      yylhs.state = yy_lr_goto_state_(yystack_[yylen].state, yyr1_[yyn]);
+      yylhs.state = yy_lr_goto_state_ (yystack_[yylen].state, yyr1_[yyn]);
       /* Variants are always initialized to an empty instance of the
          correct type. The default '$$ = $1' action is NOT applied
          when using variants.  */
-        switch (yyr1_[yyn])
+      switch (yyr1_[yyn])
     {
-      case 82: // FLOAT
-        yylhs.value.build< float > ();
+      case symbol_kind::S_FLOAT: // FLOAT
+        yylhs.value.emplace< float > ();
         break;
 
-      case 83: // LITERAL
-      case 84: // IDENTIFIER
-        yylhs.value.build< std::string > ();
+      case symbol_kind::S_LITERAL: // LITERAL
+      case symbol_kind::S_IDENTIFIER: // IDENTIFIER
+        yylhs.value.emplace< std::string > ();
         break;
 
-      case 67: // U16
-      case 68: // RS_B
-      case 69: // RS_C
-      case 70: // RS_D
-      case 71: // RS_E
-      case 72: // RS_H
-      case 73: // RS_L
-      case 74: // RS_HL
-      case 75: // RS_A
-      case 76: // RD_BC
-      case 77: // RD_DE
-      case 78: // RD_HL
-      case 79: // RD_SP
-      case 80: // RD_AF
-      case 81: // CC_COND
-      case 89: // instruction
-      case 90: // sreg
-      case 91: // dreg
-      case 92: // dregaf
-      case 93: // snum
-      case 94: // pnum
-        yylhs.value.build< u16 > ();
+      case symbol_kind::S_U16: // U16
+      case symbol_kind::S_RS_B: // RS_B
+      case symbol_kind::S_RS_C: // RS_C
+      case symbol_kind::S_RS_D: // RS_D
+      case symbol_kind::S_RS_E: // RS_E
+      case symbol_kind::S_RS_H: // RS_H
+      case symbol_kind::S_RS_L: // RS_L
+      case symbol_kind::S_RS_HL: // RS_HL
+      case symbol_kind::S_RS_A: // RS_A
+      case symbol_kind::S_RD_BC: // RD_BC
+      case symbol_kind::S_RD_DE: // RD_DE
+      case symbol_kind::S_RD_HL: // RD_HL
+      case symbol_kind::S_RD_SP: // RD_SP
+      case symbol_kind::S_RD_AF: // RD_AF
+      case symbol_kind::S_CC_COND: // CC_COND
+      case symbol_kind::S_instruction: // instruction
+      case symbol_kind::S_sreg: // sreg
+      case symbol_kind::S_dreg: // dreg
+      case symbol_kind::S_dregaf: // dregaf
+      case symbol_kind::S_snum: // snum
+      case symbol_kind::S_pnum: // pnum
+        yylhs.value.emplace< u16 > ();
         break;
 
       default:
@@ -617,686 +700,693 @@ namespace assembler {
     }
 
 
-      // Compute the default @$.
+      // Default location.
       {
-        slice<stack_symbol_type, stack_type> slice (yystack_, yylen);
-        YYLLOC_DEFAULT (yylhs.location, slice, yylen);
+        stack_type::slice range (yystack_, yylen);
+        YYLLOC_DEFAULT (yylhs.location, range, yylen);
+        yyerror_range[1].location = yylhs.location;
       }
 
       // Perform the reduction.
       YY_REDUCE_PRINT (yyn);
+#if YY_EXCEPTIONS
       try
+#endif // YY_EXCEPTIONS
         {
           switch (yyn)
             {
-  case 2:
-#line 106 "src/assembler/gbparser.ypp" // lalr1.cc:859
-    { assembler.init(8192); }
-#line 636 "src/assembler/gbparser.cpp" // lalr1.cc:859
+  case 2: // $@1: %empty
+#line 106 "src/assembler/gbparser.ypp"
+  { assembler.init(8192); }
+#line 722 "src/assembler/gbparser.cpp"
     break;
 
-  case 3:
-#line 106 "src/assembler/gbparser.ypp" // lalr1.cc:859
-    { }
-#line 642 "src/assembler/gbparser.cpp" // lalr1.cc:859
+  case 3: // start: $@1 instructions
+#line 106 "src/assembler/gbparser.ypp"
+                                         { }
+#line 728 "src/assembler/gbparser.cpp"
     break;
 
-  case 5:
-#line 110 "src/assembler/gbparser.ypp" // lalr1.cc:859
-    { }
-#line 648 "src/assembler/gbparser.cpp" // lalr1.cc:859
+  case 5: // instructions: instructions instruction
+#line 110 "src/assembler/gbparser.ypp"
+                             { }
+#line 734 "src/assembler/gbparser.cpp"
     break;
 
-  case 6:
-#line 111 "src/assembler/gbparser.ypp" // lalr1.cc:859
-    { }
-#line 654 "src/assembler/gbparser.cpp" // lalr1.cc:859
+  case 6: // instructions: instructions "\n"
+#line 111 "src/assembler/gbparser.ypp"
+                     { }
+#line 740 "src/assembler/gbparser.cpp"
     break;
 
-  case 7:
-#line 116 "src/assembler/gbparser.ypp" // lalr1.cc:859
-    { assembler.assemble(OPCODE_NOP); }
-#line 660 "src/assembler/gbparser.cpp" // lalr1.cc:859
+  case 7: // instruction: OP_NOP
+#line 116 "src/assembler/gbparser.ypp"
+         { assembler.assemble(OPCODE_NOP); }
+#line 746 "src/assembler/gbparser.cpp"
     break;
 
-  case 8:
-#line 117 "src/assembler/gbparser.ypp" // lalr1.cc:859
-    { assembler.assemble(OPCODE_DJNZ_N); }
-#line 666 "src/assembler/gbparser.cpp" // lalr1.cc:859
+  case 8: // instruction: OP_STOP
+#line 117 "src/assembler/gbparser.ypp"
+            { assembler.assemble(OPCODE_DJNZ_N); }
+#line 752 "src/assembler/gbparser.cpp"
     break;
 
-  case 9:
-#line 120 "src/assembler/gbparser.ypp" // lalr1.cc:859
-    { assembler.assemble(OPCODE_LD_R_R | (yystack_[2].value.as< u16 > () << 3) | (yystack_[0].value.as< u16 > ())); }
-#line 672 "src/assembler/gbparser.cpp" // lalr1.cc:859
+  case 9: // instruction: OP_LD sreg T_COMMA sreg
+#line 120 "src/assembler/gbparser.ypp"
+                            { assembler.assemble(OPCODE_LD_R_R | (yystack_[2].value.as < u16 > () << 3) | (yystack_[0].value.as < u16 > ())); }
+#line 758 "src/assembler/gbparser.cpp"
     break;
 
-  case 10:
-#line 121 "src/assembler/gbparser.ypp" // lalr1.cc:859
-    { assembler.assemble(OPCODE_LD_R_N | (yystack_[2].value.as< u16 > () << 3), (u8)yystack_[0].value.as< u16 > ()); }
-#line 678 "src/assembler/gbparser.cpp" // lalr1.cc:859
+  case 10: // instruction: OP_LD sreg T_COMMA snum
+#line 121 "src/assembler/gbparser.ypp"
+                            { assembler.assemble(OPCODE_LD_R_N | (yystack_[2].value.as < u16 > () << 3), (u8)yystack_[0].value.as < u16 > ()); }
+#line 764 "src/assembler/gbparser.cpp"
     break;
 
-  case 11:
-#line 122 "src/assembler/gbparser.ypp" // lalr1.cc:859
-    { assembler.assemble(OPCODE_LD_RR_NN | (yystack_[2].value.as< u16 > () << 4), (u8)(yystack_[0].value.as< u16 > () & 0xFF), (u8)((yystack_[0].value.as< u16 > () >> 8) & 0xFF) ); }
-#line 684 "src/assembler/gbparser.cpp" // lalr1.cc:859
+  case 11: // instruction: OP_LD dreg T_COMMA snum
+#line 122 "src/assembler/gbparser.ypp"
+                            { assembler.assemble(OPCODE_LD_RR_NN | (yystack_[2].value.as < u16 > () << 4), (u8)(yystack_[0].value.as < u16 > () & 0xFF), (u8)((yystack_[0].value.as < u16 > () >> 8) & 0xFF) ); }
+#line 770 "src/assembler/gbparser.cpp"
     break;
 
-  case 12:
-#line 124 "src/assembler/gbparser.ypp" // lalr1.cc:859
-    { assembler.assemble(OPCODE_LD_BC_A); }
-#line 690 "src/assembler/gbparser.cpp" // lalr1.cc:859
+  case 12: // instruction: OP_LD RDP_BC T_COMMA RS_A
+#line 124 "src/assembler/gbparser.ypp"
+                              { assembler.assemble(OPCODE_LD_BC_A); }
+#line 776 "src/assembler/gbparser.cpp"
     break;
 
-  case 13:
-#line 125 "src/assembler/gbparser.ypp" // lalr1.cc:859
-    { assembler.assemble(OPCODE_LD_DE_A); }
-#line 696 "src/assembler/gbparser.cpp" // lalr1.cc:859
+  case 13: // instruction: OP_LD RDP_DE T_COMMA RS_A
+#line 125 "src/assembler/gbparser.ypp"
+                              { assembler.assemble(OPCODE_LD_DE_A); }
+#line 782 "src/assembler/gbparser.cpp"
     break;
 
-  case 14:
-#line 126 "src/assembler/gbparser.ypp" // lalr1.cc:859
-    { assembler.aassert(yystack_[2].value.as< u16 > () == 7, "LD A, (BC) requires A reg!"); assembler.assemble(OPCODE_LD_A_BC); }
-#line 702 "src/assembler/gbparser.cpp" // lalr1.cc:859
+  case 14: // instruction: OP_LD sreg T_COMMA RDP_BC
+#line 126 "src/assembler/gbparser.ypp"
+                              { assembler.aassert(yystack_[2].value.as < u16 > () == 7, "LD A, (BC) requires A reg!"); assembler.assemble(OPCODE_LD_A_BC); }
+#line 788 "src/assembler/gbparser.cpp"
     break;
 
-  case 15:
-#line 127 "src/assembler/gbparser.ypp" // lalr1.cc:859
-    { assembler.aassert(yystack_[2].value.as< u16 > () == 7, "LD A, (DE) requires A reg!"); assembler.assemble(OPCODE_LD_A_DE); }
-#line 708 "src/assembler/gbparser.cpp" // lalr1.cc:859
+  case 15: // instruction: OP_LD sreg T_COMMA RDP_DE
+#line 127 "src/assembler/gbparser.ypp"
+                              { assembler.aassert(yystack_[2].value.as < u16 > () == 7, "LD A, (DE) requires A reg!"); assembler.assemble(OPCODE_LD_A_DE); }
+#line 794 "src/assembler/gbparser.cpp"
     break;
 
-  case 16:
-#line 128 "src/assembler/gbparser.ypp" // lalr1.cc:859
-    { assembler.assemble(OPCODE_LD_SP_HL); }
-#line 714 "src/assembler/gbparser.cpp" // lalr1.cc:859
+  case 16: // instruction: OP_LD dreg T_COMMA RD_HL
+#line 128 "src/assembler/gbparser.ypp"
+                             { assembler.assemble(OPCODE_LD_SP_HL); }
+#line 800 "src/assembler/gbparser.cpp"
     break;
 
-  case 17:
-#line 129 "src/assembler/gbparser.ypp" // lalr1.cc:859
-    { assembler.assemble(OPCODE_LD_NN_A, (u8)(yystack_[3].value.as< u16 > () & 0xFF), (u8)((yystack_[3].value.as< u16 > () >> 8) & 0xFF)); }
-#line 720 "src/assembler/gbparser.cpp" // lalr1.cc:859
+  case 17: // instruction: OP_LD T_LPAREN snum T_RPAREN T_COMMA RS_A
+#line 129 "src/assembler/gbparser.ypp"
+                                              { assembler.assemble(OPCODE_LD_NN_A, (u8)(yystack_[3].value.as < u16 > () & 0xFF), (u8)((yystack_[3].value.as < u16 > () >> 8) & 0xFF)); }
+#line 806 "src/assembler/gbparser.cpp"
     break;
 
-  case 18:
-#line 130 "src/assembler/gbparser.ypp" // lalr1.cc:859
-    { assembler.aassert(yystack_[2].value.as< u16 > () == 7, "LD A, (nn) requires A reg!"); assembler.assemble(OPCODE_LD_A_NN, (u8)(yystack_[0].value.as< u16 > () & 0xFF), (u8)((yystack_[0].value.as< u16 > () >> 8) & 0xFF)); }
-#line 726 "src/assembler/gbparser.cpp" // lalr1.cc:859
+  case 18: // instruction: OP_LD sreg T_COMMA pnum
+#line 130 "src/assembler/gbparser.ypp"
+                            { assembler.aassert(yystack_[2].value.as < u16 > () == 7, "LD A, (nn) requires A reg!"); assembler.assemble(OPCODE_LD_A_NN, (u8)(yystack_[0].value.as < u16 > () & 0xFF), (u8)((yystack_[0].value.as < u16 > () >> 8) & 0xFF)); }
+#line 812 "src/assembler/gbparser.cpp"
     break;
 
-  case 19:
-#line 132 "src/assembler/gbparser.ypp" // lalr1.cc:859
-    { assembler.assemble(OPCODE_LD_HL_NN, (u8)(yystack_[0].value.as< u16 > () & 0xFF), (u8)((yystack_[0].value.as< u16 > () >> 8) & 0xFF)); }
-#line 732 "src/assembler/gbparser.cpp" // lalr1.cc:859
+  case 19: // instruction: OP_LD dreg T_COMMA pnum
+#line 132 "src/assembler/gbparser.ypp"
+                            { assembler.assemble(OPCODE_LD_HL_NN, (u8)(yystack_[0].value.as < u16 > () & 0xFF), (u8)((yystack_[0].value.as < u16 > () >> 8) & 0xFF)); }
+#line 818 "src/assembler/gbparser.cpp"
     break;
 
-  case 20:
-#line 133 "src/assembler/gbparser.ypp" // lalr1.cc:859
-    { assembler.assemble(OPCODE_LD_NN_HL, (u8)(yystack_[3].value.as< u16 > () & 0xFF), (u8)((yystack_[3].value.as< u16 > () >> 8) & 0xFF)); }
-#line 738 "src/assembler/gbparser.cpp" // lalr1.cc:859
+  case 20: // instruction: OP_LD T_LPAREN snum T_RPAREN T_COMMA RD_HL
+#line 133 "src/assembler/gbparser.ypp"
+                                               { assembler.assemble(OPCODE_LD_NN_HL, (u8)(yystack_[3].value.as < u16 > () & 0xFF), (u8)((yystack_[3].value.as < u16 > () >> 8) & 0xFF)); }
+#line 824 "src/assembler/gbparser.cpp"
     break;
 
-  case 21:
-#line 135 "src/assembler/gbparser.ypp" // lalr1.cc:859
-    { assembler.assemble(OPCODE_LD_NN_HL); }
-#line 744 "src/assembler/gbparser.cpp" // lalr1.cc:859
+  case 21: // instruction: OP_LDI RS_HL T_COMMA RS_A
+#line 135 "src/assembler/gbparser.ypp"
+                              { assembler.assemble(OPCODE_LD_NN_HL); }
+#line 830 "src/assembler/gbparser.cpp"
     break;
 
-  case 22:
-#line 136 "src/assembler/gbparser.ypp" // lalr1.cc:859
-    { assembler.assemble(OPCODE_LD_HL_NN); }
-#line 750 "src/assembler/gbparser.cpp" // lalr1.cc:859
+  case 22: // instruction: OP_LDI RS_A T_COMMA RS_HL
+#line 136 "src/assembler/gbparser.ypp"
+                              { assembler.assemble(OPCODE_LD_HL_NN); }
+#line 836 "src/assembler/gbparser.cpp"
     break;
 
-  case 23:
-#line 137 "src/assembler/gbparser.ypp" // lalr1.cc:859
-    { assembler.assemble(OPCODE_LD_NN_A); }
-#line 756 "src/assembler/gbparser.cpp" // lalr1.cc:859
+  case 23: // instruction: OP_LDD RS_HL T_COMMA RS_A
+#line 137 "src/assembler/gbparser.ypp"
+                              { assembler.assemble(OPCODE_LD_NN_A); }
+#line 842 "src/assembler/gbparser.cpp"
     break;
 
-  case 24:
-#line 138 "src/assembler/gbparser.ypp" // lalr1.cc:859
-    { assembler.assemble(OPCODE_LD_A_NN); }
-#line 762 "src/assembler/gbparser.cpp" // lalr1.cc:859
+  case 24: // instruction: OP_LDD RS_A T_COMMA RS_HL
+#line 138 "src/assembler/gbparser.ypp"
+                              { assembler.assemble(OPCODE_LD_A_NN); }
+#line 848 "src/assembler/gbparser.cpp"
     break;
 
-  case 25:
-#line 140 "src/assembler/gbparser.ypp" // lalr1.cc:859
-    { assembler.assemble(OPCODE_EX_AF_AF, (u8)(yystack_[3].value.as< u16 > () & 0xFF), (u8)((yystack_[3].value.as< u16 > () >> 8) & 0xFF)); }
-#line 768 "src/assembler/gbparser.cpp" // lalr1.cc:859
+  case 25: // instruction: OP_LD T_LPAREN snum T_RPAREN T_COMMA RD_SP
+#line 140 "src/assembler/gbparser.ypp"
+                                               { assembler.assemble(OPCODE_EX_AF_AF, (u8)(yystack_[3].value.as < u16 > () & 0xFF), (u8)((yystack_[3].value.as < u16 > () >> 8) & 0xFF)); }
+#line 854 "src/assembler/gbparser.cpp"
     break;
 
-  case 26:
-#line 142 "src/assembler/gbparser.ypp" // lalr1.cc:859
-    { assembler.assemble(OPCODE_ADD_R | yystack_[0].value.as< u16 > ()); }
-#line 774 "src/assembler/gbparser.cpp" // lalr1.cc:859
+  case 26: // instruction: OP_ADD sreg
+#line 142 "src/assembler/gbparser.ypp"
+                { assembler.assemble(OPCODE_ADD_R | yystack_[0].value.as < u16 > ()); }
+#line 860 "src/assembler/gbparser.cpp"
     break;
 
-  case 27:
-#line 143 "src/assembler/gbparser.ypp" // lalr1.cc:859
-    { assembler.assemble(OPCODE_ADC_R | yystack_[0].value.as< u16 > ()); }
-#line 780 "src/assembler/gbparser.cpp" // lalr1.cc:859
+  case 27: // instruction: OP_ADC sreg
+#line 143 "src/assembler/gbparser.ypp"
+                { assembler.assemble(OPCODE_ADC_R | yystack_[0].value.as < u16 > ()); }
+#line 866 "src/assembler/gbparser.cpp"
     break;
 
-  case 28:
-#line 144 "src/assembler/gbparser.ypp" // lalr1.cc:859
-    { assembler.assemble(OPCODE_SUB_R | yystack_[0].value.as< u16 > ()); }
-#line 786 "src/assembler/gbparser.cpp" // lalr1.cc:859
+  case 28: // instruction: OP_SUB sreg
+#line 144 "src/assembler/gbparser.ypp"
+                { assembler.assemble(OPCODE_SUB_R | yystack_[0].value.as < u16 > ()); }
+#line 872 "src/assembler/gbparser.cpp"
     break;
 
-  case 29:
-#line 145 "src/assembler/gbparser.ypp" // lalr1.cc:859
-    { assembler.assemble(OPCODE_SBC_R | yystack_[0].value.as< u16 > ()); }
-#line 792 "src/assembler/gbparser.cpp" // lalr1.cc:859
+  case 29: // instruction: OP_SBC sreg
+#line 145 "src/assembler/gbparser.ypp"
+                { assembler.assemble(OPCODE_SBC_R | yystack_[0].value.as < u16 > ()); }
+#line 878 "src/assembler/gbparser.cpp"
     break;
 
-  case 30:
-#line 146 "src/assembler/gbparser.ypp" // lalr1.cc:859
-    { assembler.assemble(OPCODE_DAA); }
-#line 798 "src/assembler/gbparser.cpp" // lalr1.cc:859
+  case 30: // instruction: OP_DAA
+#line 146 "src/assembler/gbparser.ypp"
+           { assembler.assemble(OPCODE_DAA); }
+#line 884 "src/assembler/gbparser.cpp"
     break;
 
-  case 31:
-#line 148 "src/assembler/gbparser.ypp" // lalr1.cc:859
-    { assembler.assemble(OPCODE_AND_R | yystack_[0].value.as< u16 > ()); }
-#line 804 "src/assembler/gbparser.cpp" // lalr1.cc:859
+  case 31: // instruction: OP_AND sreg
+#line 148 "src/assembler/gbparser.ypp"
+                { assembler.assemble(OPCODE_AND_R | yystack_[0].value.as < u16 > ()); }
+#line 890 "src/assembler/gbparser.cpp"
     break;
 
-  case 32:
-#line 149 "src/assembler/gbparser.ypp" // lalr1.cc:859
-    { assembler.assemble(OPCODE_XOR_R | yystack_[0].value.as< u16 > ()); }
-#line 810 "src/assembler/gbparser.cpp" // lalr1.cc:859
+  case 32: // instruction: OP_XOR sreg
+#line 149 "src/assembler/gbparser.ypp"
+                { assembler.assemble(OPCODE_XOR_R | yystack_[0].value.as < u16 > ()); }
+#line 896 "src/assembler/gbparser.cpp"
     break;
 
-  case 33:
-#line 150 "src/assembler/gbparser.ypp" // lalr1.cc:859
-    { assembler.assemble(OPCODE_OR_R | yystack_[0].value.as< u16 > ()); }
-#line 816 "src/assembler/gbparser.cpp" // lalr1.cc:859
+  case 33: // instruction: OP_OR sreg
+#line 150 "src/assembler/gbparser.ypp"
+               { assembler.assemble(OPCODE_OR_R | yystack_[0].value.as < u16 > ()); }
+#line 902 "src/assembler/gbparser.cpp"
     break;
 
-  case 34:
-#line 151 "src/assembler/gbparser.ypp" // lalr1.cc:859
-    { assembler.assemble(OPCODE_CP_R | yystack_[0].value.as< u16 > ()); }
-#line 822 "src/assembler/gbparser.cpp" // lalr1.cc:859
+  case 34: // instruction: OP_CP sreg
+#line 151 "src/assembler/gbparser.ypp"
+               { assembler.assemble(OPCODE_CP_R | yystack_[0].value.as < u16 > ()); }
+#line 908 "src/assembler/gbparser.cpp"
     break;
 
-  case 35:
-#line 153 "src/assembler/gbparser.ypp" // lalr1.cc:859
-    { assembler.assemble(OPCODE_ADD_N, (u8)yystack_[0].value.as< u16 > ()); }
-#line 828 "src/assembler/gbparser.cpp" // lalr1.cc:859
+  case 35: // instruction: OP_ADD snum
+#line 153 "src/assembler/gbparser.ypp"
+                { assembler.assemble(OPCODE_ADD_N, (u8)yystack_[0].value.as < u16 > ()); }
+#line 914 "src/assembler/gbparser.cpp"
     break;
 
-  case 36:
-#line 154 "src/assembler/gbparser.ypp" // lalr1.cc:859
-    { assembler.assemble(OPCODE_ADC_N, (u8)yystack_[0].value.as< u16 > ()); }
-#line 834 "src/assembler/gbparser.cpp" // lalr1.cc:859
+  case 36: // instruction: OP_ADC snum
+#line 154 "src/assembler/gbparser.ypp"
+                { assembler.assemble(OPCODE_ADC_N, (u8)yystack_[0].value.as < u16 > ()); }
+#line 920 "src/assembler/gbparser.cpp"
     break;
 
-  case 37:
-#line 155 "src/assembler/gbparser.ypp" // lalr1.cc:859
-    { assembler.assemble(OPCODE_SUB_N, (u8)yystack_[0].value.as< u16 > ()); }
-#line 840 "src/assembler/gbparser.cpp" // lalr1.cc:859
+  case 37: // instruction: OP_SUB snum
+#line 155 "src/assembler/gbparser.ypp"
+                { assembler.assemble(OPCODE_SUB_N, (u8)yystack_[0].value.as < u16 > ()); }
+#line 926 "src/assembler/gbparser.cpp"
     break;
 
-  case 38:
-#line 156 "src/assembler/gbparser.ypp" // lalr1.cc:859
-    { assembler.assemble(OPCODE_SBC_N, (u8)yystack_[0].value.as< u16 > ()); }
-#line 846 "src/assembler/gbparser.cpp" // lalr1.cc:859
+  case 38: // instruction: OP_SBC snum
+#line 156 "src/assembler/gbparser.ypp"
+                { assembler.assemble(OPCODE_SBC_N, (u8)yystack_[0].value.as < u16 > ()); }
+#line 932 "src/assembler/gbparser.cpp"
     break;
 
-  case 39:
-#line 158 "src/assembler/gbparser.ypp" // lalr1.cc:859
-    { assembler.assemble(OPCODE_AND_N, (u8)yystack_[0].value.as< u16 > ()); }
-#line 852 "src/assembler/gbparser.cpp" // lalr1.cc:859
+  case 39: // instruction: OP_AND snum
+#line 158 "src/assembler/gbparser.ypp"
+                { assembler.assemble(OPCODE_AND_N, (u8)yystack_[0].value.as < u16 > ()); }
+#line 938 "src/assembler/gbparser.cpp"
     break;
 
-  case 40:
-#line 159 "src/assembler/gbparser.ypp" // lalr1.cc:859
-    { assembler.assemble(OPCODE_XOR_N | (u8)yystack_[0].value.as< u16 > ()); }
-#line 858 "src/assembler/gbparser.cpp" // lalr1.cc:859
+  case 40: // instruction: OP_XOR snum
+#line 159 "src/assembler/gbparser.ypp"
+                { assembler.assemble(OPCODE_XOR_N | (u8)yystack_[0].value.as < u16 > ()); }
+#line 944 "src/assembler/gbparser.cpp"
     break;
 
-  case 41:
-#line 160 "src/assembler/gbparser.ypp" // lalr1.cc:859
-    { assembler.assemble(OPCODE_OR_N, (u8)yystack_[0].value.as< u16 > ()); }
-#line 864 "src/assembler/gbparser.cpp" // lalr1.cc:859
+  case 41: // instruction: OP_OR snum
+#line 160 "src/assembler/gbparser.ypp"
+               { assembler.assemble(OPCODE_OR_N, (u8)yystack_[0].value.as < u16 > ()); }
+#line 950 "src/assembler/gbparser.cpp"
     break;
 
-  case 42:
-#line 161 "src/assembler/gbparser.ypp" // lalr1.cc:859
-    { assembler.assemble(OPCODE_CP_N, (u8)yystack_[0].value.as< u16 > ()); }
-#line 870 "src/assembler/gbparser.cpp" // lalr1.cc:859
+  case 42: // instruction: OP_CP snum
+#line 161 "src/assembler/gbparser.ypp"
+               { assembler.assemble(OPCODE_CP_N, (u8)yystack_[0].value.as < u16 > ()); }
+#line 956 "src/assembler/gbparser.cpp"
     break;
 
-  case 43:
-#line 163 "src/assembler/gbparser.ypp" // lalr1.cc:859
-    { assembler.assemble(OPCODE_RLCA); }
-#line 876 "src/assembler/gbparser.cpp" // lalr1.cc:859
+  case 43: // instruction: OP_RLCA
+#line 163 "src/assembler/gbparser.ypp"
+            { assembler.assemble(OPCODE_RLCA); }
+#line 962 "src/assembler/gbparser.cpp"
     break;
 
-  case 44:
-#line 164 "src/assembler/gbparser.ypp" // lalr1.cc:859
-    { assembler.assemble(OPCODE_RLA); }
-#line 882 "src/assembler/gbparser.cpp" // lalr1.cc:859
+  case 44: // instruction: OP_RLA
+#line 164 "src/assembler/gbparser.ypp"
+           { assembler.assemble(OPCODE_RLA); }
+#line 968 "src/assembler/gbparser.cpp"
     break;
 
-  case 45:
-#line 165 "src/assembler/gbparser.ypp" // lalr1.cc:859
-    { assembler.assemble(OPCODE_RRCA); }
-#line 888 "src/assembler/gbparser.cpp" // lalr1.cc:859
+  case 45: // instruction: OP_RRCA
+#line 165 "src/assembler/gbparser.ypp"
+            { assembler.assemble(OPCODE_RRCA); }
+#line 974 "src/assembler/gbparser.cpp"
     break;
 
-  case 46:
-#line 166 "src/assembler/gbparser.ypp" // lalr1.cc:859
-    { assembler.assemble(OPCODE_RRA); }
-#line 894 "src/assembler/gbparser.cpp" // lalr1.cc:859
+  case 46: // instruction: OP_RRA
+#line 166 "src/assembler/gbparser.ypp"
+           { assembler.assemble(OPCODE_RRA); }
+#line 980 "src/assembler/gbparser.cpp"
     break;
 
-  case 47:
-#line 168 "src/assembler/gbparser.ypp" // lalr1.cc:859
-    { assembler.assemble(OPCODE_BITS, OPCODE_RLC | yystack_[0].value.as< u16 > ()); }
-#line 900 "src/assembler/gbparser.cpp" // lalr1.cc:859
+  case 47: // instruction: OP_RLC sreg
+#line 168 "src/assembler/gbparser.ypp"
+                { assembler.assemble(OPCODE_BITS, OPCODE_RLC | yystack_[0].value.as < u16 > ()); }
+#line 986 "src/assembler/gbparser.cpp"
     break;
 
-  case 48:
-#line 169 "src/assembler/gbparser.ypp" // lalr1.cc:859
-    { assembler.assemble(OPCODE_BITS, OPCODE_RL | yystack_[0].value.as< u16 > ()); }
-#line 906 "src/assembler/gbparser.cpp" // lalr1.cc:859
+  case 48: // instruction: OP_RL sreg
+#line 169 "src/assembler/gbparser.ypp"
+               { assembler.assemble(OPCODE_BITS, OPCODE_RL | yystack_[0].value.as < u16 > ()); }
+#line 992 "src/assembler/gbparser.cpp"
     break;
 
-  case 49:
-#line 170 "src/assembler/gbparser.ypp" // lalr1.cc:859
-    { assembler.assemble(OPCODE_BITS, OPCODE_RRC | yystack_[0].value.as< u16 > ()); }
-#line 912 "src/assembler/gbparser.cpp" // lalr1.cc:859
+  case 49: // instruction: OP_RRC sreg
+#line 170 "src/assembler/gbparser.ypp"
+                { assembler.assemble(OPCODE_BITS, OPCODE_RRC | yystack_[0].value.as < u16 > ()); }
+#line 998 "src/assembler/gbparser.cpp"
     break;
 
-  case 50:
-#line 171 "src/assembler/gbparser.ypp" // lalr1.cc:859
-    { assembler.assemble(OPCODE_BITS, OPCODE_RR | yystack_[0].value.as< u16 > ()); }
-#line 918 "src/assembler/gbparser.cpp" // lalr1.cc:859
+  case 50: // instruction: OP_RR sreg
+#line 171 "src/assembler/gbparser.ypp"
+               { assembler.assemble(OPCODE_BITS, OPCODE_RR | yystack_[0].value.as < u16 > ()); }
+#line 1004 "src/assembler/gbparser.cpp"
     break;
 
-  case 51:
-#line 172 "src/assembler/gbparser.ypp" // lalr1.cc:859
-    { assembler.assemble(OPCODE_BITS, OPCODE_SLA | yystack_[0].value.as< u16 > ()); }
-#line 924 "src/assembler/gbparser.cpp" // lalr1.cc:859
+  case 51: // instruction: OP_SLA sreg
+#line 172 "src/assembler/gbparser.ypp"
+                { assembler.assemble(OPCODE_BITS, OPCODE_SLA | yystack_[0].value.as < u16 > ()); }
+#line 1010 "src/assembler/gbparser.cpp"
     break;
 
-  case 52:
-#line 173 "src/assembler/gbparser.ypp" // lalr1.cc:859
-    { assembler.assemble(OPCODE_BITS, OPCODE_SRA | yystack_[0].value.as< u16 > ()); }
-#line 930 "src/assembler/gbparser.cpp" // lalr1.cc:859
+  case 52: // instruction: OP_SRA sreg
+#line 173 "src/assembler/gbparser.ypp"
+                { assembler.assemble(OPCODE_BITS, OPCODE_SRA | yystack_[0].value.as < u16 > ()); }
+#line 1016 "src/assembler/gbparser.cpp"
     break;
 
-  case 53:
-#line 174 "src/assembler/gbparser.ypp" // lalr1.cc:859
-    { assembler.assemble(OPCODE_BITS, OPCODE_SLL | yystack_[0].value.as< u16 > ()); }
-#line 936 "src/assembler/gbparser.cpp" // lalr1.cc:859
+  case 53: // instruction: OP_SLL sreg
+#line 174 "src/assembler/gbparser.ypp"
+                { assembler.assemble(OPCODE_BITS, OPCODE_SLL | yystack_[0].value.as < u16 > ()); }
+#line 1022 "src/assembler/gbparser.cpp"
     break;
 
-  case 54:
-#line 175 "src/assembler/gbparser.ypp" // lalr1.cc:859
-    { assembler.assemble(OPCODE_BITS, OPCODE_SRL | yystack_[0].value.as< u16 > ()); }
-#line 942 "src/assembler/gbparser.cpp" // lalr1.cc:859
+  case 54: // instruction: OP_SRL sreg
+#line 175 "src/assembler/gbparser.ypp"
+                { assembler.assemble(OPCODE_BITS, OPCODE_SRL | yystack_[0].value.as < u16 > ()); }
+#line 1028 "src/assembler/gbparser.cpp"
     break;
 
-  case 55:
-#line 176 "src/assembler/gbparser.ypp" // lalr1.cc:859
-    { assembler.assemble(OPCODE_BITS, OPCODE_SLL | yystack_[0].value.as< u16 > ()); }
-#line 948 "src/assembler/gbparser.cpp" // lalr1.cc:859
+  case 55: // instruction: OP_SWAP sreg
+#line 176 "src/assembler/gbparser.ypp"
+                 { assembler.assemble(OPCODE_BITS, OPCODE_SLL | yystack_[0].value.as < u16 > ()); }
+#line 1034 "src/assembler/gbparser.cpp"
     break;
 
-  case 56:
-#line 178 "src/assembler/gbparser.ypp" // lalr1.cc:859
-    { assembler.aassert(yystack_[2].value.as< u16 > () <= 7, "BIT specifier over bounds!"); assembler.assemble(OPCODE_BITS, OPCODE_BIT | (yystack_[2].value.as< u16 > () << 3) | yystack_[0].value.as< u16 > ()); }
-#line 954 "src/assembler/gbparser.cpp" // lalr1.cc:859
+  case 56: // instruction: OP_BIT snum T_COMMA sreg
+#line 178 "src/assembler/gbparser.ypp"
+                             { assembler.aassert(yystack_[2].value.as < u16 > () <= 7, "BIT specifier over bounds!"); assembler.assemble(OPCODE_BITS, OPCODE_BIT | (yystack_[2].value.as < u16 > () << 3) | yystack_[0].value.as < u16 > ()); }
+#line 1040 "src/assembler/gbparser.cpp"
     break;
 
-  case 57:
-#line 179 "src/assembler/gbparser.ypp" // lalr1.cc:859
-    { assembler.aassert(yystack_[2].value.as< u16 > () <= 7, "RES specifier over bounds!"); assembler.assemble(OPCODE_BITS, OPCODE_RES | (yystack_[2].value.as< u16 > () << 3) | yystack_[0].value.as< u16 > ()); }
-#line 960 "src/assembler/gbparser.cpp" // lalr1.cc:859
+  case 57: // instruction: OP_RES snum T_COMMA sreg
+#line 179 "src/assembler/gbparser.ypp"
+                             { assembler.aassert(yystack_[2].value.as < u16 > () <= 7, "RES specifier over bounds!"); assembler.assemble(OPCODE_BITS, OPCODE_RES | (yystack_[2].value.as < u16 > () << 3) | yystack_[0].value.as < u16 > ()); }
+#line 1046 "src/assembler/gbparser.cpp"
     break;
 
-  case 58:
-#line 180 "src/assembler/gbparser.ypp" // lalr1.cc:859
-    { assembler.aassert(yystack_[2].value.as< u16 > () <= 7, "SET specifier over bounds!"); assembler.assemble(OPCODE_BITS, OPCODE_SET | (yystack_[2].value.as< u16 > () << 3) | yystack_[0].value.as< u16 > ()); }
-#line 966 "src/assembler/gbparser.cpp" // lalr1.cc:859
+  case 58: // instruction: OP_SET snum T_COMMA sreg
+#line 180 "src/assembler/gbparser.ypp"
+                             { assembler.aassert(yystack_[2].value.as < u16 > () <= 7, "SET specifier over bounds!"); assembler.assemble(OPCODE_BITS, OPCODE_SET | (yystack_[2].value.as < u16 > () << 3) | yystack_[0].value.as < u16 > ()); }
+#line 1052 "src/assembler/gbparser.cpp"
     break;
 
-  case 59:
-#line 182 "src/assembler/gbparser.ypp" // lalr1.cc:859
-    { assembler.assemble(OPCODE_CPL); }
-#line 972 "src/assembler/gbparser.cpp" // lalr1.cc:859
+  case 59: // instruction: OP_CPL
+#line 182 "src/assembler/gbparser.ypp"
+           { assembler.assemble(OPCODE_CPL); }
+#line 1058 "src/assembler/gbparser.cpp"
     break;
 
-  case 60:
-#line 183 "src/assembler/gbparser.ypp" // lalr1.cc:859
-    { assembler.assemble(OPCODE_SCF); }
-#line 978 "src/assembler/gbparser.cpp" // lalr1.cc:859
+  case 60: // instruction: OP_SCF
+#line 183 "src/assembler/gbparser.ypp"
+           { assembler.assemble(OPCODE_SCF); }
+#line 1064 "src/assembler/gbparser.cpp"
     break;
 
-  case 61:
-#line 184 "src/assembler/gbparser.ypp" // lalr1.cc:859
-    { assembler.assemble(OPCODE_CCF); }
-#line 984 "src/assembler/gbparser.cpp" // lalr1.cc:859
+  case 61: // instruction: OP_CCF
+#line 184 "src/assembler/gbparser.ypp"
+           { assembler.assemble(OPCODE_CCF); }
+#line 1070 "src/assembler/gbparser.cpp"
     break;
 
-  case 62:
-#line 186 "src/assembler/gbparser.ypp" // lalr1.cc:859
-    { assembler.assemble(OPCODE_ADD_HL_RR | yystack_[0].value.as< u16 > () << 4); }
-#line 990 "src/assembler/gbparser.cpp" // lalr1.cc:859
+  case 62: // instruction: OP_ADD RD_HL T_COMMA dreg
+#line 186 "src/assembler/gbparser.ypp"
+                              { assembler.assemble(OPCODE_ADD_HL_RR | yystack_[0].value.as < u16 > () << 4); }
+#line 1076 "src/assembler/gbparser.cpp"
     break;
 
-  case 63:
-#line 188 "src/assembler/gbparser.ypp" // lalr1.cc:859
-    { assembler.assemble(OPCODE_DJNZ_N, (u8)yystack_[0].value.as< u16 > ()); }
-#line 996 "src/assembler/gbparser.cpp" // lalr1.cc:859
+  case 63: // instruction: OP_DJNZ snum
+#line 188 "src/assembler/gbparser.ypp"
+                 { assembler.assemble(OPCODE_DJNZ_N, (u8)yystack_[0].value.as < u16 > ()); }
+#line 1082 "src/assembler/gbparser.cpp"
     break;
 
-  case 64:
-#line 189 "src/assembler/gbparser.ypp" // lalr1.cc:859
-    { assembler.assemble(OPCODE_JR_N, (u8)yystack_[0].value.as< u16 > ()); }
-#line 1002 "src/assembler/gbparser.cpp" // lalr1.cc:859
+  case 64: // instruction: OP_JR snum
+#line 189 "src/assembler/gbparser.ypp"
+               { assembler.assemble(OPCODE_JR_N, (u8)yystack_[0].value.as < u16 > ()); }
+#line 1088 "src/assembler/gbparser.cpp"
     break;
 
-  case 65:
-#line 190 "src/assembler/gbparser.ypp" // lalr1.cc:859
-    { assembler.assemble(OPCODE_JRNZ_N, (u8)yystack_[0].value.as< u16 > ()); }
-#line 1008 "src/assembler/gbparser.cpp" // lalr1.cc:859
+  case 65: // instruction: OP_JRNZ snum
+#line 190 "src/assembler/gbparser.ypp"
+                 { assembler.assemble(OPCODE_JRNZ_N, (u8)yystack_[0].value.as < u16 > ()); }
+#line 1094 "src/assembler/gbparser.cpp"
     break;
 
-  case 66:
-#line 191 "src/assembler/gbparser.ypp" // lalr1.cc:859
-    { assembler.assemble(OPCODE_JRZ_N, (u8)yystack_[0].value.as< u16 > ()); }
-#line 1014 "src/assembler/gbparser.cpp" // lalr1.cc:859
+  case 66: // instruction: OP_JRZ snum
+#line 191 "src/assembler/gbparser.ypp"
+                { assembler.assemble(OPCODE_JRZ_N, (u8)yystack_[0].value.as < u16 > ()); }
+#line 1100 "src/assembler/gbparser.cpp"
     break;
 
-  case 67:
-#line 192 "src/assembler/gbparser.ypp" // lalr1.cc:859
-    { assembler.assemble(OPCODE_JRNC_N, (u8)yystack_[0].value.as< u16 > ()); }
-#line 1020 "src/assembler/gbparser.cpp" // lalr1.cc:859
+  case 67: // instruction: OP_JRNC snum
+#line 192 "src/assembler/gbparser.ypp"
+                 { assembler.assemble(OPCODE_JRNC_N, (u8)yystack_[0].value.as < u16 > ()); }
+#line 1106 "src/assembler/gbparser.cpp"
     break;
 
-  case 68:
-#line 193 "src/assembler/gbparser.ypp" // lalr1.cc:859
-    { assembler.assemble(OPCODE_JRC_N, (u8)yystack_[0].value.as< u16 > ()); }
-#line 1026 "src/assembler/gbparser.cpp" // lalr1.cc:859
+  case 68: // instruction: OP_JRC snum
+#line 193 "src/assembler/gbparser.ypp"
+                { assembler.assemble(OPCODE_JRC_N, (u8)yystack_[0].value.as < u16 > ()); }
+#line 1112 "src/assembler/gbparser.cpp"
     break;
 
-  case 69:
-#line 195 "src/assembler/gbparser.ypp" // lalr1.cc:859
-    { assembler.assemble(OPCODE_JP_NN, (u8)(yystack_[0].value.as< u16 > () & 0xFF), (u8)((yystack_[0].value.as< u16 > () >> 8) & 0xFF)); }
-#line 1032 "src/assembler/gbparser.cpp" // lalr1.cc:859
+  case 69: // instruction: OP_JP snum
+#line 195 "src/assembler/gbparser.ypp"
+               { assembler.assemble(OPCODE_JP_NN, (u8)(yystack_[0].value.as < u16 > () & 0xFF), (u8)((yystack_[0].value.as < u16 > () >> 8) & 0xFF)); }
+#line 1118 "src/assembler/gbparser.cpp"
     break;
 
-  case 70:
-#line 196 "src/assembler/gbparser.ypp" // lalr1.cc:859
-    { assembler.assemble(OPCODE_JP_CC_NN | (yystack_[1].value.as< u16 > () << 3), (u8)(yystack_[0].value.as< u16 > () & 0xFF), (u8)((yystack_[0].value.as< u16 > () >> 8) & 0xFF)); }
-#line 1038 "src/assembler/gbparser.cpp" // lalr1.cc:859
+  case 70: // instruction: OP_JP CC_COND snum
+#line 196 "src/assembler/gbparser.ypp"
+                       { assembler.assemble(OPCODE_JP_CC_NN | (yystack_[1].value.as < u16 > () << 3), (u8)(yystack_[0].value.as < u16 > () & 0xFF), (u8)((yystack_[0].value.as < u16 > () >> 8) & 0xFF)); }
+#line 1124 "src/assembler/gbparser.cpp"
     break;
 
-  case 71:
-#line 197 "src/assembler/gbparser.ypp" // lalr1.cc:859
-    { assembler.assemble(OPCODE_JP_HL); }
-#line 1044 "src/assembler/gbparser.cpp" // lalr1.cc:859
+  case 71: // instruction: OP_JP RS_HL
+#line 197 "src/assembler/gbparser.ypp"
+                { assembler.assemble(OPCODE_JP_HL); }
+#line 1130 "src/assembler/gbparser.cpp"
     break;
 
-  case 72:
-#line 199 "src/assembler/gbparser.ypp" // lalr1.cc:859
-    { assembler.assemble(OPCODE_CALL_NN, (u8)(yystack_[0].value.as< u16 > () & 0xFF), (u8)((yystack_[0].value.as< u16 > () >> 8) & 0xFF)); }
-#line 1050 "src/assembler/gbparser.cpp" // lalr1.cc:859
+  case 72: // instruction: OP_CALL snum
+#line 199 "src/assembler/gbparser.ypp"
+                 { assembler.assemble(OPCODE_CALL_NN, (u8)(yystack_[0].value.as < u16 > () & 0xFF), (u8)((yystack_[0].value.as < u16 > () >> 8) & 0xFF)); }
+#line 1136 "src/assembler/gbparser.cpp"
     break;
 
-  case 73:
-#line 200 "src/assembler/gbparser.ypp" // lalr1.cc:859
-    { assembler.assemble(OPCODE_CALL_CC_NN | (yystack_[1].value.as< u16 > () << 3), (u8)(yystack_[0].value.as< u16 > () & 0xFF), (u8)((yystack_[0].value.as< u16 > () >> 8) & 0xFF)); }
-#line 1056 "src/assembler/gbparser.cpp" // lalr1.cc:859
+  case 73: // instruction: OP_CALL CC_COND snum
+#line 200 "src/assembler/gbparser.ypp"
+                         { assembler.assemble(OPCODE_CALL_CC_NN | (yystack_[1].value.as < u16 > () << 3), (u8)(yystack_[0].value.as < u16 > () & 0xFF), (u8)((yystack_[0].value.as < u16 > () >> 8) & 0xFF)); }
+#line 1142 "src/assembler/gbparser.cpp"
     break;
 
-  case 74:
-#line 202 "src/assembler/gbparser.ypp" // lalr1.cc:859
-    { assembler.aassert(assembler.correctRSTAddress(yystack_[0].value.as< u16 > ()), "RST Address over bounds!"); assembler.assemble(OPCODE_RST | ((yystack_[0].value.as< u16 > ()/8) << 3)); }
-#line 1062 "src/assembler/gbparser.cpp" // lalr1.cc:859
+  case 74: // instruction: OP_RST snum
+#line 202 "src/assembler/gbparser.ypp"
+                { assembler.aassert(assembler.correctRSTAddress(yystack_[0].value.as < u16 > ()), "RST Address over bounds!"); assembler.assemble(OPCODE_RST | ((yystack_[0].value.as < u16 > ()/8) << 3)); }
+#line 1148 "src/assembler/gbparser.cpp"
     break;
 
-  case 75:
-#line 204 "src/assembler/gbparser.ypp" // lalr1.cc:859
-    { assembler.assemble(OPCODE_RET); }
-#line 1068 "src/assembler/gbparser.cpp" // lalr1.cc:859
+  case 75: // instruction: OP_RET
+#line 204 "src/assembler/gbparser.ypp"
+           { assembler.assemble(OPCODE_RET); }
+#line 1154 "src/assembler/gbparser.cpp"
     break;
 
-  case 76:
-#line 205 "src/assembler/gbparser.ypp" // lalr1.cc:859
-    { assembler.assemble(OPCODE_RET_CC | (yystack_[0].value.as< u16 > () << 3)); }
-#line 1074 "src/assembler/gbparser.cpp" // lalr1.cc:859
+  case 76: // instruction: OP_RET CC_COND
+#line 205 "src/assembler/gbparser.ypp"
+                   { assembler.assemble(OPCODE_RET_CC | (yystack_[0].value.as < u16 > () << 3)); }
+#line 1160 "src/assembler/gbparser.cpp"
     break;
 
-  case 77:
-#line 206 "src/assembler/gbparser.ypp" // lalr1.cc:859
-    { assembler.assemble(OPCODE_EXX); }
-#line 1080 "src/assembler/gbparser.cpp" // lalr1.cc:859
+  case 77: // instruction: OP_RETI
+#line 206 "src/assembler/gbparser.ypp"
+            { assembler.assemble(OPCODE_EXX); }
+#line 1166 "src/assembler/gbparser.cpp"
     break;
 
-  case 78:
-#line 208 "src/assembler/gbparser.ypp" // lalr1.cc:859
-    { assembler.assemble(OPCODE_PUSH | (yystack_[0].value.as< u16 > () << 4)); }
-#line 1086 "src/assembler/gbparser.cpp" // lalr1.cc:859
+  case 78: // instruction: OP_PUSH dregaf
+#line 208 "src/assembler/gbparser.ypp"
+                   { assembler.assemble(OPCODE_PUSH | (yystack_[0].value.as < u16 > () << 4)); }
+#line 1172 "src/assembler/gbparser.cpp"
     break;
 
-  case 79:
-#line 209 "src/assembler/gbparser.ypp" // lalr1.cc:859
-    { assembler.assemble(OPCODE_POP | (yystack_[0].value.as< u16 > () << 4)); }
-#line 1092 "src/assembler/gbparser.cpp" // lalr1.cc:859
+  case 79: // instruction: OP_POP dregaf
+#line 209 "src/assembler/gbparser.ypp"
+                  { assembler.assemble(OPCODE_POP | (yystack_[0].value.as < u16 > () << 4)); }
+#line 1178 "src/assembler/gbparser.cpp"
     break;
 
-  case 80:
-#line 211 "src/assembler/gbparser.ypp" // lalr1.cc:859
-    { assembler.assemble(OPCODE_EI); }
-#line 1098 "src/assembler/gbparser.cpp" // lalr1.cc:859
+  case 80: // instruction: OP_EI
+#line 211 "src/assembler/gbparser.ypp"
+          { assembler.assemble(OPCODE_EI); }
+#line 1184 "src/assembler/gbparser.cpp"
     break;
 
-  case 81:
-#line 212 "src/assembler/gbparser.ypp" // lalr1.cc:859
-    { assembler.assemble(OPCODE_DI); }
-#line 1104 "src/assembler/gbparser.cpp" // lalr1.cc:859
+  case 81: // instruction: OP_DI
+#line 212 "src/assembler/gbparser.ypp"
+          { assembler.assemble(OPCODE_DI); }
+#line 1190 "src/assembler/gbparser.cpp"
     break;
 
-  case 82:
-#line 214 "src/assembler/gbparser.ypp" // lalr1.cc:859
-    { assembler.assemble(OPCODE_INC_R | (yystack_[0].value.as< u16 > () << 3)); }
-#line 1110 "src/assembler/gbparser.cpp" // lalr1.cc:859
+  case 82: // instruction: OP_INC sreg
+#line 214 "src/assembler/gbparser.ypp"
+                { assembler.assemble(OPCODE_INC_R | (yystack_[0].value.as < u16 > () << 3)); }
+#line 1196 "src/assembler/gbparser.cpp"
     break;
 
-  case 83:
-#line 215 "src/assembler/gbparser.ypp" // lalr1.cc:859
-    { assembler.assemble(OPCODE_DEC_R | (yystack_[0].value.as< u16 > () << 3)); }
-#line 1116 "src/assembler/gbparser.cpp" // lalr1.cc:859
+  case 83: // instruction: OP_DEC sreg
+#line 215 "src/assembler/gbparser.ypp"
+                { assembler.assemble(OPCODE_DEC_R | (yystack_[0].value.as < u16 > () << 3)); }
+#line 1202 "src/assembler/gbparser.cpp"
     break;
 
-  case 84:
-#line 217 "src/assembler/gbparser.ypp" // lalr1.cc:859
-    { assembler.assemble(OPCODE_INC_RR | (yystack_[0].value.as< u16 > () << 4)); }
-#line 1122 "src/assembler/gbparser.cpp" // lalr1.cc:859
+  case 84: // instruction: OP_INC dreg
+#line 217 "src/assembler/gbparser.ypp"
+                { assembler.assemble(OPCODE_INC_RR | (yystack_[0].value.as < u16 > () << 4)); }
+#line 1208 "src/assembler/gbparser.cpp"
     break;
 
-  case 85:
-#line 218 "src/assembler/gbparser.ypp" // lalr1.cc:859
-    { assembler.assemble(OPCODE_DEC_RR | (yystack_[0].value.as< u16 > () << 4)); }
-#line 1128 "src/assembler/gbparser.cpp" // lalr1.cc:859
+  case 85: // instruction: OP_DEC dreg
+#line 218 "src/assembler/gbparser.ypp"
+                { assembler.assemble(OPCODE_DEC_RR | (yystack_[0].value.as < u16 > () << 4)); }
+#line 1214 "src/assembler/gbparser.cpp"
     break;
 
-  case 86:
-#line 220 "src/assembler/gbparser.ypp" // lalr1.cc:859
-    { assembler.assemble(OPCODE_OUT_N_A, yystack_[2].value.as< u16 > ()); }
-#line 1134 "src/assembler/gbparser.cpp" // lalr1.cc:859
+  case 86: // instruction: OP_OUT snum T_COMMA RS_A
+#line 220 "src/assembler/gbparser.ypp"
+                             { assembler.assemble(OPCODE_OUT_N_A, yystack_[2].value.as < u16 > ()); }
+#line 1220 "src/assembler/gbparser.cpp"
     break;
 
-  case 87:
-#line 221 "src/assembler/gbparser.ypp" // lalr1.cc:859
-    { assembler.assemble(OPCODE_IN_N_A, yystack_[0].value.as< u16 > ()); }
-#line 1140 "src/assembler/gbparser.cpp" // lalr1.cc:859
+  case 87: // instruction: OP_IN RS_A T_COMMA snum
+#line 221 "src/assembler/gbparser.ypp"
+                            { assembler.assemble(OPCODE_IN_N_A, yystack_[0].value.as < u16 > ()); }
+#line 1226 "src/assembler/gbparser.cpp"
     break;
 
-  case 88:
-#line 223 "src/assembler/gbparser.ypp" // lalr1.cc:859
-    { assembler.assemble(OPCODE_EX_AF_AF); }
-#line 1146 "src/assembler/gbparser.cpp" // lalr1.cc:859
+  case 88: // instruction: OP_EX RD_AF T_COMMA RD_AF T_QUOTE
+#line 223 "src/assembler/gbparser.ypp"
+                                      { assembler.assemble(OPCODE_EX_AF_AF); }
+#line 1232 "src/assembler/gbparser.cpp"
     break;
 
-  case 89:
-#line 224 "src/assembler/gbparser.ypp" // lalr1.cc:859
-    { assembler.assemble(OPCODE_EXX); }
-#line 1152 "src/assembler/gbparser.cpp" // lalr1.cc:859
+  case 89: // instruction: OP_EXX
+#line 224 "src/assembler/gbparser.ypp"
+           { assembler.assemble(OPCODE_EXX); }
+#line 1238 "src/assembler/gbparser.cpp"
     break;
 
-  case 90:
-#line 225 "src/assembler/gbparser.ypp" // lalr1.cc:859
-    { assembler.assemble(OPCODE_EX_SP_HL); }
-#line 1158 "src/assembler/gbparser.cpp" // lalr1.cc:859
+  case 90: // instruction: OP_EX RDP_SP T_COMMA RD_HL
+#line 225 "src/assembler/gbparser.ypp"
+                               { assembler.assemble(OPCODE_EX_SP_HL); }
+#line 1244 "src/assembler/gbparser.cpp"
     break;
 
-  case 91:
-#line 226 "src/assembler/gbparser.ypp" // lalr1.cc:859
-    { assembler.assemble(OPCODE_EX_DE_HL); }
-#line 1164 "src/assembler/gbparser.cpp" // lalr1.cc:859
+  case 91: // instruction: OP_EX RD_DE T_COMMA RD_HL
+#line 226 "src/assembler/gbparser.ypp"
+                              { assembler.assemble(OPCODE_EX_DE_HL); }
+#line 1250 "src/assembler/gbparser.cpp"
     break;
 
-  case 92:
-#line 228 "src/assembler/gbparser.ypp" // lalr1.cc:859
-    { assembler.assemble(OPCODE_HALT); }
-#line 1170 "src/assembler/gbparser.cpp" // lalr1.cc:859
+  case 92: // instruction: OP_HALT
+#line 228 "src/assembler/gbparser.ypp"
+            { assembler.assemble(OPCODE_HALT); }
+#line 1256 "src/assembler/gbparser.cpp"
     break;
 
-  case 93:
-#line 236 "src/assembler/gbparser.ypp" // lalr1.cc:859
-    { yylhs.value.as< u16 > () = yystack_[0].value.as< u16 > (); }
-#line 1176 "src/assembler/gbparser.cpp" // lalr1.cc:859
+  case 93: // sreg: RS_B
+#line 236 "src/assembler/gbparser.ypp"
+       { yylhs.value.as < u16 > () = yystack_[0].value.as < u16 > (); }
+#line 1262 "src/assembler/gbparser.cpp"
     break;
 
-  case 94:
-#line 237 "src/assembler/gbparser.ypp" // lalr1.cc:859
-    { yylhs.value.as< u16 > () = yystack_[0].value.as< u16 > (); }
-#line 1182 "src/assembler/gbparser.cpp" // lalr1.cc:859
+  case 94: // sreg: RS_C
+#line 237 "src/assembler/gbparser.ypp"
+       { yylhs.value.as < u16 > () = yystack_[0].value.as < u16 > (); }
+#line 1268 "src/assembler/gbparser.cpp"
     break;
 
-  case 95:
-#line 238 "src/assembler/gbparser.ypp" // lalr1.cc:859
-    { yylhs.value.as< u16 > () = yystack_[0].value.as< u16 > (); }
-#line 1188 "src/assembler/gbparser.cpp" // lalr1.cc:859
+  case 95: // sreg: RS_D
+#line 238 "src/assembler/gbparser.ypp"
+       { yylhs.value.as < u16 > () = yystack_[0].value.as < u16 > (); }
+#line 1274 "src/assembler/gbparser.cpp"
     break;
 
-  case 96:
-#line 239 "src/assembler/gbparser.ypp" // lalr1.cc:859
-    { yylhs.value.as< u16 > () = yystack_[0].value.as< u16 > (); }
-#line 1194 "src/assembler/gbparser.cpp" // lalr1.cc:859
+  case 96: // sreg: RS_E
+#line 239 "src/assembler/gbparser.ypp"
+       { yylhs.value.as < u16 > () = yystack_[0].value.as < u16 > (); }
+#line 1280 "src/assembler/gbparser.cpp"
     break;
 
-  case 97:
-#line 240 "src/assembler/gbparser.ypp" // lalr1.cc:859
-    { yylhs.value.as< u16 > () = yystack_[0].value.as< u16 > (); }
-#line 1200 "src/assembler/gbparser.cpp" // lalr1.cc:859
+  case 97: // sreg: RS_H
+#line 240 "src/assembler/gbparser.ypp"
+       { yylhs.value.as < u16 > () = yystack_[0].value.as < u16 > (); }
+#line 1286 "src/assembler/gbparser.cpp"
     break;
 
-  case 98:
-#line 241 "src/assembler/gbparser.ypp" // lalr1.cc:859
-    { yylhs.value.as< u16 > () = yystack_[0].value.as< u16 > (); }
-#line 1206 "src/assembler/gbparser.cpp" // lalr1.cc:859
+  case 98: // sreg: RS_L
+#line 241 "src/assembler/gbparser.ypp"
+       { yylhs.value.as < u16 > () = yystack_[0].value.as < u16 > (); }
+#line 1292 "src/assembler/gbparser.cpp"
     break;
 
-  case 99:
-#line 242 "src/assembler/gbparser.ypp" // lalr1.cc:859
-    { yylhs.value.as< u16 > () = yystack_[0].value.as< u16 > (); }
-#line 1212 "src/assembler/gbparser.cpp" // lalr1.cc:859
+  case 99: // sreg: RS_HL
+#line 242 "src/assembler/gbparser.ypp"
+        { yylhs.value.as < u16 > () = yystack_[0].value.as < u16 > (); }
+#line 1298 "src/assembler/gbparser.cpp"
     break;
 
-  case 100:
-#line 243 "src/assembler/gbparser.ypp" // lalr1.cc:859
-    { yylhs.value.as< u16 > () = yystack_[0].value.as< u16 > (); }
-#line 1218 "src/assembler/gbparser.cpp" // lalr1.cc:859
+  case 100: // sreg: RS_A
+#line 243 "src/assembler/gbparser.ypp"
+       { yylhs.value.as < u16 > () = yystack_[0].value.as < u16 > (); }
+#line 1304 "src/assembler/gbparser.cpp"
     break;
 
-  case 101:
-#line 247 "src/assembler/gbparser.ypp" // lalr1.cc:859
-    { yylhs.value.as< u16 > () = yystack_[0].value.as< u16 > (); }
-#line 1224 "src/assembler/gbparser.cpp" // lalr1.cc:859
+  case 101: // dreg: RD_BC
+#line 247 "src/assembler/gbparser.ypp"
+        { yylhs.value.as < u16 > () = yystack_[0].value.as < u16 > (); }
+#line 1310 "src/assembler/gbparser.cpp"
     break;
 
-  case 102:
-#line 248 "src/assembler/gbparser.ypp" // lalr1.cc:859
-    { yylhs.value.as< u16 > () = yystack_[0].value.as< u16 > (); }
-#line 1230 "src/assembler/gbparser.cpp" // lalr1.cc:859
+  case 102: // dreg: RD_DE
+#line 248 "src/assembler/gbparser.ypp"
+        { yylhs.value.as < u16 > () = yystack_[0].value.as < u16 > (); }
+#line 1316 "src/assembler/gbparser.cpp"
     break;
 
-  case 103:
-#line 249 "src/assembler/gbparser.ypp" // lalr1.cc:859
-    { yylhs.value.as< u16 > () = yystack_[0].value.as< u16 > (); }
-#line 1236 "src/assembler/gbparser.cpp" // lalr1.cc:859
+  case 103: // dreg: RD_HL
+#line 249 "src/assembler/gbparser.ypp"
+        { yylhs.value.as < u16 > () = yystack_[0].value.as < u16 > (); }
+#line 1322 "src/assembler/gbparser.cpp"
     break;
 
-  case 104:
-#line 250 "src/assembler/gbparser.ypp" // lalr1.cc:859
-    { yylhs.value.as< u16 > () = yystack_[0].value.as< u16 > (); }
-#line 1242 "src/assembler/gbparser.cpp" // lalr1.cc:859
+  case 104: // dreg: RD_SP
+#line 250 "src/assembler/gbparser.ypp"
+        { yylhs.value.as < u16 > () = yystack_[0].value.as < u16 > (); }
+#line 1328 "src/assembler/gbparser.cpp"
     break;
 
-  case 105:
-#line 254 "src/assembler/gbparser.ypp" // lalr1.cc:859
-    { yylhs.value.as< u16 > () = yystack_[0].value.as< u16 > (); }
-#line 1248 "src/assembler/gbparser.cpp" // lalr1.cc:859
+  case 105: // dregaf: RD_BC
+#line 254 "src/assembler/gbparser.ypp"
+        { yylhs.value.as < u16 > () = yystack_[0].value.as < u16 > (); }
+#line 1334 "src/assembler/gbparser.cpp"
     break;
 
-  case 106:
-#line 255 "src/assembler/gbparser.ypp" // lalr1.cc:859
-    { yylhs.value.as< u16 > () = yystack_[0].value.as< u16 > (); }
-#line 1254 "src/assembler/gbparser.cpp" // lalr1.cc:859
+  case 106: // dregaf: RD_DE
+#line 255 "src/assembler/gbparser.ypp"
+        { yylhs.value.as < u16 > () = yystack_[0].value.as < u16 > (); }
+#line 1340 "src/assembler/gbparser.cpp"
     break;
 
-  case 107:
-#line 256 "src/assembler/gbparser.ypp" // lalr1.cc:859
-    { yylhs.value.as< u16 > () = yystack_[0].value.as< u16 > (); }
-#line 1260 "src/assembler/gbparser.cpp" // lalr1.cc:859
+  case 107: // dregaf: RD_HL
+#line 256 "src/assembler/gbparser.ypp"
+        { yylhs.value.as < u16 > () = yystack_[0].value.as < u16 > (); }
+#line 1346 "src/assembler/gbparser.cpp"
     break;
 
-  case 108:
-#line 257 "src/assembler/gbparser.ypp" // lalr1.cc:859
-    { yylhs.value.as< u16 > () = yystack_[0].value.as< u16 > (); }
-#line 1266 "src/assembler/gbparser.cpp" // lalr1.cc:859
+  case 108: // dregaf: RD_AF
+#line 257 "src/assembler/gbparser.ypp"
+        { yylhs.value.as < u16 > () = yystack_[0].value.as < u16 > (); }
+#line 1352 "src/assembler/gbparser.cpp"
     break;
 
-  case 109:
-#line 261 "src/assembler/gbparser.ypp" // lalr1.cc:859
-    { yylhs.value.as< u16 > () = yystack_[0].value.as< u16 > (); }
-#line 1272 "src/assembler/gbparser.cpp" // lalr1.cc:859
+  case 109: // snum: U16
+#line 261 "src/assembler/gbparser.ypp"
+      { yylhs.value.as < u16 > () = yystack_[0].value.as < u16 > (); }
+#line 1358 "src/assembler/gbparser.cpp"
     break;
 
-  case 110:
-#line 265 "src/assembler/gbparser.ypp" // lalr1.cc:859
-    { yylhs.value.as< u16 > () = yystack_[1].value.as< u16 > (); }
-#line 1278 "src/assembler/gbparser.cpp" // lalr1.cc:859
+  case 110: // pnum: T_LPAREN U16 T_RPAREN
+#line 265 "src/assembler/gbparser.ypp"
+                        { yylhs.value.as < u16 > () = yystack_[1].value.as < u16 > (); }
+#line 1364 "src/assembler/gbparser.cpp"
     break;
 
 
-#line 1282 "src/assembler/gbparser.cpp" // lalr1.cc:859
+#line 1368 "src/assembler/gbparser.cpp"
+
             default:
               break;
             }
         }
+#if YY_EXCEPTIONS
       catch (const syntax_error& yyexc)
         {
+          YYCDEBUG << "Caught exception: " << yyexc.what() << '\n';
           error (yyexc);
           YYERROR;
         }
+#endif // YY_EXCEPTIONS
       YY_SYMBOL_PRINT ("-> $$ =", yylhs);
       yypop_ (yylen);
       yylen = 0;
-      YY_STACK_PRINT ();
 
       // Shift the result of the reduction.
-      yypush_ (YY_NULLPTR, yylhs);
+      yypush_ (YY_NULLPTR, YY_MOVE (yylhs));
     }
     goto yynewstate;
+
 
   /*--------------------------------------.
   | yyerrlab -- here on detecting error.  |
@@ -1306,7 +1396,9 @@ namespace assembler {
     if (!yyerrstatus_)
       {
         ++yynerrs_;
-        error (yyla.location, yysyntax_error_ (yystack_[0].state, yyla));
+        context yyctx (*this, yyla);
+        std::string msg = yysyntax_error_ (yyctx);
+        error (yyla.location, YY_MOVE (msg));
       }
 
 
@@ -1317,7 +1409,7 @@ namespace assembler {
            error, discard it.  */
 
         // Return failure if at end of input.
-        if (yyla.type_get () == yyeof_)
+        if (yyla.kind () == symbol_kind::S_YYEOF)
           YYABORT;
         else if (!yyla.empty ())
           {
@@ -1334,69 +1426,81 @@ namespace assembler {
   | yyerrorlab -- error raised explicitly by YYERROR.  |
   `---------------------------------------------------*/
   yyerrorlab:
-
-    /* Pacify compilers like GCC when the user code never invokes
-       YYERROR and the label yyerrorlab therefore never appears in user
-       code.  */
+    /* Pacify compilers when the user code never invokes YYERROR and
+       the label yyerrorlab therefore never appears in user code.  */
     if (false)
-      goto yyerrorlab;
-    yyerror_range[1].location = yystack_[yylen - 1].location;
+      YYERROR;
+
     /* Do not reclaim the symbols of the rule whose action triggered
        this YYERROR.  */
     yypop_ (yylen);
     yylen = 0;
+    YY_STACK_PRINT ();
     goto yyerrlab1;
+
 
   /*-------------------------------------------------------------.
   | yyerrlab1 -- common code for both syntax error and YYERROR.  |
   `-------------------------------------------------------------*/
   yyerrlab1:
     yyerrstatus_ = 3;   // Each real token shifted decrements this.
+    // Pop stack until we find a state that shifts the error token.
+    for (;;)
+      {
+        yyn = yypact_[+yystack_[0].state];
+        if (!yy_pact_value_is_default_ (yyn))
+          {
+            yyn += symbol_kind::S_YYerror;
+            if (0 <= yyn && yyn <= yylast_
+                && yycheck_[yyn] == symbol_kind::S_YYerror)
+              {
+                yyn = yytable_[yyn];
+                if (0 < yyn)
+                  break;
+              }
+          }
+
+        // Pop the current state because it cannot handle the error token.
+        if (yystack_.size () == 1)
+          YYABORT;
+
+        yyerror_range[1].location = yystack_[0].location;
+        yy_destroy_ ("Error: popping", yystack_[0]);
+        yypop_ ();
+        YY_STACK_PRINT ();
+      }
     {
       stack_symbol_type error_token;
-      for (;;)
-        {
-          yyn = yypact_[yystack_[0].state];
-          if (!yy_pact_value_is_default_ (yyn))
-            {
-              yyn += yyterror_;
-              if (0 <= yyn && yyn <= yylast_ && yycheck_[yyn] == yyterror_)
-                {
-                  yyn = yytable_[yyn];
-                  if (0 < yyn)
-                    break;
-                }
-            }
-
-          // Pop the current state because it cannot handle the error token.
-          if (yystack_.size () == 1)
-            YYABORT;
-
-          yyerror_range[1].location = yystack_[0].location;
-          yy_destroy_ ("Error: popping", yystack_[0]);
-          yypop_ ();
-          YY_STACK_PRINT ();
-        }
 
       yyerror_range[2].location = yyla.location;
       YYLLOC_DEFAULT (error_token.location, yyerror_range, 2);
 
       // Shift the error token.
-      error_token.state = yyn;
-      yypush_ ("Shifting", error_token);
+      error_token.state = state_type (yyn);
+      yypush_ ("Shifting", YY_MOVE (error_token));
     }
     goto yynewstate;
 
-    // Accept.
+
+  /*-------------------------------------.
+  | yyacceptlab -- YYACCEPT comes here.  |
+  `-------------------------------------*/
   yyacceptlab:
     yyresult = 0;
     goto yyreturn;
 
-    // Abort.
+
+  /*-----------------------------------.
+  | yyabortlab -- YYABORT comes here.  |
+  `-----------------------------------*/
   yyabortlab:
     yyresult = 1;
     goto yyreturn;
 
+
+  /*-----------------------------------------------------.
+  | yyreturn -- parsing is finished, return the result.  |
+  `-----------------------------------------------------*/
   yyreturn:
     if (!yyla.empty ())
       yy_destroy_ ("Cleanup: discarding lookahead", yyla);
@@ -1404,6 +1508,7 @@ namespace assembler {
     /* Do not reclaim the symbols of the rule whose action triggered
        this YYABORT or YYACCEPT.  */
     yypop_ (yylen);
+    YY_STACK_PRINT ();
     while (1 < yystack_.size ())
       {
         yy_destroy_ ("Cleanup: popping", yystack_[0]);
@@ -1412,12 +1517,12 @@ namespace assembler {
 
     return yyresult;
   }
+#if YY_EXCEPTIONS
     catch (...)
       {
-        YYCDEBUG << "Exception caught: cleaning lookahead and stack"
-                 << std::endl;
+        YYCDEBUG << "Exception caught: cleaning lookahead and stack\n";
         // Do not try to display the values of the reclaimed symbols,
-        // as their printer might throw an exception.
+        // as their printers might throw an exception.
         if (!yyla.empty ())
           yy_destroy_ (YY_NULLPTR, yyla);
 
@@ -1428,26 +1533,109 @@ namespace assembler {
           }
         throw;
       }
+#endif // YY_EXCEPTIONS
   }
 
   void
   Parser::error (const syntax_error& yyexc)
   {
-    error (yyexc.location, yyexc.what());
+    error (yyexc.location, yyexc.what ());
   }
 
-  // Generate an error message.
+  /* Return YYSTR after stripping away unnecessary quotes and
+     backslashes, so that it's suitable for yyerror.  The heuristic is
+     that double-quoting is unnecessary unless the string contains an
+     apostrophe, a comma, or backslash (other than backslash-backslash).
+     YYSTR is taken from yytname.  */
   std::string
-  Parser::yysyntax_error_ (state_type yystate, const symbol_type& yyla) const
+  Parser::yytnamerr_ (const char *yystr)
   {
-    // Number of reported tokens (one for the "unexpected", one per
-    // "expected").
-    size_t yycount = 0;
-    // Its maximum.
-    enum { YYERROR_VERBOSE_ARGS_MAXIMUM = 5 };
-    // Arguments of yyformat.
-    char const *yyarg[YYERROR_VERBOSE_ARGS_MAXIMUM];
+    if (*yystr == '"')
+      {
+        std::string yyr;
+        char const *yyp = yystr;
 
+        for (;;)
+          switch (*++yyp)
+            {
+            case '\'':
+            case ',':
+              goto do_not_strip_quotes;
+
+            case '\\':
+              if (*++yyp != '\\')
+                goto do_not_strip_quotes;
+              else
+                goto append;
+
+            append:
+            default:
+              yyr += *yyp;
+              break;
+
+            case '"':
+              return yyr;
+            }
+      do_not_strip_quotes: ;
+      }
+
+    return yystr;
+  }
+
+  std::string
+  Parser::symbol_name (symbol_kind_type yysymbol)
+  {
+    return yytnamerr_ (yytname_[yysymbol]);
+  }
+
+
+
+  // Parser::context.
+  Parser::context::context (const Parser& yyparser, const symbol_type& yyla)
+    : yyparser_ (yyparser)
+    , yyla_ (yyla)
+  {}
+
+  int
+  Parser::context::expected_tokens (symbol_kind_type yyarg[], int yyargn) const
+  {
+    // Actual number of expected tokens
+    int yycount = 0;
+
+    int yyn = yypact_[+yyparser_.yystack_[0].state];
+    if (!yy_pact_value_is_default_ (yyn))
+      {
+        /* Start YYX at -YYN if negative to avoid negative indexes in
+           YYCHECK.  In other words, skip the first -YYN actions for
+           this state because they are default actions.  */
+        int yyxbegin = yyn < 0 ? -yyn : 0;
+        // Stay within bounds of both yycheck and yytname.
+        int yychecklim = yylast_ - yyn + 1;
+        int yyxend = yychecklim < YYNTOKENS ? yychecklim : YYNTOKENS;
+        for (int yyx = yyxbegin; yyx < yyxend; ++yyx)
+          if (yycheck_[yyx + yyn] == yyx && yyx != symbol_kind::S_YYerror
+              && !yy_table_value_is_error_ (yytable_[yyx + yyn]))
+            {
+              if (!yyarg)
+                ++yycount;
+              else if (yycount == yyargn)
+                return 0;
+              else
+                yyarg[yycount++] = YY_CAST (symbol_kind_type, yyx);
+            }
+      }
+
+    if (yyarg && yycount == 0 && 0 < yyargn)
+      yyarg[0] = symbol_kind::S_YYEMPTY;
+    return yycount;
+  }
+
+
+
+  int
+  Parser::yy_syntax_error_arguments_ (const context& yyctx,
+                                                 symbol_kind_type yyarg[], int yyargn) const
+  {
     /* There are many possibilities here to consider:
        - If this state is a consistent state with a default action, then
          the only way this function was invoked is if the default action
@@ -1466,41 +1654,32 @@ namespace assembler {
        - Of course, the expected token list depends on states to have
          correct lookahead information, and it depends on the parser not
          to perform extra reductions after fetching a lookahead from the
-         scanner and before detecting a syntax error.  Thus, state
-         merging (from LALR or IELR) and default reductions corrupt the
-         expected token list.  However, the list is correct for
-         canonical LR with one exception: it will still contain any
-         token that will not be accepted due to an error action in a
-         later state.
+         scanner and before detecting a syntax error.  Thus, state merging
+         (from LALR or IELR) and default reductions corrupt the expected
+         token list.  However, the list is correct for canonical LR with
+         one exception: it will still contain any token that will not be
+         accepted due to an error action in a later state.
     */
-    if (!yyla.empty ())
+
+    if (!yyctx.lookahead ().empty ())
       {
-        int yytoken = yyla.type_get ();
-        yyarg[yycount++] = yytname_[yytoken];
-        int yyn = yypact_[yystate];
-        if (!yy_pact_value_is_default_ (yyn))
-          {
-            /* Start YYX at -YYN if negative to avoid negative indexes in
-               YYCHECK.  In other words, skip the first -YYN actions for
-               this state because they are default actions.  */
-            int yyxbegin = yyn < 0 ? -yyn : 0;
-            // Stay within bounds of both yycheck and yytname.
-            int yychecklim = yylast_ - yyn + 1;
-            int yyxend = yychecklim < yyntokens_ ? yychecklim : yyntokens_;
-            for (int yyx = yyxbegin; yyx < yyxend; ++yyx)
-              if (yycheck_[yyx + yyn] == yyx && yyx != yyterror_
-                  && !yy_table_value_is_error_ (yytable_[yyx + yyn]))
-                {
-                  if (yycount == YYERROR_VERBOSE_ARGS_MAXIMUM)
-                    {
-                      yycount = 1;
-                      break;
-                    }
-                  else
-                    yyarg[yycount++] = yytname_[yyx];
-                }
-          }
+        if (yyarg)
+          yyarg[0] = yyctx.token ();
+        int yyn = yyctx.expected_tokens (yyarg ? yyarg + 1 : yyarg, yyargn - 1);
+        return yyn + 1;
       }
+    return 0;
+  }
+
+  // Generate an error message.
+  std::string
+  Parser::yysyntax_error_ (const context& yyctx) const
+  {
+    // Its maximum.
+    enum { YYARGS_MAX = 5 };
+    // Arguments of yyformat.
+    symbol_kind_type yyarg[YYARGS_MAX];
+    int yycount = yy_syntax_error_arguments_ (yyctx, yyarg, YYARGS_MAX);
 
     char const* yyformat = YY_NULLPTR;
     switch (yycount)
@@ -1509,22 +1688,23 @@ namespace assembler {
         case N:                               \
           yyformat = S;                       \
         break
-        YYCASE_(0, YY_("syntax error"));
-        YYCASE_(1, YY_("syntax error, unexpected %s"));
-        YYCASE_(2, YY_("syntax error, unexpected %s, expecting %s"));
-        YYCASE_(3, YY_("syntax error, unexpected %s, expecting %s or %s"));
-        YYCASE_(4, YY_("syntax error, unexpected %s, expecting %s or %s or %s"));
-        YYCASE_(5, YY_("syntax error, unexpected %s, expecting %s or %s or %s or %s"));
+      default: // Avoid compiler warnings.
+        YYCASE_ (0, YY_("syntax error"));
+        YYCASE_ (1, YY_("syntax error, unexpected %s"));
+        YYCASE_ (2, YY_("syntax error, unexpected %s, expecting %s"));
+        YYCASE_ (3, YY_("syntax error, unexpected %s, expecting %s or %s"));
+        YYCASE_ (4, YY_("syntax error, unexpected %s, expecting %s or %s or %s"));
+        YYCASE_ (5, YY_("syntax error, unexpected %s, expecting %s or %s or %s or %s"));
 #undef YYCASE_
       }
 
     std::string yyres;
     // Argument number.
-    size_t yyi = 0;
+    std::ptrdiff_t yyi = 0;
     for (char const* yyp = yyformat; *yyp; ++yyp)
       if (yyp[0] == '%' && yyp[1] == 's' && yyi < yycount)
         {
-          yyres += yytnamerr_ (yyarg[yyi++]);
+          yyres += symbol_name (yyarg[yyi++]);
           ++yyp;
         }
       else
@@ -1537,7 +1717,7 @@ namespace assembler {
 
   const signed char Parser::yytable_ninf_ = -1;
 
-  const short int
+  const short
   Parser::yypact_[] =
   {
      -69,    13,   -69,   -69,   166,   -69,   -69,   -69,    38,   -68,
@@ -1562,7 +1742,7 @@ namespace assembler {
      -69,   -69,   -69
   };
 
-  const unsigned char
+  const signed char
   Parser::yydefact_[] =
   {
        2,     0,     4,     1,     3,     6,     7,     8,     0,     0,
@@ -1587,13 +1767,13 @@ namespace assembler {
       20,    25,   110
   };
 
-  const short int
+  const short
   Parser::yypgoto_[] =
   {
      -69,   -69,   -69,   -69,   -69,    21,   -10,   128,   -13,    24
   };
 
-  const short int
+  const short
   Parser::yydefgoto_[] =
   {
       -1,     1,     2,     4,    61,    77,    78,   121,    86,   169
@@ -1629,7 +1809,7 @@ namespace assembler {
       70,    71,    72
   };
 
-  const short int
+  const short
   Parser::yycheck_[] =
   {
       13,    14,    15,    16,    17,    18,    74,    75,    21,    19,
@@ -1659,7 +1839,7 @@ namespace assembler {
       73,    74,    75
   };
 
-  const unsigned char
+  const signed char
   Parser::yystos_[] =
   {
        0,    86,    87,     0,    88,    11,    12,    13,    14,    15,
@@ -1684,7 +1864,7 @@ namespace assembler {
       78,    79,     6
   };
 
-  const unsigned char
+  const signed char
   Parser::yyr1_[] =
   {
        0,    85,    87,    86,    88,    88,    88,    89,    89,    89,
@@ -1701,7 +1881,7 @@ namespace assembler {
       94
   };
 
-  const unsigned char
+  const signed char
   Parser::yyr2_[] =
   {
        0,     2,     0,     2,     0,     2,     2,     1,     1,     4,
@@ -1719,13 +1899,13 @@ namespace assembler {
   };
 
 
-
+#if YYDEBUG || 1
   // YYTNAME[SYMBOL-NUM] -- String name of the symbol SYMBOL-NUM.
-  // First, the terminals, then, starting at \a yyntokens_, nonterminals.
+  // First, the terminals, then, starting at \a YYNTOKENS, nonterminals.
   const char*
   const Parser::yytname_[] =
   {
-  "\"end of file\"", "error", "$undefined", "T_COLON", "T_COMMA",
+  "\"end of file\"", "error", "\"invalid token\"", "T_COLON", "T_COMMA",
   "T_LPAREN", "T_RPAREN", "T_QUOTE", "RDP_BC", "RDP_DE", "RDP_SP",
   "\"\\n\"", "OP_NOP", "OP_STOP", "OP_LD", "OP_LDI", "OP_LDD", "OP_HALT",
   "OP_ADD", "OP_ADC", "OP_SUB", "OP_SBC", "OP_AND", "OP_XOR", "OP_OR",
@@ -1740,9 +1920,11 @@ namespace assembler {
   "IDENTIFIER", "$accept", "start", "$@1", "instructions", "instruction",
   "sreg", "dreg", "dregaf", "snum", "pnum", YY_NULLPTR
   };
+#endif
+
 
 #if YYDEBUG
-  const unsigned short int
+  const short
   Parser::yyrline_[] =
   {
        0,   106,   106,   106,   109,   110,   111,   116,   117,   120,
@@ -1759,28 +1941,26 @@ namespace assembler {
      265
   };
 
-  // Print the state stack on the debug stream.
   void
-  Parser::yystack_print_ ()
+  Parser::yy_stack_print_ () const
   {
     *yycdebug_ << "Stack now";
     for (stack_type::const_iterator
            i = yystack_.begin (),
            i_end = yystack_.end ();
          i != i_end; ++i)
-      *yycdebug_ << ' ' << i->state;
-    *yycdebug_ << std::endl;
+      *yycdebug_ << ' ' << int (i->state);
+    *yycdebug_ << '\n';
   }
 
-  // Report on the debug stream that the rule \a yyrule is going to be reduced.
   void
-  Parser::yy_reduce_print_ (int yyrule)
+  Parser::yy_reduce_print_ (int yyrule) const
   {
-    unsigned int yylno = yyrline_[yyrule];
+    int yylno = yyrline_[yyrule];
     int yynrhs = yyr2_[yyrule];
     // Print the symbols being reduced, and their result.
     *yycdebug_ << "Reducing stack by rule " << yyrule - 1
-               << " (line " << yylno << "):" << std::endl;
+               << " (line " << yylno << "):\n";
     // The symbols being reduced.
     for (int yyi = 0; yyi < yynrhs; yyi++)
       YY_SYMBOL_PRINT ("   $" << yyi + 1 << " =",
@@ -1789,10 +1969,11 @@ namespace assembler {
 #endif // YYDEBUG
 
 
-#line 5 "src/assembler/gbparser.ypp" // lalr1.cc:1167
+#line 5 "src/assembler/gbparser.ypp"
 } // assembler
-#line 1795 "src/assembler/gbparser.cpp" // lalr1.cc:1167
-#line 273 "src/assembler/gbparser.ypp" // lalr1.cc:1168
+#line 1975 "src/assembler/gbparser.cpp"
+
+#line 273 "src/assembler/gbparser.ypp"
 
 
 void assembler::Parser::error(const location_type& l, const std::string& m)

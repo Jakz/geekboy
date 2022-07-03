@@ -1,9 +1,9 @@
 Terminals unused in grammar
 
-   T_COLON
-   FLOAT
-   LITERAL
-   IDENTIFIER
+    T_COLON
+    FLOAT
+    LITERAL
+    IDENTIFIER
 
 
 Grammar
@@ -131,121 +131,123 @@ Grammar
 
 Terminals, with rules where they appear
 
-"end of file" (0) 0
-error (256)
-T_COLON (258)
-T_COMMA (259) 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 55 56
-    57 61 85 86 87 89 90
-T_LPAREN (260) 16 19 24 109
-T_RPAREN (261) 16 19 24 109
-T_QUOTE (262) 87
-RDP_BC (263) 11 13
-RDP_DE (264) 12 14
-RDP_SP (265) 89
-"\n" (266) 5
-OP_NOP (267) 6
-OP_STOP (268) 7
-OP_LD (269) 8 9 10 11 12 13 14 15 16 17 18 19 24
-OP_LDI (270) 20 21
-OP_LDD (271) 22 23
-OP_HALT (272) 91
-OP_ADD (273) 25 34 61
-OP_ADC (274) 26 35
-OP_SUB (275) 27 36
-OP_SBC (276) 28 37
-OP_AND (277) 30 38
-OP_XOR (278) 31 39
-OP_OR (279) 32 40
-OP_INC (280) 81 83
-OP_DEC (281) 82 84
-OP_CP (282) 33 41
-OP_DAA (283) 29
-OP_RLCA (284) 42
-OP_RLA (285) 43
-OP_RRCA (286) 44
-OP_RRA (287) 45
-OP_CPL (288) 58
-OP_CCF (289) 60
-OP_SCF (290) 59
-OP_DJNZ (291) 62
-OP_JR (292) 63
-OP_JRNZ (293) 64
-OP_JRZ (294) 65
-OP_JRNC (295) 66
-OP_JRC (296) 67
-OP_CALL (297) 71 72
-OP_RET (298) 74 75
-OP_JP (299) 68 69 70
-OP_PUSH (300) 77
-OP_POP (301) 78
-OP_RST (302) 73
-OP_RETI (303) 76
-OP_BIT (304) 55
-OP_RES (305) 56
-OP_SET (306) 57
-OP_RLC (307) 46
-OP_RL (308) 47
-OP_RRC (309) 48
-OP_RR (310) 49
-OP_SLA (311) 50
-OP_SRA (312) 51
-OP_SLL (313) 52
-OP_SRL (314) 53
-OP_SWAP (315) 54
-OP_EI (316) 79
-OP_DI (317) 80
-OP_OUT (318) 85
-OP_IN (319) 86
-OP_EX (320) 87 89 90
-OP_EXX (321) 88
-U16 (322) 108 109
-RS_B (323) 92
-RS_C (324) 93
-RS_D (325) 94
-RS_E (326) 95
-RS_H (327) 96
-RS_L (328) 97
-RS_HL (329) 20 21 22 23 70 98
-RS_A (330) 11 12 16 20 21 22 23 85 86 99
-RD_BC (331) 100 104
-RD_DE (332) 90 101 105
-RD_HL (333) 15 19 61 89 90 102 106
-RD_SP (334) 24 103
-RD_AF (335) 87 107
-CC_COND (336) 69 72 75
-FLOAT (337)
-LITERAL (338)
-IDENTIFIER (339)
+    "end of file" (0) 0
+    error (256)
+    T_COLON (258)
+    T_COMMA (259) 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 55 56 57 61 85 86 87 89 90
+    T_LPAREN (260) 16 19 24 109
+    T_RPAREN (261) 16 19 24 109
+    T_QUOTE (262) 87
+    RDP_BC (263) 11 13
+    RDP_DE (264) 12 14
+    RDP_SP (265) 89
+    "\n" (266) 5
+    OP_NOP (267) 6
+    OP_STOP (268) 7
+    OP_LD (269) 8 9 10 11 12 13 14 15 16 17 18 19 24
+    OP_LDI (270) 20 21
+    OP_LDD (271) 22 23
+    OP_HALT (272) 91
+    OP_ADD (273) 25 34 61
+    OP_ADC (274) 26 35
+    OP_SUB (275) 27 36
+    OP_SBC (276) 28 37
+    OP_AND (277) 30 38
+    OP_XOR (278) 31 39
+    OP_OR (279) 32 40
+    OP_INC (280) 81 83
+    OP_DEC (281) 82 84
+    OP_CP (282) 33 41
+    OP_DAA (283) 29
+    OP_RLCA (284) 42
+    OP_RLA (285) 43
+    OP_RRCA (286) 44
+    OP_RRA (287) 45
+    OP_CPL (288) 58
+    OP_CCF (289) 60
+    OP_SCF (290) 59
+    OP_DJNZ (291) 62
+    OP_JR (292) 63
+    OP_JRNZ (293) 64
+    OP_JRZ (294) 65
+    OP_JRNC (295) 66
+    OP_JRC (296) 67
+    OP_CALL (297) 71 72
+    OP_RET (298) 74 75
+    OP_JP (299) 68 69 70
+    OP_PUSH (300) 77
+    OP_POP (301) 78
+    OP_RST (302) 73
+    OP_RETI (303) 76
+    OP_BIT (304) 55
+    OP_RES (305) 56
+    OP_SET (306) 57
+    OP_RLC (307) 46
+    OP_RL (308) 47
+    OP_RRC (309) 48
+    OP_RR (310) 49
+    OP_SLA (311) 50
+    OP_SRA (312) 51
+    OP_SLL (313) 52
+    OP_SRL (314) 53
+    OP_SWAP (315) 54
+    OP_EI (316) 79
+    OP_DI (317) 80
+    OP_OUT (318) 85
+    OP_IN (319) 86
+    OP_EX (320) 87 89 90
+    OP_EXX (321) 88
+    U16 <u16> (322) 108 109
+    RS_B <u16> (323) 92
+    RS_C <u16> (324) 93
+    RS_D <u16> (325) 94
+    RS_E <u16> (326) 95
+    RS_H <u16> (327) 96
+    RS_L <u16> (328) 97
+    RS_HL <u16> (329) 20 21 22 23 70 98
+    RS_A <u16> (330) 11 12 16 20 21 22 23 85 86 99
+    RD_BC <u16> (331) 100 104
+    RD_DE <u16> (332) 90 101 105
+    RD_HL <u16> (333) 15 19 61 89 90 102 106
+    RD_SP <u16> (334) 24 103
+    RD_AF <u16> (335) 87 107
+    CC_COND <u16> (336) 69 72 75
+    FLOAT <float> (337)
+    LITERAL <std::string> (338)
+    IDENTIFIER <std::string> (339)
 
 
 Nonterminals, with rules where they appear
 
-$accept (85)
-    on left: 0
-start (86)
-    on left: 2, on right: 0
-$@1 (87)
-    on left: 1, on right: 2
-instructions (88)
-    on left: 3 4 5, on right: 2 4 5
-instruction (89)
-    on left: 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25
-    26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46
-    47 48 49 50 51 52 53 54 55 56 57 58 59 60 61 62 63 64 65 66 67
-    68 69 70 71 72 73 74 75 76 77 78 79 80 81 82 83 84 85 86 87 88
-    89 90 91, on right: 4
-sreg (90)
-    on left: 92 93 94 95 96 97 98 99, on right: 8 9 13 14 17 25 26
-    27 28 30 31 32 33 46 47 48 49 50 51 52 53 54 55 56 57 81 82
-dreg (91)
-    on left: 100 101 102 103, on right: 10 15 18 61 83 84
-dregaf (92)
-    on left: 104 105 106 107, on right: 77 78
-snum (93)
-    on left: 108, on right: 9 10 16 19 24 34 35 36 37 38 39 40 41 55
-    56 57 62 63 64 65 66 67 68 69 71 72 73 85 86
-pnum (94)
-    on left: 109, on right: 17 18
+    $accept (85)
+        on left: 0
+    start (86)
+        on left: 2
+        on right: 0
+    $@1 (87)
+        on left: 1
+        on right: 2
+    instructions (88)
+        on left: 3 4 5
+        on right: 2 4 5
+    instruction <u16> (89)
+        on left: 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59 60 61 62 63 64 65 66 67 68 69 70 71 72 73 74 75 76 77 78 79 80 81 82 83 84 85 86 87 88 89 90 91
+        on right: 4
+    sreg <u16> (90)
+        on left: 92 93 94 95 96 97 98 99
+        on right: 8 9 13 14 17 25 26 27 28 30 31 32 33 46 47 48 49 50 51 52 53 54 55 56 57 81 82
+    dreg <u16> (91)
+        on left: 100 101 102 103
+        on right: 10 15 18 61 83 84
+    dregaf <u16> (92)
+        on left: 104 105 106 107
+        on right: 77 78
+    snum <u16> (93)
+        on left: 108
+        on right: 9 10 16 19 24 34 35 36 37 38 39 40 41 55 56 57 62 63 64 65 66 67 68 69 71 72 73 85 86
+    pnum <u16> (94)
+        on left: 109
+        on right: 17 18
 
 
 State 0

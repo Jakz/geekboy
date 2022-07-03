@@ -5,17 +5,16 @@
 
 using namespace std;
 
-void startWithArgs(const vector<string>& args)
+void startWithArgs(vector<string> args)
 {
   if (args.size() < 2)
-    return;
-  
-  
+    //args.push_back("F:\\Misc\\Roms\\Nintendo - GameBoy\\Super Mario Land.gb");
+    args.push_back("tests\\mem_timing.gb");
   
   Screen::i()->execute(args[1]);
 }
 
-int SDL_main(int argc, char **argv)
+int main(int argc, char** argv)
 {
   vector<string> args;
   for (int i = 0; i < argc; ++i)
@@ -25,10 +24,3 @@ int SDL_main(int argc, char **argv)
 
   return 0;
 }
-
-#ifdef __linux__
-int main(int argc, char **argv)
-{
-  SDL_main(argc,argv);
-}
-#endif
