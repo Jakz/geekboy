@@ -17,7 +17,7 @@
 #include "emulator.h"
 #include "ui/font.h"
 
-using pixel_type = gb::Display<gb::PixelFormat::ARGB8>::Pixel::type;
+using pixel_type = gb::Display<gb::Emulator::PIXEL_TYPE>::Pixel::type;
 
 #define FPS (60)
 
@@ -28,27 +28,29 @@ using pixel_type = gb::Display<gb::PixelFormat::ARGB8>::Pixel::type;
 
 struct Surface
 {
-  std::unique_ptr<pixel_type[]> _data;
-  const GLsizei width, height;
+  size_t width, height;
+  
+  SDL_Renderer* renderer;
+  SDL_Surface* surface;
+  SDL_Texture* texture;
 
-  Surface(Surface&& other) : width(other.width), height(other.height), _data(std::move(other._data)) { }
-  Surface& operator=(Surface&& other)
+  Surface(size_t width, size_t height) : width(width), height(height)
   {
-    _data = std::move(other._data);
-    return *this;
+
   }
 
-  Surface(const Surface& other) = delete;
-  Surface& operator=(Surface& other) = delete;
+  void init(SDL_Renderer* renderer);
 
-  Surface(GLsizei width, GLsizei height) : _data(new pixel_type[width*height]), width(width), height(height) { }
+  void render(s32 x, s32 y, float scale)
+  {
+    SDL_Rect dest = SDL_Rect{ (short)x, (short)y , (short)(width * scale), (short)(height * scale) };
+    SDL_RenderCopy(renderer, texture, nullptr, &dest);
+  }
 
+  void update() { SDL_UpdateTexture(texture, nullptr, surface->pixels, surface->pitch); }
 
-  void set(GLsizei x, GLsizei y, pixel_type p) { _data[x+y*width] = p; }
-  void fill(pixel_type p) { std::fill(_data.get(), _data.get()+width*height, p); }
-
-  pixel_type* data() { return _data.get(); }
-  const pixel_type* data() const { return _data.get(); }
+  void set(GLsizei x, GLsizei y, pixel_type p) { ((pixel_type*)surface->pixels)[x+y*width] = p; }
+  void fill(pixel_type p) { std::fill((pixel_type*)surface->pixels, (pixel_type*)surface->pixels + width * height, p); }
 };
 
 constexpr size_t SPRITE_SIZE = 8;
@@ -135,9 +137,6 @@ class Screen
   bool paused;
 
   clock_t crender, cloop;
-
-  void draw(int x, int y, float scale, const void* data, int width, int height);
-  void draw(int x, int y, const Surface& surface, float scale);
 
   void drawString(const std::string& txt, int x, int y, float scale);
 

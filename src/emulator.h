@@ -27,6 +27,9 @@ enum Mode
 
 class Emulator
 {
+public:
+  static constexpr PixelFormat PIXEL_TYPE = PixelFormat::ARGB8;
+
 private:
 
   s32 dividerCounter;
@@ -73,7 +76,7 @@ public:
 
   CpuGB cpu;
   Memory mem;
-  Display<PixelFormat::ARGB8>* display;
+  Display<PIXEL_TYPE>* display;
 #ifndef DEBUGGER
   GBSound sound;
 #endif
@@ -84,7 +87,6 @@ public:
   
   void toggleDoubleSpeed(bool value);
   bool isDoubleSpeedEnabled() const;
-  
 };
   
 }

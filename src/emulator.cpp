@@ -15,7 +15,7 @@ Emulator::Emulator() : mem(Memory(*this)), cpu(CpuGB(*this))
   this->cycles = 0;
   this->mode = MODE_GB;
   
-  this->display = new Display<PixelFormat::ARGB8>(cpu,mem,*this);
+  this->display = new Display<PIXEL_TYPE>(cpu,mem,*this);
   
   keysState = 0xFF;
   doubleSpeed = false;
@@ -161,7 +161,7 @@ bool Emulator::run(u32 maxCycles)
   
   
   cycles += maxCycles + cyclesLeft;
-  sound.update();
+  //sound.update();
   
   return true;
 }
