@@ -4,13 +4,14 @@
 
 using namespace gb;
 
-Cartridge::Cartridge(Emulator& emu) : emu(emu)
+Cartridge::Cartridge()
 {
   status.rom = nullptr;
   status.rom_bank_0 = nullptr;
   status.rom_bank_1 = nullptr;
   status.ram = nullptr;
   status.ram_bank = nullptr;
+  status.rtc = nullptr;
   
   status.rtc_override = false;
   status.ram_enabled = false;
@@ -18,6 +19,18 @@ Cartridge::Cartridge(Emulator& emu) : emu(emu)
   
   status.current_rom_bank = 1;
   status.current_ram_bank = 0;
+}
+
+Cartridge::Cartridge(const std::string& fileName) : Cartridge()
+{
+  load(fileName);
+}
+
+Cartridge::~Cartridge()
+{
+  delete [] status.ram;
+  delete [] status.rom;
+  delete [] status.rtc;
 }
 
 /* scrive un byte nella ROM */
@@ -266,12 +279,12 @@ void Cartridge::init(void)
 	/* TODO: resetta lo status, sonasega */
 }
 
-void Cartridge::load(const char *rom_name)
+void Cartridge::load(const std::string& rom_name)
 {
-	FILE *in = fopen(rom_name, "rb");
+	FILE *in = fopen(rom_name.c_str(), "rb");
 	long length = Utils::fileLength(in);
   
-  status.fileName = strdup(rom_name);
+  status.fileName = rom_name;
 	
 	fseek(in, 0x100, SEEK_SET);
 	fread(&header, sizeof(GB_CART_HEADER), 1, in);
@@ -279,8 +292,8 @@ void Cartridge::load(const char *rom_name)
 	
 	status.flags = 0x00;
   
-  if (header.cgb_flag & 0x80 && rom_name[strlen(rom_name)-1] == 'c')
-    emu.mode = MODE_CGB;
+  if (header.cgb_flag & 0x80 && rom_name.back() == 'c')
+    status.flags |= MBC_CGB;
 	
 	/* in base al cart_type assegna le flag della rom */
 	if (header.cart_type == 0x00 || header.cart_type == 0x08 || header.cart_type == 0x09)
@@ -464,10 +477,8 @@ void Cartridge::dumpSave()
   
   if (size > 0)
   {
-    char buffer[128];
-    sprintf(buffer, "%s.sav", status.fileName);
-    
-    FILE *out = fopen(buffer, "wb");
+    std::string outName = status.fileName + ".sav";
+    FILE *out = fopen(outName.c_str(), "wb");
     fwrite(status.ram, size, sizeof(u8), out);
     fclose(out);
   }

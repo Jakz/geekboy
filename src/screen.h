@@ -17,7 +17,7 @@
 #include "emulator.h"
 #include "ui/font.h"
 
-using pixel_type = gb::Display<gb::Emulator::PIXEL_TYPE>::Pixel::type;
+using pixel_type = gb::GpuGB<gb::Emulator::PIXEL_TYPE>::Pixel::type;
 
 #define FPS (60)
 
@@ -88,9 +88,10 @@ class Screen
 
   Timer timer;
 
+  EmuSpec emuSpec;
   Emulator *emu;
 
-  SDL_Window* window;
+  SDL_Window* _window;
   SDL_Renderer* renderer;
 
   SDL_Surface* display;
@@ -143,13 +144,15 @@ class Screen
 public:
   Screen();
 
-  bool init();
+  bool init(const EmuSpec& spec);
 
-  int execute(const std::string& fileName);
+  int execute();
 
   void loop();
   void render();
   void capFPS(u32 start);
+
+  void load(const std::string& fileName);
 
   void handleEvent(SDL_Event *event);
 
@@ -174,6 +177,8 @@ public:
   void renderGbPalette();
   void renderCgbPalette();
 #endif
+
+  SDL_Window* window() { return _window; }
 
   static Screen* i();
 };

@@ -3,6 +3,8 @@
 
 #include <cstring>
 #include <cstdlib>
+#include <memory>
+
 #include "gbspec.h"
 #include "cartridge.h"
 
@@ -69,7 +71,7 @@ class Memory
   private:
     MemoryMap memory;
     
-    Emulator& emu;
+    Emulator* emu;
   
     HDMA hdma;
   
@@ -81,9 +83,11 @@ class Memory
     
 
   public:
-    Memory(Emulator& emu);
+    Memory();
     ~Memory();
   
+    void setEmulator(Emulator* emu) { this->emu = emu; }
+
     u8 read(u16 address);
     void write(u16 address, u8 value);
   
@@ -96,7 +100,7 @@ class Memory
     
     void setCode(u8 *code, u16 len);
   
-    Cartridge *cart;
+    std::unique_ptr<Cartridge> cart;
   
     u8 readVram0(u16 address);
     u8 readVram1(u16 address);

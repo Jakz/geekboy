@@ -7,10 +7,9 @@ using namespace gb;
 
 //static u8 code[] = { (u8) 0x2E, (u8) 0x06, (u8) 0x26, (u8) 0x80, 0x36, 0x0A, (u8)0x06, (u8) 0x40, (u8)0x70, (u8)0x56, 0x3A, 0x06, 0x80};
 
-Memory::Memory(Emulator& emu) : emu(emu)
+Memory::Memory() : emu(nullptr)
 {
   init();
-  cart = new Cartridge(emu);
 }
 
 /* dealloca tutto e rialloca nuova fiammante memoria */
@@ -154,7 +153,7 @@ u8 Memory::trapPortRead(u16 address)
     case PORT_JOYP:
     {
       u8 oldJoyp = rawPortRead(address);
-      u8 joyp = emu.keyPadState(oldJoyp);
+      u8 joyp = emu->keyPadState(oldJoyp);
       rawPortWrite(address, joyp);
       return joyp;
       break;
@@ -170,7 +169,7 @@ void Memory::trapPortWrite(u16 address, u8 value)
   if (address >= PORT_NR10 && address <= 0xFF3F)
   {
 #ifndef DEBUGGER
-    emu.sound.write(address, value);
+    emu->sound.write(address, value);
 #endif
   }
   
@@ -180,9 +179,9 @@ void Memory::trapPortWrite(u16 address, u8 value)
     //case PORT_LY:
     case PORT_DIV: { 
       value = 0;
-      emu.resetDivCounter();
+      emu->resetDivCounter();
       /* writing on DIV also resets programmable TIMER */
-      emu.resetTimerCounter();
+      emu->resetTimerCounter();
       break;
     }
     // writing on the TAC register will start/stop the timer or change its frequency
@@ -192,7 +191,7 @@ void Memory::trapPortWrite(u16 address, u8 value)
       rawPortWrite(address, value);
       
       // if frequency of the timer has just to change
-      emu.resetTimerCounter();
+      emu->resetTimerCounter();
       
       return;
     }
@@ -264,7 +263,7 @@ void Memory::trapPortWrite(u16 address, u8 value)
       
       memory.color_palette_ram[paletteByte] = value;
       
-      //printf("Writing %02x at palette %02x\n", value, paletteByte);
+      printf("Writing %02x at palette %02x\n", value, paletteByte);
       
       // TODO maybe index should wrap?
       if (memory.cgbPaletteAutoIncr[0] /*&& paletteByte < 0x40*/)
@@ -353,7 +352,7 @@ void Memory::trapPortWrite(u16 address, u8 value)
       //value |= 0x80;
       
       if (Utils::bit(lcdc, 7) ^ Utils::bit(value, 7))
-        emu.toggleLcdState();
+        emu->toggleLcdState();
       
       //printf("LCDC %.2x\n", value); break;
 
@@ -381,7 +380,7 @@ u8 Memory::rawPortRead(u16 address) const
   if (address >= 0xFF10 && address <= 0xFF3F)
   {
 #ifndef DEBUGGER
-    return emu.sound.read(address);
+    return emu->sound.read(address);
 #endif
   }
 

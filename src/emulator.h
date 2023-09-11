@@ -3,7 +3,7 @@
 
 #include "utils.h"
 
-#include "display.h"
+#include "systems/gb/gpu.h"
 #ifndef DEBUGGER
 #include "sound.h"
 #endif
@@ -12,7 +12,7 @@
 namespace gb {
 
 template<PixelFormat T>
-class Display;
+class GpuGB;
 
 class GBSound;
 class Memory;
@@ -47,9 +47,11 @@ private:
   bool lcdChangedState;
 
 public:
-  Emulator();
+  Emulator(const EmuSpec& spec);
 
   void init();
+
+  void loadCartridge(const std::string& fileName);
   
   void setupSound(int sampleRate);
 
@@ -76,17 +78,17 @@ public:
 
   CpuGB cpu;
   Memory mem;
-  Display<PIXEL_TYPE>* display;
+  GpuGB<PIXEL_TYPE>* display;
 #ifndef DEBUGGER
   GBSound sound;
 #endif
-
-  const EmuSpec spec = {160,144};
   
   void toggleLcdState() { lcdChangedState = true; }
   
   void toggleDoubleSpeed(bool value);
   bool isDoubleSpeedEnabled() const;
+
+  EmuSpec spec;
 };
   
 }

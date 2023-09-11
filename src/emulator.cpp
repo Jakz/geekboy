@@ -6,7 +6,7 @@ using namespace gb;
 
 constexpr u32 Emulator::timerFrequencies[4];
 
-Emulator::Emulator() : mem(Memory(*this)), cpu(CpuGB(*this))
+Emulator::Emulator(const EmuSpec& spec) : mem(), cpu(CpuGB(*this)), spec(spec)
 #ifndef DEBUGGER
 , sound(GBSound())
 #endif
@@ -15,11 +15,20 @@ Emulator::Emulator() : mem(Memory(*this)), cpu(CpuGB(*this))
   this->cycles = 0;
   this->mode = MODE_GB;
   
-  this->display = new Display<PIXEL_TYPE>(cpu,mem,*this);
+  this->display = new GpuGB<PIXEL_TYPE>(cpu, mem, *this, spec);
   
   keysState = 0xFF;
   doubleSpeed = false;
   cyclesLeft = 0;
+
+  mem.setEmulator(this);
+}
+
+void Emulator::loadCartridge(const std::string& fileName)
+{
+  mem.cart.reset(new Cartridge(fileName));
+  mode = mem.cart->isCGB() ? MODE_CGB : MODE_GB;
+  init();
 }
 
 void Emulator::setupSound(int sampleRate)
@@ -71,7 +80,6 @@ u8 Emulator::step()
   cpu.manageInterrupts();
   return cycles;
 }
-
 
 /*
  
@@ -161,7 +169,7 @@ bool Emulator::run(u32 maxCycles)
   
   
   cycles += maxCycles + cyclesLeft;
-  //sound.update();
+  sound.update();
   
   return true;
 }

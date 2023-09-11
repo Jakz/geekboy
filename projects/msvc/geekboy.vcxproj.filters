@@ -1,0 +1,148 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="src">
+      <UniqueIdentifier>{d57be89a-90cb-4e78-97a2-e77756aa64d3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\blarrg">
+      <UniqueIdentifier>{616a52fe-c2d1-4dc9-b0fd-a0d8b595fc55}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\blarrg\gb_apu">
+      <UniqueIdentifier>{bf5315d0-d5e8-40cc-87c1-c54ca3965ae5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\ui">
+      <UniqueIdentifier>{5990edca-44f3-4352-aad3-b9427307c08b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\systems">
+      <UniqueIdentifier>{5637b2ce-9d90-44d8-b100-5a8525d5d23c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\systems\gb">
+      <UniqueIdentifier>{4f03c7f3-f598-41bc-844a-13e725ceaa99}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\src\emulator.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\main.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\memory.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\opcodes.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\rtc.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\screen.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\sound.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\cartridge.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\cpu.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\blarrg\Basic_Gb_Apu.cpp">
+      <Filter>src\blarrg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\blarrg\demo_sdl.cpp">
+      <Filter>src\blarrg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\blarrg\Sound_Queue.cpp">
+      <Filter>src\blarrg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\blarrg\gb_apu\Blip_Buffer.cpp">
+      <Filter>src\blarrg\gb_apu</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\blarrg\gb_apu\Gb_Apu.cpp">
+      <Filter>src\blarrg\gb_apu</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\blarrg\gb_apu\Gb_Oscs.cpp">
+      <Filter>src\blarrg\gb_apu</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\blarrg\gb_apu\Multi_Buffer.cpp">
+      <Filter>src\blarrg\gb_apu</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ui\font.cpp">
+      <Filter>src\ui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\systems\gb\gpu.cpp">
+      <Filter>src\systems\gb</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\src\emulator.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\gbspec.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\memory.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\opcodes.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\rtc.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\screen.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\sound.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\utils.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\cartridge.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\cpu.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\blarrg\Basic_Gb_Apu.h">
+      <Filter>src\blarrg</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\blarrg\Sound_Queue.h">
+      <Filter>src\blarrg</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\blarrg\gb_apu\Blip_Buffer.h">
+      <Filter>src\blarrg\gb_apu</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\blarrg\gb_apu\Blip_Synth.h">
+      <Filter>src\blarrg\gb_apu</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\blarrg\gb_apu\Gb_Apu.h">
+      <Filter>src\blarrg\gb_apu</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\blarrg\gb_apu\Gb_Oscs.h">
+      <Filter>src\blarrg\gb_apu</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\blarrg\gb_apu\Multi_Buffer.h">
+      <Filter>src\blarrg\gb_apu</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\blarrg\gb_apu\blargg_common.h">
+      <Filter>src\blarrg\gb_apu</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\blarrg\gb_apu\blargg_source.h">
+      <Filter>src\blarrg\gb_apu</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\ui\font.h">
+      <Filter>src\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="..\..\src\systems\gb\gpu.h">
+      <Filter>src\systems\gb</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="geekboy.rc" />
+  </ItemGroup>
+</Project>

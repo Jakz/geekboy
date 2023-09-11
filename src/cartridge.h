@@ -5,6 +5,8 @@
 #include <cstring>
 #include <cstdlib>
 
+#include <string>
+
 #include "utils.h"
 #include "rtc.h"
 
@@ -22,6 +24,7 @@ namespace gb {
 #define MBC_MBC4 0x100
 #define MBC_MBC5 0x200
 #define MBC_SIMPLE 0x400
+#define MBC_CGB 0x800
 
 /*
   questo file dovrebbe preoccuparsi anche di essere interfacciato dallo Z80 per scrivere e leggere valori della ROM.
@@ -101,14 +104,12 @@ struct GB_CART_STATUS
   
 	u32 flags;
   
-  char *fileName;
+  std::string fileName;
 };
 
 class Cartridge
 {
 private:
-  Emulator& emu;
-
   GB_CART_HEADER header;
   GB_CART_STATUS status;
 
@@ -117,21 +118,25 @@ private:
   
   RTC rtc;
   
+  /* initialize values (which bank selected, pointers, etc) */
+  void init();
+  /* load a cartridge */
+  void load(const std::string& romName);
+
 public:
-  Cartridge(Emulator& emu);
+  Cartridge();
+  Cartridge(const std::string& fileName);
+
   ~Cartridge();
 
-  /* carica una rom in memoria */
-  void load(const char *romName);
   void dump();
-  /* inizializza i valori (tipo banco selezionato, puntatori ai banchi) */
-  void init();
 
-  /* scrive un valore ad un determinato indirizzo, gestisce il cambio di pagina secondo il protocollo
-   dell'MBC interno alla cart */
+  bool isCGB() const { return (status.flags & MBC_CGB) != 0; }
+
+  /* write value to cart address */
   void write(u16 address, u8 value);
 
-  /* legge un valore ad un determinato indirizzo */
+  /* read value at cart address */
   u8 read(u16 address) const;
 
   void loadRaw(u8 *code, u32 length);

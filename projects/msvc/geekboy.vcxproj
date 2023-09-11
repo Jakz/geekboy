@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\src\blarrg\Basic_Gb_Apu.cpp" />
+    <ClCompile Include="..\..\src\blarrg\demo_sdl.cpp" />
+    <ClCompile Include="..\..\src\blarrg\gb_apu\Blip_Buffer.cpp" />
+    <ClCompile Include="..\..\src\blarrg\gb_apu\Gb_Apu.cpp" />
+    <ClCompile Include="..\..\src\blarrg\gb_apu\Gb_Oscs.cpp" />
+    <ClCompile Include="..\..\src\blarrg\gb_apu\Multi_Buffer.cpp" />
+    <ClCompile Include="..\..\src\blarrg\Sound_Queue.cpp" />
+    <ClCompile Include="..\..\src\cartridge.cpp" />
+    <ClCompile Include="..\..\src\cpu.cpp" />
+    <ClCompile Include="..\..\src\emulator.cpp" />
+    <ClCompile Include="..\..\src\main.cpp" />
+    <ClCompile Include="..\..\src\memory.cpp" />
+    <ClCompile Include="..\..\src\opcodes.cpp" />
+    <ClCompile Include="..\..\src\rtc.cpp" />
+    <ClCompile Include="..\..\src\screen.cpp" />
+    <ClCompile Include="..\..\src\sound.cpp" />
+    <ClCompile Include="..\..\src\systems\gb\gpu.cpp" />
+    <ClCompile Include="..\..\src\ui\font.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\src\blarrg\Basic_Gb_Apu.h" />
+    <ClInclude Include="..\..\src\blarrg\gb_apu\blargg_common.h" />
+    <ClInclude Include="..\..\src\blarrg\gb_apu\blargg_source.h" />
+    <ClInclude Include="..\..\src\blarrg\gb_apu\Blip_Buffer.h" />
+    <ClInclude Include="..\..\src\blarrg\gb_apu\Blip_Synth.h" />
+    <ClInclude Include="..\..\src\blarrg\gb_apu\Gb_Apu.h" />
+    <ClInclude Include="..\..\src\blarrg\gb_apu\Gb_Oscs.h" />
+    <ClInclude Include="..\..\src\blarrg\gb_apu\Multi_Buffer.h" />
+    <ClInclude Include="..\..\src\blarrg\Sound_Queue.h" />
+    <ClInclude Include="..\..\src\cartridge.h" />
+    <ClInclude Include="..\..\src\cpu.h" />
+    <ClInclude Include="..\..\src\emulator.h" />
+    <ClInclude Include="..\..\src\gbspec.h" />
+    <ClInclude Include="..\..\src\memory.h" />
+    <ClInclude Include="..\..\src\opcodes.h" />
+    <ClInclude Include="..\..\src\rtc.h" />
+    <ClInclude Include="..\..\src\screen.h" />
+    <ClInclude Include="..\..\src\sound.h" />
+    <ClInclude Include="..\..\src\systems\gb\gpu.h" />
+    <ClInclude Include="..\..\src\ui\font.h" />
+    <ClInclude Include="..\..\src\utils.h" />
+    <ClInclude Include="resource.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="geekboy.rc" />
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>16.0</VCProjectVersion>
+    <Keyword>Win32Proj</Keyword>
+    <ProjectGuid>{c3d8d49d-4482-4511-8fa1-32faa8425ff5}</ProjectGuid>
+    <RootNamespace>geekboy</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>C:\Users\Jack\Documents\dev\libs\sdl\SDL2-2.28.3\include;$(SolutionDir);$(SolutionDir)..\..\src</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>C:\Users\Jack\Documents\dev\libs\sdl\SDL2-2.28.3\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>C:\Users\Jack\Documents\dev\libs\sdl\SDL2-2.28.3\include;$(SolutionDir);$(SolutionDir)..\..\src</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>C:\Users\Jack\Documents\dev\libs\sdl\SDL2-2.28.3\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

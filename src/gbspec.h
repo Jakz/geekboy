@@ -119,8 +119,8 @@ namespace gb
   };
 
   struct EmuSpec {
-    const u32 displayWidth;
-    const u32 displayHeight;
+    u32 displayWidth;
+    u32 displayHeight;
   };
 }
 

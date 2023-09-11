@@ -5,22 +5,112 @@
 
 using namespace std;
 
+void startWithArgs(vector<string> args);
+
+#ifdef __cplusplus
+
+extern "C"
+{
+  int main(int argc, char** argv)
+  {
+    vector<string> args;
+    for (int i = 0; i < argc; ++i)
+      args.push_back(argv[i]);
+
+    Screen::i()->init(gb::EmuSpec{ 160, 144 });
+
+    startWithArgs(args);
+    Screen::i()->execute();
+    Screen::i()->cleanup();
+
+   
+    return 0;
+  }
+}
+
+#endif
+
+#ifndef _WIN32
+
 void startWithArgs(vector<string> args)
 {
-  if (args.size() < 2)
+  /*if (args.size() < 2)
     args.push_back("F:\\Misc\\Roms\\Nintendo - GameBoy\\Super Mario Land.gb");
-    //args.push_back("tests\\mem_timing.gb");
-  
-  Screen::i()->execute(args[1]);
+  */
+  Screen::i()->init(gb::EmuSpec{ 160, 144 });
+  Screen::i()->execute();
+  Screen::i()->load(args[1].c_str());
+  Screen::i()->cleanup();
 }
+#else
 
-int main(int argc, char** argv)
+#include "SDL.h"
+#include "SDL_syswm.h"
+
+#include "resource.h"
+
+#include <winuser.h>
+#include <ShObjIdl.h>
+
+
+void messageHook(void* userdata, void* hWnd, unsigned int message, Uint64 wParam, Sint64 lParam);
+
+void startWithArgs(vector<string> args)
 {
-  vector<string> args;
-  for (int i = 0; i < argc; ++i)
-    args.push_back(argv[i]);
+  SDL_SetWindowsMessageHook(messageHook, nullptr);
 
-  startWithArgs(args);
+  SDL_SysWMinfo wmInfo;
+  SDL_VERSION(&wmInfo.version);
+  SDL_GetWindowWMInfo(Screen::i()->window(), &wmInfo);
+  HWND hwnd = wmInfo.info.win.window;
 
-  return 0;
+  HMENU menu = LoadMenu(GetModuleHandle(NULL), MAKEINTRESOURCE(IDR_MENU1));
+
+  SetMenu(hwnd, menu);
+  SetWindowTextW(hwnd, L"Geekboy");
 }
+
+
+void messageHook(void* userdata, void* hWnd, unsigned int message, Uint64 wParam, Sint64 lParam)
+{
+  if (message == WM_COMMAND)
+  {
+    if (wParam == MENU_EXIT)
+      exit(0);
+    else if (wParam == ID_FILE_LOAD)
+    {
+      IFileOpenDialog* pFileOpenDialog;
+      HRESULT hr = CoCreateInstance(CLSID_FileOpenDialog, NULL, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&pFileOpenDialog));
+      
+      COMDLG_FILTERSPEC filterSpec[] = { { L"Game Boy roms", L"*.gb; *.gbc" } };
+      pFileOpenDialog->SetFileTypes(1, filterSpec);
+
+      hr = pFileOpenDialog->Show(NULL);
+      if (FAILED(hr)) 
+      {
+        pFileOpenDialog->Release();
+      }
+
+      IShellItem* pSelectedItem;
+      hr = pFileOpenDialog->GetResult(&pSelectedItem);
+      if (SUCCEEDED(hr)) {
+        PWSTR filePath;
+        hr = pSelectedItem->GetDisplayName(SIGDN_FILESYSPATH, &filePath);
+
+        char utfName[256];
+        wcstombs(utfName, filePath, 500);
+
+        Screen::i()->load(utfName);
+        Screen::i()->execute();
+        
+        if (SUCCEEDED(hr)) {
+          // Handle the selected file path (in filePath)
+          CoTaskMemFree(filePath);
+        }
+        pSelectedItem->Release();
+      }
+    }
+  }
+}
+
+#endif 
