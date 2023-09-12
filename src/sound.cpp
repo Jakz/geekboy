@@ -27,3 +27,8 @@ u8 GBSound::read(u16 address)
 {
   return bApu->read_register(address);
 }
+
+void GBSound::mute(bool toggle)
+{
+  bApu->volume(toggle ? 0.0f : 1.0f);
+}

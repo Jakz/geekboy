@@ -33,6 +33,8 @@ public:
 	// Read at most 'count' samples out of buffer and return number actually read
 	typedef blip_sample_t sample_t;
 	long read_samples( sample_t* out, long count );
+
+	void volume(double v) { apu.volume(v); }
 	
 private:
 	Gb_Apu apu;

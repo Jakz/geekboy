@@ -20,6 +20,8 @@ extern "C"
     Screen::i()->init(gb::EmuSpec{ 160, 144 });
 
     startWithArgs(args);
+    //Screen::i()->load("F:\\Misc\\Roms\\Nintendo - GameBoy\\Super Mario Land.gb");
+    //Screen::i()->emulator()->mute(true);
     Screen::i()->execute();
     Screen::i()->cleanup();
 
@@ -52,7 +54,6 @@ void startWithArgs(vector<string> args)
 #include <winuser.h>
 #include <ShObjIdl.h>
 
-
 void messageHook(void* userdata, void* hWnd, unsigned int message, Uint64 wParam, Sint64 lParam);
 
 void startWithArgs(vector<string> args)
@@ -70,6 +71,26 @@ void startWithArgs(vector<string> args)
   SetWindowTextW(hwnd, L"Geekboy");
 }
 
+
+bool toggleMenuCheckbox(HWND hwnd, UINT resource)
+{
+  HMENU hmenu = GetMenu(hwnd);
+
+  MENUITEMINFO menuItem = { 0 };
+  menuItem.cbSize = sizeof(MENUITEMINFO);
+  menuItem.fMask = MIIM_STATE;
+
+  GetMenuItemInfo(hmenu, ID_EMULATION_MUTE, FALSE, &menuItem);
+
+  if (menuItem.fState == MFS_CHECKED)
+    menuItem.fState = MFS_UNCHECKED;
+  else
+    menuItem.fState = MFS_CHECKED;
+  
+  SetMenuItemInfo(hmenu, ID_EMULATION_MUTE, FALSE, &menuItem);
+
+  return menuItem.fState == MFS_CHECKED;
+}
 
 void messageHook(void* userdata, void* hWnd, unsigned int message, Uint64 wParam, Sint64 lParam)
 {
@@ -109,6 +130,18 @@ void messageHook(void* userdata, void* hWnd, unsigned int message, Uint64 wParam
         }
         pSelectedItem->Release();
       }
+    }
+    else if (wParam == ID_EMULATION_MUTE)
+    {
+      HWND hwnd = (HWND)hWnd;
+      HMENU hmenu = GetMenu(hwnd);
+
+      MENUITEMINFO menuItem = { 0 };
+      menuItem.cbSize = sizeof(MENUITEMINFO);
+      menuItem.fMask = MIIM_STATE;
+
+      bool checked = toggleMenuCheckbox((HWND)hWnd, ID_EMULATION_MUTE);
+      Screen::i()->emulator()->mute(!checked);
     }
   }
 }

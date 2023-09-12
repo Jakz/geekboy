@@ -103,6 +103,7 @@ bool Screen::init(const EmuSpec& spec)
   display = SDL_CreateRGBSurface(0, spec.displayWidth, spec.displayHeight, 32, 0, 0, 0, 0);
   displayTexture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING, display->w, display->h);
 
+#if VRAM_DEBUG
   tileDatas[0].init(renderer);
   tileDatas[1].init(renderer);
 
@@ -111,6 +112,9 @@ bool Screen::init(const EmuSpec& spec)
 
   sprites.init(renderer);
   palette.init(renderer);
+  
+  console.init(renderer);
+#endif
 
   screenBuffer = new u16[spec.displayWidth * spec.displayHeight];
   
@@ -216,7 +220,7 @@ void Screen::cleanup()
 
   fclose(out);*/
 
-  if (emu->mem.cart)
+  if (emu)
     emu->mem.cart->dumpSave();
 
   SDL_FreeSurface(display);
@@ -242,16 +246,17 @@ void Screen::handleEvent(SDL_Event *event)
       {
         if (sym == SDLK_BACKSPACE)
         {
-          if (console.length() > 1)
-            console.pop_back();
+          if (consoleBuffer.length() > 1)
+            consoleBuffer.pop_back();
         }
         else if (sym == SDLK_RETURN)
         {
           consoleMode = false;
-          console = ">";
+          consoleBuffer = ">";
         }
         else
-          console += event->key.keysym.sym;
+          consoleBuffer += event->key.keysym.sym;
+        
         return;
       }
 #endif
@@ -341,11 +346,19 @@ void Screen::drawString(const std::string& txt, int x, int y, float scale)
 
     const bool* data = Font::glyph(c);
 
-    for (size_t i = 0; i < Font::WIDTH*Font::HEIGHT; ++i)
-      buffer[i] = data[i] ? color: 0;
-
-    //draw(x, y, scale, buffer, Font::WIDTH, Font::HEIGHT);
-
+    for (size_t i = 0; i < Font::WIDTH * Font::HEIGHT; ++i)
+    {
+      int lx = i % Font::WIDTH;
+      int ly = i / Font::WIDTH;
+      
+      if (data[i])
+      {
+#if VRAM_DEBUG
+        console.set(x + lx, y + ly, color);
+#endif
+      }
+    }
+   
     x += (Font::WIDTH+1)*scale;
   }
 }
@@ -364,8 +377,14 @@ void Screen::render()
   SDL_RenderCopy(renderer, displayTexture, nullptr, &dest);
 
   #if VRAM_DEBUG
+
+  console.fill(0x4d4d4dFF);
+
   renderVRAM();
   renderRegs();
+
+  console.update();
+  console.render(emuSpec.displayWidth * scaleFactor + 40 + 10 + tileDatas[0].width * 2 * 2.0f, 20, 1.01f);
  /*
 
   if (consoleMode)
@@ -467,34 +486,35 @@ void Screen::renderRegs()
   const auto& regs = *emu->cpu.regs();
   auto& mem = emu->mem;
 
-  constexpr int BASE_Y = 50;
+  constexpr int BASE_X = 0;
+  constexpr int BASE_Y = 0;
 
   Opcodes::visualOpcode(buffer, mem.read(regs.PC), mem.read(regs.PC+1), mem.read(regs.PC+2));
-  drawString(buffer, 1100, BASE_Y, 1);
+  drawString(buffer, BASE_X, BASE_Y, 1);
 
   sprintf(buffer, "SPEED %u (%2.2f)", *speed, timer.frameRate());
-  drawString(buffer, 1100, BASE_Y+10, 1);
+  drawString(buffer, BASE_X, BASE_Y+10, 1);
 
   sprintf(buffer, "SCANLINE %d (%d)\n", emu->display->getScanlineCounter(), emu->mem.rawPortRead(PORT_STAT) & 0x03);
-  drawString(buffer, 1100, BASE_Y+20, 1);
+  drawString(buffer, BASE_X, BASE_Y+20, 1);
 
   sprintf(buffer, "PC %04xh Z%d N%d H%d C%d", regs.PC, (regs.AF.F & FLAG_Z) != 0, (regs.AF.F & FLAG_N) != 0, (regs.AF.F & FLAG_H) != 0, (regs.AF.F & FLAG_C) != 0);
-  drawString(buffer, 1100, BASE_Y+50, 1);
+  drawString(buffer, BASE_X, BASE_Y+50, 1);
 
   sprintf(buffer, "AF %02xh BC %04xh", regs.AF.A, regs.BC.BC);
-  drawString(buffer, 1100, BASE_Y+60, 1);
+  drawString(buffer, BASE_X, BASE_Y+60, 1);
 
   sprintf(buffer, "DE %04xh HL %04xh", regs.DE.DE, regs.HL.HL);
-  drawString(buffer, 1100, BASE_Y+70, 1);
+  drawString(buffer, BASE_X, BASE_Y+70, 1);
 
   sprintf(buffer, "SP %04xh IF %02xh IE %02xh", regs.SP, mem.read(PORT_IF), mem.read(PORT_EF));
-  drawString(buffer, 1100, BASE_Y+80, 1);
+  drawString(buffer, BASE_X, BASE_Y+80, 1);
 
   std::array<PortSpec, 5> specst = { { {PORT_DIV, "DIV"}, {PORT_TIMA, "TIMA"}, {PORT_TMA, "TMA"}, {PORT_TAC, "TAC"}, {PORT_JOYP, "JOYP"} } };
-  renderPorts(specst, 1100, BASE_Y+100);
+  renderPorts(specst, BASE_X, BASE_Y+100);
 
   std::array<PortSpec, 8> specsd = { { {PORT_LCDC, "LCDC"}, {PORT_STAT, "STAT"}, {PORT_SCY, "SCY"}, {PORT_SCX, "SCX"}, {PORT_LY, "LY"}, {PORT_LYC, "LYC"}, {PORT_WY, "WY"}, {PORT_WX, "WX"} } };
-  renderPorts(specsd, 1100, BASE_Y+160);
+  renderPorts(specsd, BASE_X + 100, BASE_Y+100);
 
   u8 lcdc = mem.rawPortRead(PORT_LCDC);
 
@@ -508,7 +528,7 @@ void Screen::renderRegs()
           Utils::bit(lcdc, 1) ? "on" : "off",
           Utils::bit(lcdc, 0) ? 1 : 0
   );
-  drawString(buffer, 1200, BASE_Y+160, 1);
+  drawString(buffer, BASE_X, BASE_Y+180, 1);
 
 }
 

@@ -19,6 +19,9 @@
     <Filter Include="src\systems\gb">
       <UniqueIdentifier>{4f03c7f3-f598-41bc-844a-13e725ceaa99}</UniqueIdentifier>
     </Filter>
+    <Filter Include="src\systems\nes">
+      <UniqueIdentifier>{79ae28b1-a7f1-4aa8-bf7c-8790618a0c3f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\emulator.cpp">
@@ -74,6 +77,9 @@
     </ClCompile>
     <ClCompile Include="..\..\src\systems\gb\gpu.cpp">
       <Filter>src\systems\gb</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\systems\nes\cpu_nes.cpp">
+      <Filter>src\systems\nes</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -141,8 +147,14 @@
     <ClInclude Include="..\..\src\systems\gb\gpu.h">
       <Filter>src\systems\gb</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\systems\nes\cpu_nes.h">
+      <Filter>src\systems\nes</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="geekboy.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="geekboy.ico" />
   </ItemGroup>
 </Project>

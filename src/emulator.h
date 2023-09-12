@@ -52,7 +52,7 @@ public:
   void init();
 
   void loadCartridge(const std::string& fileName);
-  
+
   void setupSound(int sampleRate);
 
 
@@ -69,7 +69,7 @@ public:
   u64 cycles;
   Mode mode;
 
-  static constexpr u32 timerFrequencies[4] = {KB4, 262144, 65536, KB16};
+  static constexpr u32 timerFrequencies[4] = { KB4, 262144, 65536, KB16 };
 
   void keyPressed(Key key);
   void keyReleased(Key key);
@@ -82,11 +82,13 @@ public:
 #ifndef DEBUGGER
   GBSound sound;
 #endif
-  
+
   void toggleLcdState() { lcdChangedState = true; }
-  
+
   void toggleDoubleSpeed(bool value);
   bool isDoubleSpeedEnabled() const;
+
+  void mute(bool toggle) { sound.mute(toggle); };
 
   EmuSpec spec;
 };

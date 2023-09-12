@@ -46,6 +46,8 @@ class GBSound
       long count = bApu->read_samples( buf, buf_size );
       bQueue.write( buf, count );
     }
+
+    void mute(bool toggle);
 };
 
 }

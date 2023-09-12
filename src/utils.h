@@ -21,6 +21,8 @@ typedef signed char s8;
 typedef signed short s16;
 typedef signed int s32;
 
+using cycle_count_t = uint64_t;
+
 #define KB2 (2048)
 #define KB4 (4096)
 #define KB8 (8192)

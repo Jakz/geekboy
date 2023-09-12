@@ -21,7 +21,7 @@ using pixel_type = gb::GpuGB<gb::Emulator::PIXEL_TYPE>::Pixel::type;
 
 #define FPS (60)
 
-#define VRAM_DEBUG true
+#define VRAM_DEBUG false
 
 
 #ifdef VRAM_DEBUG
@@ -119,11 +119,12 @@ class Screen
   Surface tileDatas[2] = { Surface(128,192), Surface(128, 192) };
   Surface maps[2] = { Surface(256, 256), Surface(256, 256) };
   Surface sprites = Surface((SPRITE_SIZE+SPRITE_MARGIN)*SPRITE_MAX_COUNT, SPRITE_SIZE*2);
+  Surface console = Surface(Font::WIDTH * 50, Font::HEIGHT * 40);
 
   Surface palette = Surface(32, 2);
 
+  std::string consoleBuffer;
   bool consoleMode;
-  std::string console;
 
   struct PortSpec
   {
@@ -179,6 +180,7 @@ public:
 #endif
 
   SDL_Window* window() { return _window; }
+  Emulator* emulator() { return emu; }
 
   static Screen* i();
 };
