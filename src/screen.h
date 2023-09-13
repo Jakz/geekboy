@@ -21,7 +21,7 @@ using pixel_type = gb::GpuGB<gb::Emulator::PIXEL_TYPE>::Pixel::type;
 
 #define FPS (60)
 
-#define VRAM_DEBUG false
+#define VRAM_DEBUG true
 
 
 #ifdef VRAM_DEBUG

@@ -27,8 +27,11 @@
     <ClCompile Include="..\..\src\rtc.cpp" />
     <ClCompile Include="..\..\src\screen.cpp" />
     <ClCompile Include="..\..\src\sound.cpp" />
+    <ClCompile Include="..\..\src\systems\gb\debugger_gb.cpp" />
     <ClCompile Include="..\..\src\systems\gb\gpu.cpp" />
+    <ClCompile Include="..\..\src\systems\nes\cartridge_nes.cpp" />
     <ClCompile Include="..\..\src\systems\nes\cpu_nes.cpp" />
+    <ClCompile Include="..\..\src\systems\nes\opcodes_nes.cpp" />
     <ClCompile Include="..\..\src\ui\font.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -50,8 +53,11 @@
     <ClInclude Include="..\..\src\rtc.h" />
     <ClInclude Include="..\..\src\screen.h" />
     <ClInclude Include="..\..\src\sound.h" />
+    <ClInclude Include="..\..\src\systems\gb\debugger_gb.h" />
     <ClInclude Include="..\..\src\systems\gb\gpu.h" />
+    <ClInclude Include="..\..\src\systems\nes\cartridge_nes.h" />
     <ClInclude Include="..\..\src\systems\nes\cpu_nes.h" />
+    <ClInclude Include="..\..\src\systems\nes\opcodes_nes.h" />
     <ClInclude Include="..\..\src\ui\font.h" />
     <ClInclude Include="..\..\src\utils.h" />
     <ClInclude Include="resource.h" />
@@ -101,7 +107,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Users\Jack\Documents\dev\libs\sdl\SDL2-2.28.3\include;C:\Users\Jack\Documents\dev\libs\ftxui\include;$(SolutionDir);$(SolutionDir)..\..\src</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\Jack\Documents\dev\libs\sdl\SDL2-2.28.3\include;C:\Users\Jack\Documents\dev\libs\bearlibterminal\Terminal\Include\C;$(SolutionDir);$(SolutionDir)..\..\src</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <ExceptionHandling>false</ExceptionHandling>
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
@@ -111,7 +117,7 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>C:\Users\Jack\Documents\dev\libs\sdl\SDL2-2.28.3\lib\x64;C:\Users\Jack\Documents\dev\libs\ftxui\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>SDL2.lib;SDL2main.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;C:\Users\Jack\Documents\dev\libs\bearlibterminal\Windows64\BearLibTerminal.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -122,7 +128,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Users\Jack\Documents\dev\libs\sdl\SDL2-2.28.3\include;C:\Users\Jack\Documents\dev\libs\ftxui\include;$(SolutionDir);$(SolutionDir)..\..\src</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\Jack\Documents\dev\libs\sdl\SDL2-2.28.3\include;C:\Users\Jack\Documents\dev\libs\bearlibterminal\Terminal\Include\C;$(SolutionDir);$(SolutionDir)..\..\src</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <ExceptionHandling>false</ExceptionHandling>
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
@@ -134,7 +140,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>C:\Users\Jack\Documents\dev\libs\sdl\SDL2-2.28.3\lib\x64;C:\Users\Jack\Documents\dev\libs\ftxui\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>SDL2.lib;SDL2main.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;C:\Users\Jack\Documents\dev\libs\bearlibterminal\Windows64\BearLibTerminal.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

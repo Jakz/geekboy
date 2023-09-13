@@ -1,3 +1,4 @@
+#pragma once
 
 #include "utils.h"
 
@@ -36,7 +37,7 @@ namespace nes
   class CpuNES
   {
   protected:
-    Registers regs;
+    Registers _regs;
 
     static cycle_count_t cyclesForInstruction(nes_opcode_t opcode);
 
@@ -44,13 +45,19 @@ namespace nes
     inline void setFlag(CpuFlag flag, u8 value);
   
     inline cycle_count_t mov_R_R_IMM(u8& dst, u8 src, bool flags = true);
-    inline cycle_count_t mov_R_PTR_NN(u8& dst);
+    inline cycle_count_t mov_R_PTR(u8& dst, addr16_t src);
 
-    u8 memRead(u16 address);
-    void memWrite(u16 address, u8 value);
+    u8 memRead8(addr16_t address);
+    u16 memRead16(addr16_t address);
+    void memWrite(addr16_t address, u8 value);
+
 
   public:
     cycle_count_t executeInstruction(nes_opcode_t opcode);
+
+    void reset();
+
+    Registers& regs() { return _regs; }
   };
 
 

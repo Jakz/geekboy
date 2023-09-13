@@ -81,6 +81,15 @@
     <ClCompile Include="..\..\src\systems\nes\cpu_nes.cpp">
       <Filter>src\systems\nes</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\systems\nes\opcodes_nes.cpp">
+      <Filter>src\systems\nes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\systems\nes\cartridge_nes.cpp">
+      <Filter>src\systems\nes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\systems\gb\debugger_gb.cpp">
+      <Filter>src\systems\gb</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\emulator.h">
@@ -149,6 +158,15 @@
     </ClInclude>
     <ClInclude Include="..\..\src\systems\nes\cpu_nes.h">
       <Filter>src\systems\nes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\systems\nes\opcodes_nes.h">
+      <Filter>src\systems\nes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\systems\nes\cartridge_nes.h">
+      <Filter>src\systems\nes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\systems\gb\debugger_gb.h">
+      <Filter>src\systems\gb</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

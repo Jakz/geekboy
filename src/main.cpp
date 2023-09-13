@@ -6,13 +6,20 @@
 using namespace std;
 
 void startWithArgs(vector<string> args);
+void end();
 
 #ifdef __cplusplus
+
+#include "systems/nes/cartridge_nes.h"
 
 extern "C"
 {
   int main(int argc, char** argv)
   {
+    /*std::string path = R"(F:\Misc\Roms\Nintendo - NES\Super Mario Bros. 1.nes)";
+    nes::CartridgeNES cart(path);
+    return 0;*/
+    
     vector<string> args;
     for (int i = 0; i < argc; ++i)
       args.push_back(argv[i]);
@@ -25,6 +32,7 @@ extern "C"
     Screen::i()->execute();
     Screen::i()->cleanup();
 
+    end();
    
     return 0;
   }
@@ -44,6 +52,12 @@ void startWithArgs(vector<string> args)
   Screen::i()->load(args[1].c_str());
   Screen::i()->cleanup();
 }
+
+void end()
+{
+  
+}
+
 #else
 
 #include "SDL.h"
@@ -54,10 +68,20 @@ void startWithArgs(vector<string> args)
 #include <winuser.h>
 #include <ShObjIdl.h>
 
+#include "BearLibTerminal.h"
+
 void messageHook(void* userdata, void* hWnd, unsigned int message, Uint64 wParam, Sint64 lParam);
+
+#include "systems/gb/debugger_gb.h"
+
+gb::Debugger debugger;
 
 void startWithArgs(vector<string> args)
 {
+  terminal_open();
+  terminal_set("window.size=100x50; font: consola.ttf, size=10; window.title='Debugger'");
+  terminal_refresh();
+   
   SDL_SetWindowsMessageHook(messageHook, nullptr);
 
   SDL_SysWMinfo wmInfo;
@@ -69,6 +93,11 @@ void startWithArgs(vector<string> args)
 
   SetMenu(hwnd, menu);
   SetWindowTextW(hwnd, L"Geekboy");
+}
+
+void end()
+{
+  terminal_close();
 }
 
 
@@ -114,6 +143,7 @@ void messageHook(void* userdata, void* hWnd, unsigned int message, Uint64 wParam
 
       IShellItem* pSelectedItem;
       hr = pFileOpenDialog->GetResult(&pSelectedItem);
+      
       if (SUCCEEDED(hr)) {
         PWSTR filePath;
         hr = pSelectedItem->GetDisplayName(SIGDN_FILESYSPATH, &filePath);
@@ -122,6 +152,10 @@ void messageHook(void* userdata, void* hWnd, unsigned int message, Uint64 wParam
         wcstombs(utfName, filePath, 500);
 
         Screen::i()->load(utfName);
+
+        debugger.setEmulator(Screen::i()->emulator());
+        debugger.refresh();
+        
         Screen::i()->execute();
         
         if (SUCCEEDED(hr)) {

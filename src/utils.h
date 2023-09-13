@@ -7,9 +7,13 @@
 #define strdup _strdup
 #endif
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdint.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cstdint>
+
+#include <string>
+#include <memory>
+#include <vector>
 //#include <unistd.h>
 
 typedef unsigned char u8;
@@ -22,6 +26,10 @@ typedef signed short s16;
 typedef signed int s32;
 
 using cycle_count_t = uint64_t;
+using instruction_len_t = uint32_t;
+using addr16_t = uint16_t;
+
+using coord_t = int32_t;
 
 #define KB2 (2048)
 #define KB4 (4096)
@@ -47,6 +55,23 @@ class Utils
       fseek(file, cur, SEEK_SET);
       
       return length;
+    }
+
+    static std::vector<u8> readFile(const std::string& path)
+    {
+      FILE* file = fopen(path.c_str(), "rb");
+
+      if (!file)
+        return std::vector<u8>();
+
+      long length = fileLength(file);
+
+      std::vector<u8> buffer(length);
+
+      fread(buffer.data(), 1, length, file);
+      fclose(file);
+
+      return buffer;
     }
   
     static inline bool bit(u8 value, u8 bit)
