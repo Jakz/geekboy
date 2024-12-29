@@ -36,11 +36,26 @@ namespace nes
     MOV_X_PTR_NNNN = 0xAE,
     MOV_Y_PTR_NNNN = 0xAC,
 
+    /* MOV, R [NNNN+X] */
+    MOV_A_PTR_NNNN_X = 0xBD,
+    MOV_A_PTR_NNNN_Y = 0xB9,
+    MOV_X_PTR_NNNN_Y = 0xBE,
+    MOV_Y_PTR_NNNN_X = 0xBC,
+
+    /* MOV A, [[NN+X]]*/
+    /* MOV A, [[NN]+Y]*/
+    MOV_A_PTR_PTR_NN_X = 0xA1,
+    MOV_A_PTR_PTR_NN_Y = 0xB1,
+
     /* PUSH / PULL */
     PUSH_A = 0x48,
     PUSH_P = 0x08,
     POP_A = 0x68,
     POP_P = 0x28,
+
+    /* ADC */
+    //ADC_A_NN = 0x69,
+    //ADC_A_PTR_NN = 0x65,
 
     UNKNOWN = 0x00,
   };
@@ -50,6 +65,7 @@ namespace nes
     None,
     Imm8,
     Addr8,
+    Addr16,
   };
 
   struct OpcodeInfo
@@ -70,6 +86,7 @@ namespace nes
 
     static instruction_len_t length(nes_opcode_t op);
     static cycle_count_t cyclesFor(nes_opcode_t op);
+    static bool isPageCross(addr16_t addr1, addr16_t offset);
 
     static std::string decode(nes_opcode_t op, u8 d1);
   };

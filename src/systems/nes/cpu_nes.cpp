@@ -36,6 +36,11 @@ void CpuNES::setFlag(CpuFlag flag, u8 value)
     _regs.P &= ~decltype(_regs.P)(flag);
 }
 
+bool CpuNES::isFlagSet(CpuFlag flag) const
+{
+  return (_regs.P & decltype(_regs.P)(flag)) != 0;
+}
+
 void CpuNES::setZeroAndNegativeFlags(u8 value)
 {
   setFlag(CpuFlag::Zero, value == 0);
@@ -161,6 +166,90 @@ cycle_count_t CpuNES::executeInstruction(nes_opcode_t opcode)
     {
       mov_R_PTR(_regs.Y, (memRead8(_regs.PC++) + _regs.X) & 0xff);
       cycles = Opcodes::cyclesFor(opcode);
+      break;
+    }
+
+    /* MOV R, [NNNN+X] */
+    case op::MOV_A_PTR_NNNN_X:
+    {
+      mov_R_PTR(_regs.A, memRead16(_regs.PC + _regs.X));
+      
+      cycles = Opcodes::cyclesFor(opcode);
+      if (Opcodes::isPageCross(_regs.PC, _regs.X))
+        cycles += 1;
+
+      _regs.PC += 2;
+
+      break;
+    }
+    case op::MOV_A_PTR_NNNN_Y:
+    {
+      mov_R_PTR(_regs.A, memRead16(_regs.PC + _regs.Y));
+
+      cycles = Opcodes::cyclesFor(opcode);
+      if (Opcodes::isPageCross(_regs.PC, _regs.Y))
+        cycles += 1;
+
+      _regs.PC += 2;
+
+      break;
+    }
+    case op::MOV_X_PTR_NNNN_Y:
+    {
+      mov_R_PTR(_regs.X, memRead16(_regs.PC + _regs.Y));
+      
+      cycles = Opcodes::cyclesFor(opcode);
+      if (Opcodes::isPageCross(_regs.PC, _regs.X))
+        cycles += 1;
+
+      _regs.PC += 2;
+
+      break;
+    }
+    case op::MOV_Y_PTR_NNNN_X:
+    {
+      mov_R_PTR(_regs.Y, memRead16(_regs.PC + _regs.X));
+      
+      cycles = Opcodes::cyclesFor(opcode);
+      if (Opcodes::isPageCross(_regs.PC, _regs.X))
+        cycles += 1;
+
+      _regs.PC += 2;
+
+      break;
+    }
+    case op::MOV_A_PTR_PTR_NN_X:
+    {
+      /* addr = X + NN no carry */
+      u16 addr = (_regs.X + memRead8(_regs.PC++)) & 0x00ff;
+
+      u16 lsb = memRead8(addr);
+      u16 msb = memRead8(addr + 1);
+
+      mov_R_PTR(_regs.A, (msb << 8) | lsb);
+
+      cycles = Opcodes::cyclesFor(opcode);
+      break;
+    }
+    case op::MOV_A_PTR_PTR_NN_Y:
+    {
+      /* addr = Y + NN keep carry */
+      u16 zeroAddr = memRead8(_regs.PC);
+
+      u16 lsb = memRead8(zeroAddr);
+      u16 msb = memRead8((zeroAddr & 0x00ff) + 1);
+
+      u16 baseAddr = lsb + msb << 8;
+      u16 addr = baseAddr + _regs.Y;
+
+      mov_R_PTR(_regs.A, addr);
+
+      cycles = Opcodes::cyclesFor(opcode);
+      if ((baseAddr & 0xff00) != (addr & 0xff00))
+        cycles += 1;
+
+      _regs.PC += 1;
+
       break;
     }
 

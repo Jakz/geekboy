@@ -15,6 +15,11 @@ instruction_len_t Opcodes::length(nes_opcode_t op)
   return _opcodes[size_t(op)].length;
 }
 
+bool Opcodes::isPageCross(addr16_t addr, addr16_t offset)
+{
+  return (addr & 0xFF00) != ((addr + offset) & 0xFF00);
+}
+
 std::array<OpcodeInfo, 256> Opcodes::_opcodes = { {
 
   { { "unk", "unk" }, op::UNKNOWN, { 0, 0 }, 1, OpcodeParamInfo::None }, // 0x00
@@ -187,25 +192,25 @@ std::array<OpcodeInfo, 256> Opcodes::_opcodes = { {
   { { "unk", "unk" }, op::UNKNOWN, { 0, 0 }, 1, OpcodeParamInfo::None }, // 0x9e
   { { "unk", "unk" }, op::UNKNOWN, { 0, 0 }, 1, OpcodeParamInfo::None }, // 0x9f
 
-  { {      "mov Y, %.2X",    "ldy %.2X" },        op::MOV_Y_NN, { 2, 0 }, 2,  OpcodeParamInfo::Imm8 }, // 0xa0
-  { { "unk", "unk" }, op::UNKNOWN, { 0, 0 }, 1, OpcodeParamInfo::None }, // 0xa1
-  { {      "mov X, %.2X",    "ldx %.2X" },        op::MOV_X_NN, { 2, 0 }, 2,  OpcodeParamInfo::Imm8 }, // 0xa2
+  { {      "mov Y, %.2X",    "ldy #%.2X" },        op::MOV_Y_NN, { 2, 0 }, 2,  OpcodeParamInfo::Imm8 }, // 0xa0
+  { { "mov A [[%.2X+X]]", "LDA (%.2X, X)" }, op::MOV_A_PTR_PTR_NN_X, { 6, 0 }, 2, OpcodeParamInfo::Addr8 }, // 0xa1
+  { {      "mov X, %.2X",    "ldx #%.2X" },        op::MOV_X_NN, { 2, 0 }, 2,  OpcodeParamInfo::Imm8 }, // 0xa2
   { { "unk", "unk" }, op::UNKNOWN, { 0, 0 }, 1, OpcodeParamInfo::None }, // 0xa3
   { {    "mov Y, [%.2X]",    "ldy %.2X" },    op::MOV_Y_PTR_NN, { 3, 0 }, 2, OpcodeParamInfo::Addr8 }, // 0xa4
   { {    "mov A, [%.2X]",    "lda %.2X" },    op::MOV_A_PTR_NN, { 3, 0 }, 2, OpcodeParamInfo::Addr8 }, // 0xa5
   { {    "mov X, [%.2X]",    "ldx %.2X" },    op::MOV_X_PTR_NN, { 3, 0 }, 2, OpcodeParamInfo::Addr8 }, // 0xa6
   { { "unk", "unk" }, op::UNKNOWN, { 0, 0 }, 1, OpcodeParamInfo::None }, // 0xa7
   { {         "mov Y, A",         "tay" },         op::MOV_Y_A, { 2, 0 }, 1,  OpcodeParamInfo::None }, // 0xa8
-  { {      "mov A, %.2X",    "lda %.2X" },        op::MOV_A_NN, { 2, 0 }, 2,  OpcodeParamInfo::Imm8 }, // 0xa9
+  { {      "mov A, %.2X",    "lda #%.2X" },        op::MOV_A_NN, { 2, 0 }, 2,  OpcodeParamInfo::Imm8 }, // 0xa9
   { {         "mov X, A",         "tax" },         op::MOV_X_A, { 2, 0 }, 1,  OpcodeParamInfo::None }, // 0xaa
   { { "unk", "unk" }, op::UNKNOWN, { 0, 0 }, 1, OpcodeParamInfo::None }, // 0xab
-  { {      "mov Y, %.4X",    "LDY %.4X" }, op::UNKNOWN, { 4, 0 }, 3, OpcodeParamInfo::None }, // 0xac
-  { {      "mov A, %.4X",    "LDA %.4X" }, op::UNKNOWN, { 4, 0 }, 3, OpcodeParamInfo::None }, // 0xad
-  { {      "mov X, %.4X",    "LDX %.4X" }, op::UNKNOWN, { 4, 0 }, 3, OpcodeParamInfo::None }, // 0xae
+  { {      "mov Y, %.4X",    "ldy %.4X" }, op::UNKNOWN, { 4, 0 }, 3, OpcodeParamInfo::Addr16 }, // 0xac
+  { {      "mov A, %.4X",    "lda %.4X" }, op::UNKNOWN, { 4, 0 }, 3, OpcodeParamInfo::Addr16 }, // 0xad
+  { {      "mov X, %.4X",    "ldx %.4X" }, op::UNKNOWN, { 4, 0 }, 3, OpcodeParamInfo::Addr16 }, // 0xae
   { { "unk", "unk" }, op::UNKNOWN, { 0, 0 }, 1, OpcodeParamInfo::None }, // 0xaf
 
   { { "unk", "unk" }, op::UNKNOWN, { 0, 0 }, 1, OpcodeParamInfo::None }, // 0xb0
-  { { "unk", "unk" }, op::UNKNOWN, { 0, 0 }, 1, OpcodeParamInfo::None }, // 0xb1
+  { { "mov A, [[%.2X]+Y]", "LDA (%.2X), Y" }, op::MOV_A_PTR_PTR_NN_Y, { 5, 0 }, 2, OpcodeParamInfo::Addr8 }, // 0xb1
   { { "unk", "unk" }, op::UNKNOWN, { 0, 0 }, 1, OpcodeParamInfo::None }, // 0xb2
   { { "unk", "unk" }, op::UNKNOWN, { 0, 0 }, 1, OpcodeParamInfo::None }, // 0xb3
   { {  "mov Y, [%.2X+X]", "ldy %.2X, X" },  op::MOV_Y_PTR_NN_X, { 4, 0 }, 2, OpcodeParamInfo::Addr8 }, // 0xb4
@@ -217,9 +222,10 @@ std::array<OpcodeInfo, 256> Opcodes::_opcodes = { {
   { {         "mov X, S",         "tsx" },         op::MOV_X_S, { 2, 0 }, 1,  OpcodeParamInfo::None }, // 0xba
   { { "unk", "unk" }, op::UNKNOWN, { 0, 0 }, 1, OpcodeParamInfo::None }, // 0xbb
   { { "unk", "unk" }, op::UNKNOWN, { 0, 0 }, 1, OpcodeParamInfo::None }, // 0xbc
-  { { "unk", "unk" }, op::UNKNOWN, { 0, 0 }, 1, OpcodeParamInfo::None }, // 0xbd
-  { { "unk", "unk" }, op::UNKNOWN, { 0, 0 }, 1, OpcodeParamInfo::None }, // 0xbe
-  { { "unk", "unk" }, op::UNKNOWN, { 0, 0 }, 1, OpcodeParamInfo::None }, // 0xbf
+
+  { {  "mov A, [%.4X+X]", "lda [%.4X+X]" }, op::UNKNOWN, { 4, 0 }, 3, OpcodeParamInfo::Addr16 }, // 0xbd
+  { {  "mov X, [%.4X+Y]", "ldx [%.4X+Y]" }, op::UNKNOWN, { 4, 0 }, 3, OpcodeParamInfo::Addr16 }, // 0xbe
+  { {  "mov Y, [%.4X+X]", "ldx [%.4X+X]" }, op::UNKNOWN, { 4, 0 }, 3, OpcodeParamInfo::Addr16 }, // 0xbc
 
   { { "unk", "unk" }, op::UNKNOWN, { 0, 0 }, 1, OpcodeParamInfo::None }, // 0xc0
   { { "unk", "unk" }, op::UNKNOWN, { 0, 0 }, 1, OpcodeParamInfo::None }, // 0xc1

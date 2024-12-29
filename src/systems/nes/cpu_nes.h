@@ -43,7 +43,8 @@ namespace nes
 
     inline void setZeroAndNegativeFlags(u8 value);
     inline void setFlag(CpuFlag flag, u8 value);
-  
+    inline bool isFlagSet(CpuFlag flag) const;
+
     inline cycle_count_t mov_R_R_IMM(u8& dst, u8 src, bool flags = true);
     inline cycle_count_t mov_R_PTR(u8& dst, addr16_t src);
 

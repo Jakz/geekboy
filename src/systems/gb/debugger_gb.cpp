@@ -67,6 +67,39 @@ Debugger::Debugger()
   _term = new Terminal();
 }
 
+debug::InstructionInfo DebuggerMachine::decode(const debug::Machine::instr_buffer_t& data)
+{
+  debug::InstructionInfo info;
+  
+  if (data[0] != gb::OPCODE_BITS)
+  {
+    const gb::OpcodeGB& opcode = Opcodes::opcodesSpecs[data[0]];
+    info.length = opcode.length;
+  
+    char buffer[256];
+
+    if (info.length == 1)
+      info.mnemonic = opcode.name;
+    else if (info.length == 2)
+    {
+      sprintf(buffer, opcode.name, opcode.paramsSign ? (s8)data[2] : data[2]);
+      info.mnemonic = buffer;
+    }
+    else if (info.length == 3)
+    {
+      sprintf(buffer, opcode.name, (data[2] << 8) | data[1]);
+      info.mnemonic = buffer;
+    }
+  }
+  else
+  {
+    info.length = 2;
+    info.mnemonic = gb::Opcodes::cbMnemonics[data[1]];
+  }
+  
+  return info;
+}
+
 void Debugger::drawRegs(coord_t x, coord_t y)
 {
   _term->drawBox(x, y, x + 53, y + 3);
@@ -100,11 +133,34 @@ void Debugger::drawRegs(coord_t x, coord_t y)
 
 }
 
+void Debugger::drawRom(coord_t x, coord_t y)
+{
+  constexpr size_t ROWS = 20;
+  
+  uint16_t addr = _emu->cpu.regs()->PC;
+
+  for (size_t i = 0; i < ROWS; ++i)
+  {
+    debug::Machine::instr_buffer_t instruction;
+    
+    for (size_t j = 0; j < instruction.size(); ++j)
+      instruction[j] = _emu->mem.read(addr + j);
+
+    auto info = _machine->decode(instruction);
+
+    _term->drawString(x, y, info.mnemonic.c_str());
+
+    addr += info.length;
+    ++y;
+  }
+}
+
 void Debugger::refresh()
 {
   _term->clear();
 
   drawRegs(0, 0);
+  drawRom(0, 0);
 
   _term->refresh();
 }
