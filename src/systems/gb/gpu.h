@@ -90,32 +90,31 @@ namespace gb
 
     const typename Pixel::type bcolors[4];
 
+    void setMode(u8& reg, Mode mode) const { reg &= ~0x03; reg |= mode; }
+    void manageSTAT();
+    bool isEnabled();
+
   public:
+
     GpuGB(CpuGB& cpu, Memory& memory, Emulator& emu, const EmuSpec& spec);
     ~GpuGB();
     void setBuffer(typename Pixel::type* buffer) { this->buffer = buffer; }
+
     void init();
     void reset();
-  
-    void setMode(u8& reg, Mode mode) const { reg &= ~0x03; reg |= mode; }
-
-    bool isEnabled();
-
     void update(u8 cycles);
 
-    void manageSTAT();
-
-
+  protected:
     void drawScanline(u8 line);
 
     void drawTiles(u8 line);
     void drawWindow(u8 line);
     void drawSprites(u8 line);
-
-    void colorsForPalette(DrawLayer layer, u8 index, typename Pixel::type (&palette)[4]);
-
-    s16 getScanlineCounter() { return scanlineCounter; }
   
+  public:
+    void colorsForPalette(DrawLayer layer, u8 index, typename Pixel::type(&palette)[4]);
+    s16 getScanlineCounter() { return scanlineCounter; }
+
     static typename Pixel::type ccc(u8 r, u8 g, u8 b);
   };
 }

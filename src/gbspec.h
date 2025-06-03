@@ -1,5 +1,4 @@
-#ifndef _GB_GBSPEC_H_
-#define _GB_GBSPEC_H_
+#pragma once
 
 #include "utils.h"
 
@@ -123,6 +122,3 @@ namespace gb
     u32 displayHeight;
   };
 }
-
-
-#endif

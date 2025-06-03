@@ -90,11 +90,4 @@ class Utils
     }
 };
 
-class Opcode
-{
-  virtual u8 getLength() = 0;
-  virtual u8 getParamSign() = 0;
-  virtual const char *getName() = 0;
-};
-
 #endif

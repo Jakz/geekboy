@@ -32,6 +32,7 @@
     <ClCompile Include="..\..\src\systems\nes\cartridge_nes.cpp" />
     <ClCompile Include="..\..\src\systems\nes\cpu_nes.cpp" />
     <ClCompile Include="..\..\src\systems\nes\opcodes_nes.cpp" />
+    <ClCompile Include="..\..\src\test\gb_cpu_test.cpp" />
     <ClCompile Include="..\..\src\ui\font.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -58,6 +59,7 @@
     <ClInclude Include="..\..\src\systems\nes\cartridge_nes.h" />
     <ClInclude Include="..\..\src\systems\nes\cpu_nes.h" />
     <ClInclude Include="..\..\src\systems\nes\opcodes_nes.h" />
+    <ClInclude Include="..\..\src\test\json.hpp" />
     <ClInclude Include="..\..\src\ui\font.h" />
     <ClInclude Include="..\..\src\utils.h" />
     <ClInclude Include="resource.h" />

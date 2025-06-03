@@ -316,7 +316,7 @@ const char *Opcodes::cbMnemonics[] =
      "SET 7, B", "SET 7, C", "SET 7, D", "SET 7, E", "SET 7, H", "SET 7, L", "SET 7, (HL)", "SET 7, A"
 };
 
-u8 Opcodes::cpuCycles(u8 opcode, u8 opcode2, bool branchTaken)
+uint8_t Opcodes::cpuCycles(uint8_t opcode, uint8_t opcode2, bool branchTaken)
 {
   if (opcode == 0xCB)
   {
@@ -334,7 +334,7 @@ u8 Opcodes::cpuCycles(u8 opcode, u8 opcode2, bool branchTaken)
     return opcodesSpecs[opcode].cycles[branchTaken ? 0 : 1];
 }
 
-u16 Opcodes::daaTable[4096] = {
+uint16_t Opcodes::daaTable[4096] = {
   0x0080,0x6010,0x0600,0x6610,0x00C0,0xA050,0xFA40,0x9A50,0x0080,0x6010,0x0600,0x6610,0x00C0,0xA050,0xFA40,0x9A50,
   0x0100,0x6110,0x0700,0x6710,0x0140,0xA150,0xFB40,0x9B50,0x0100,0x6110,0x0700,0x6710,0x0140,0xA150,0xFB40,0x9B50,
   0x0200,0x6210,0x0800,0x6810,0x0240,0xA250,0xFC40,0x9C50,0x0200,0x6210,0x0800,0x6810,0x0240,0xA250,0xFC40,0x9C50,
@@ -593,7 +593,7 @@ u16 Opcodes::daaTable[4096] = {
   0x6510,0x6510,0x6510,0x6510,0xFF40,0x9F50,0xF940,0x9950,0x6510,0x6510,0x6510,0x6510,0xFF40,0x9F50,0xF940,0x9950
 };
 
-void Opcodes::visualOpcode(char *buffer, u8 d1, u8 d2, u8 d3)
+void Opcodes::visualOpcode(char *buffer, uint8_t d1, uint8_t d2, uint8_t d3)
 {  
   if (d1 != gb::OPCODE_BITS)
   {
@@ -603,7 +603,7 @@ void Opcodes::visualOpcode(char *buffer, u8 d1, u8 d2, u8 d3)
     if (length == 1)
       sprintf(buffer, "%s", params.name);
     else if (length == 2)
-      sprintf(buffer, params.name, params.paramsSign ? (s8)d2 : d2);
+      sprintf(buffer, params.name, params.paramsSign ? (int)d2 : d2);
     else if (length == 3)
       sprintf(buffer, params.name, (d3 << 8) | d2);
   }

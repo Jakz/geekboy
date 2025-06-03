@@ -22,6 +22,9 @@
     <Filter Include="src\systems\nes">
       <UniqueIdentifier>{79ae28b1-a7f1-4aa8-bf7c-8790618a0c3f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="src\test">
+      <UniqueIdentifier>{be5e700c-3a1a-49af-adba-25bf77bafb3b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\emulator.cpp">
@@ -89,6 +92,9 @@
     </ClCompile>
     <ClCompile Include="..\..\src\systems\gb\debugger_gb.cpp">
       <Filter>src\systems\gb</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\test\gb_cpu_test.cpp">
+      <Filter>src\test</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -167,6 +173,9 @@
     </ClInclude>
     <ClInclude Include="..\..\src\systems\gb\debugger_gb.h">
       <Filter>src\systems\gb</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\test\json.hpp">
+      <Filter>src\test</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
