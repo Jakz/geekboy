@@ -498,13 +498,13 @@ void Screen::renderRegs()
   sprintf(buffer, "SCANLINE %d (%d)\n", emu->display->getScanlineCounter(), emu->mem.rawPortRead(PORT_STAT) & 0x03);
   drawString(buffer, BASE_X, BASE_Y+20, 1);
 
-  sprintf(buffer, "PC %04xh Z%d N%d H%d C%d", regs.PC, (regs.AF.F & FLAG_Z) != 0, (regs.AF.F & FLAG_N) != 0, (regs.AF.F & FLAG_H) != 0, (regs.AF.F & FLAG_C) != 0);
+  sprintf(buffer, "PC %04xh Z%d N%d H%d C%d", regs.PC, (regs.F & FLAG_Z) != 0, (regs.F & FLAG_N) != 0, (regs.F & FLAG_H) != 0, (regs.F & FLAG_C) != 0);
   drawString(buffer, BASE_X, BASE_Y+50, 1);
 
-  sprintf(buffer, "AF %02xh BC %04xh", regs.AF.A, regs.BC.BC);
+  sprintf(buffer, "AF %02xh BC %04xh", regs.A, regs.BC);
   drawString(buffer, BASE_X, BASE_Y+60, 1);
 
-  sprintf(buffer, "DE %04xh HL %04xh", regs.DE.DE, regs.HL.HL);
+  sprintf(buffer, "DE %04xh HL %04xh", regs.DE, regs.HL);
   drawString(buffer, BASE_X, BASE_Y+70, 1);
 
   sprintf(buffer, "SP %04xh IF %02xh IE %02xh", regs.SP, mem.read(PORT_IF), mem.read(PORT_EF));

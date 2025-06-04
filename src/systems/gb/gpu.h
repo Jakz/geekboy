@@ -8,10 +8,6 @@
 #include <type_traits>
 
 #include "gbspec.h"
-
-#include "cpu.h"
-#include "memory.h"
-
 #include "utils.h"
 
 namespace gb

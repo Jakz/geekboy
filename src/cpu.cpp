@@ -17,35 +17,35 @@ void CpuGB::reset()
 	r.rrrsp = (u16**)calloc(4,sizeof(u16**));
   r.rrraf = (u16**)calloc(4,sizeof(u16**));
 	
-	r.BC.B = 0;
-	r.BC.C = 0;
-	r.DE.D = 0;
-	r.DE.E = 0;
-	r.HL.H = 0;
-	r.HL.L = 0;
-	r.AF.A = 0;
+	r.B = 0;
+	r.C = 0;
+	r.D = 0;
+	r.E = 0;
+	r.H = 0;
+	r.L = 0;
+	r.A = 0;
 	
 	r.PC = 0;
   r.SP = 0x0;
 	
-	r.rr[0] = &r.BC.B;
-	r.rr[1] = &r.BC.C;
-	r.rr[2] = &r.DE.D;
-	r.rr[3] = &r.DE.E;
-	r.rr[4] = &r.HL.H;
-	r.rr[5] = &r.HL.L;
+	r.rr[0] = &r.B;
+	r.rr[1] = &r.C;
+	r.rr[2] = &r.D;
+	r.rr[3] = &r.E;
+	r.rr[4] = &r.H;
+	r.rr[5] = &r.L;
 	
-	r.rr[7] = &r.AF.A;
+	r.rr[7] = &r.A;
 	
-	r.rrrsp[0] = &r.BC.BC;
-	r.rrrsp[1] = &r.DE.DE;
-	r.rrrsp[2] = &r.HL.HL;
+	r.rrrsp[0] = &r.BC;
+	r.rrrsp[1] = &r.DE;
+	r.rrrsp[2] = &r.HL;
 	r.rrrsp[3] = &r.SP;
   
-  r.rrraf[0] = &r.BC.BC;
-	r.rrraf[1] = &r.DE.DE;
-	r.rrraf[2] = &r.HL.HL;
-	r.rrraf[3] = &r.AF.AF;
+  r.rrraf[0] = &r.BC;
+	r.rrraf[1] = &r.DE;
+	r.rrraf[2] = &r.HL;
+	r.rrraf[3] = &r.AF;
   
   s.running = true;
   s.interruptsEnabled = true;
@@ -73,7 +73,7 @@ void CpuGB::halt()
 void CpuGB::adc(u8 b)
 {
   u8 carry = isFlagSet(FLAG_C);
-  u8 a = r.AF.A;
+  u8 a = r.A;
   u8 carryOut, res, halfCarry;
 
   if (carry)
@@ -89,7 +89,7 @@ void CpuGB::adc(u8 b)
     halfCarry = (a & 0x0F) + (b & 0x0F) > 0x0F;
   }
 
-  r.AF.A = res;
+  r.A = res;
   
   setFlag(FLAG_S, res & 0x80);
   setFlag(FLAG_Z, res == 0x00);
@@ -101,7 +101,7 @@ void CpuGB::adc(u8 b)
 void CpuGB::sbc(u8 b)
 {
   u8 carry = isFlagSet(FLAG_C);
-  u8 a = r.AF.A;
+  u8 a = r.A;
   u8 carryOut, res, halfCarry;
   
   if (carry)
@@ -117,7 +117,7 @@ void CpuGB::sbc(u8 b)
     res = a - b;
   }
   
-  r.AF.A = res;
+  r.A = res;
   
   setFlag(FLAG_S, res & 0x80);
   setFlag(FLAG_Z, res == 0x00);
@@ -149,24 +149,24 @@ void CpuGB::daa()
   
   if (!isFlagSet(FLAG_N))
   {
-    if ((r.AF.A & 0x0F) > 0x09)
+    if ((r.A & 0x0F) > 0x09)
       c |= 0x06;
     
-    if (r.AF.A > 0x99)
+    if (r.A > 0x99)
       c |= 0x60;
 
-    r.AF.A += c;
+    r.A += c;
   }
   else
   {    
-    r.AF.A -= c;
+    r.A -= c;
   }
   
   if (isFlagSet(FLAG_C) || c >= 0x60)
     cy = true;
   
   setFlag(FLAG_C, cy);
-  setFlag(FLAG_Z, r.AF.A == 0);
+  setFlag(FLAG_Z, r.A == 0);
   setFlag(FLAG_H, 0);
 }
 
@@ -231,7 +231,7 @@ bool CpuGB::manageInterrupts()
 
 inline bool CpuGB::isFlagSet(u8 flag)
 {
-  return r.AF.F & flag;
+  return r.F & flag;
 }
       
 inline void CpuGB::setFlag(u8 flag, u8 value)
@@ -240,9 +240,9 @@ inline void CpuGB::setFlag(u8 flag, u8 value)
     return;
   
   if (value)
-    r.AF.F |= flag;
+    r.F |= flag;
   else
-    r.AF.F &= ~flag;
+    r.F &= ~flag;
 }
 
 inline bool CpuGB::isConditionTrue(u8 cond)
@@ -263,13 +263,13 @@ inline bool CpuGB::isConditionTrue(u8 cond)
 
 inline void CpuGB::resetFlag(u8 flag)
 {
-  r.AF.F ^= flag;
+  r.F ^= flag;
 }
 
 inline void CpuGB::storeSingle(u8 reg, u8 value)
 {
   if (reg == REGS_HL)
-    mem.write(r.HL.HL, value);
+    mem.write(r.HL, value);
   else
     *r.rr[reg] = value;
 }
@@ -277,7 +277,7 @@ inline void CpuGB::storeSingle(u8 reg, u8 value)
 inline u8 CpuGB::loadSingle(u8 reg)
 {
   if (reg == REGS_HL)
-    return mem.read(r.HL.HL);
+    return mem.read(r.HL);
   else
     return *r.rr[reg];
 }
@@ -371,51 +371,51 @@ u8 CpuGB::executeInstruction(u8 opcode)
   /* LD (BC), A */
   else if (opcode == OPCODE_LD_BC_A)
   {
-    mem.write(r.BC.BC, r.AF.A);
+    mem.write(r.BC, r.A);
   }
   /* LD (DE), A */
   else if (opcode == OPCODE_LD_DE_A)
   {
-    mem.write(r.DE.DE, r.AF.A);
+    mem.write(r.DE, r.A);
   }
   /* LD (nn), A - LDD (HL), A*/
   else if (opcode == OPCODE_LD_NN_A)
   {
-    mem.write(r.HL.HL, r.AF.A);
-    --r.HL.HL;
+    mem.write(r.HL, r.A);
+    --r.HL;
   }
   /* LD A, (BC) */
   else if (opcode == OPCODE_LD_A_BC)
   {
-    r.AF.A = mem.read(r.BC.BC);
+    r.A = mem.read(r.BC);
   }
   /* LD A, (DE) */
   else if (opcode == OPCODE_LD_A_DE)
   {
-    r.AF.A = mem.read(r.DE.DE);
+    r.A = mem.read(r.DE);
   }
   /* LD A, (nn) - LDD A, (HL) */
   else if (opcode == OPCODE_LD_A_NN)
   {
-    r.AF.A = mem.read(r.HL.HL);
-    --r.HL.HL;
+    r.A = mem.read(r.HL);
+    --r.HL;
   }
   /* LD (nn), HL - LDI (HL), A */
   else if (opcode == OPCODE_LD_NN_HL)
   {
-    mem.write(r.HL.HL, r.AF.A);
-    ++r.HL.HL;
+    mem.write(r.HL, r.A);
+    ++r.HL;
   }
   /* LD HL, (nn) - LDI A, (HL) */
   else if (opcode == OPCODE_LD_HL_NN)
   {
-    r.AF.A = mem.read(r.HL.HL);
-    ++r.HL.HL;
+    r.A = mem.read(r.HL);
+    ++r.HL;
   }
   /* LD SP, HL */
   else if (opcode == OPCODE_LD_SP_HL)
   {
-    r.SP = r.HL.HL;
+    r.SP = r.HL;
   }
   
   /* INC rr */
@@ -520,12 +520,12 @@ u8 CpuGB::executeInstruction(u8 opcode)
     u8 s = (opcode & 0x07);
     u8 value = loadSingle(s);
     
-    r.AF.A &= value;
+    r.A &= value;
     
-    setFlag(FLAG_S, r.AF.A & 0x80);
-    setFlag(FLAG_Z, r.AF.A == 0);
+    setFlag(FLAG_S, r.A & 0x80);
+    setFlag(FLAG_Z, r.A == 0);
     setFlag(FLAG_H, 1);
-    setFlag(FLAG_PV, parity(r.AF.A) ? 1 : 0);
+    setFlag(FLAG_PV, parity(r.A) ? 1 : 0);
     setFlag(FLAG_N, 0);
     setFlag(FLAG_C, 0);
   }
@@ -535,12 +535,12 @@ u8 CpuGB::executeInstruction(u8 opcode)
     u8 s = (opcode & 0x07);
     u8 value = loadSingle(s);
     
-    r.AF.A ^= value;
+    r.A ^= value;
     
-    setFlag(FLAG_S, r.AF.A & 0x80);
-    setFlag(FLAG_Z, r.AF.A == 0);
+    setFlag(FLAG_S, r.A & 0x80);
+    setFlag(FLAG_Z, r.A == 0);
     setFlag(FLAG_H, 0);
-    setFlag(FLAG_PV, parity(r.AF.A) ? 1 : 0);
+    setFlag(FLAG_PV, parity(r.A) ? 1 : 0);
     setFlag(FLAG_N, 0);
     setFlag(FLAG_C, 0);
   }
@@ -550,12 +550,12 @@ u8 CpuGB::executeInstruction(u8 opcode)
     u8 s = (opcode & 0x07);
     u8 value = loadSingle(s);
     
-    r.AF.A |= value;
+    r.A |= value;
     
-    setFlag(FLAG_S, r.AF.A & 0x80);
-    setFlag(FLAG_Z, r.AF.A == 0);
+    setFlag(FLAG_S, r.A & 0x80);
+    setFlag(FLAG_Z, r.A == 0);
     setFlag(FLAG_H, 0);
-    setFlag(FLAG_PV, parity(r.AF.A) ? 1 : 0);
+    setFlag(FLAG_PV, parity(r.A) ? 1 : 0);
     setFlag(FLAG_N, 0);
     setFlag(FLAG_C, 0);
   }
@@ -563,12 +563,12 @@ u8 CpuGB::executeInstruction(u8 opcode)
   else if ((opcode & 0xF8) == OPCODE_CP_R)
   {
     u8 s = (opcode & 0x07);
-    u8 back = r.AF.A;
+    u8 back = r.A;
     u8 value = loadSingle(s);
     
     sub(value);
     
-    r.AF.A = back;
+    r.A = back;
     
     setFlag(FLAG_N, 1);
   }
@@ -576,7 +576,7 @@ u8 CpuGB::executeInstruction(u8 opcode)
   {
     u8 s = (opcode & 0x30) >> 4;
     u16 b = loadDoubleSP(s);
-    u16 a = r.HL.HL;
+    u16 a = r.HL;
     
     u8 carryOut, halfCarry;
     u16 res;
@@ -585,7 +585,7 @@ u8 CpuGB::executeInstruction(u8 opcode)
     res = a + b;
     halfCarry = (a&0x0FFF) + (b&0xFFF) > 0xFFF;
 
-    r.HL.HL = res;
+    r.HL = res;
     
     setFlag(FLAG_C, carryOut);
     setFlag(FLAG_H, halfCarry);
@@ -634,12 +634,12 @@ u8 CpuGB::executeInstruction(u8 opcode)
   {
     u8 value = mem.read(r.PC++);
     
-    r.AF.A &= value;
+    r.A &= value;
     
-    setFlag(FLAG_S, r.AF.A & 0x80);
-    setFlag(FLAG_Z, r.AF.A == 0);
+    setFlag(FLAG_S, r.A & 0x80);
+    setFlag(FLAG_Z, r.A == 0);
     setFlag(FLAG_H, 1);
-    setFlag(FLAG_PV, parity(r.AF.A) ? 1 : 0);
+    setFlag(FLAG_PV, parity(r.A) ? 1 : 0);
     setFlag(FLAG_N, 0);
     setFlag(FLAG_C, 0);
   }
@@ -648,12 +648,12 @@ u8 CpuGB::executeInstruction(u8 opcode)
   {
     u8 value = mem.read(r.PC++);
     
-    r.AF.A ^= value;
+    r.A ^= value;
     
-    setFlag(FLAG_S, r.AF.A & 0x80);
-    setFlag(FLAG_Z, r.AF.A == 0);
+    setFlag(FLAG_S, r.A & 0x80);
+    setFlag(FLAG_Z, r.A == 0);
     setFlag(FLAG_H, 0);
-    setFlag(FLAG_PV, parity(r.AF.A) ? 1 : 0);
+    setFlag(FLAG_PV, parity(r.A) ? 1 : 0);
     setFlag(FLAG_N, 0);
     setFlag(FLAG_C, 0);
   }
@@ -662,24 +662,24 @@ u8 CpuGB::executeInstruction(u8 opcode)
   {
     u8 value = mem.read(r.PC++);
     
-    r.AF.A |= value;
+    r.A |= value;
     
-    setFlag(FLAG_S, r.AF.A & 0x80);
-    setFlag(FLAG_Z, r.AF.A == 0);
+    setFlag(FLAG_S, r.A & 0x80);
+    setFlag(FLAG_Z, r.A == 0);
     setFlag(FLAG_H, 0);
-    setFlag(FLAG_PV, parity(r.AF.A) ? 1 : 0);
+    setFlag(FLAG_PV, parity(r.A) ? 1 : 0);
     setFlag(FLAG_N, 0);
     setFlag(FLAG_C, 0);
   }
   /* CP A, n */
   else if (opcode == OPCODE_CP_N)
   {
-    u8 back = r.AF.A;
+    u8 back = r.A;
     u8 value = mem.read(r.PC++);
     
     sub(value);
     
-    r.AF.A = back;
+    r.A = back;
     
     setFlag(FLAG_N, 1);
   }
@@ -687,7 +687,7 @@ u8 CpuGB::executeInstruction(u8 opcode)
   /* MISC */
   else if (opcode == OPCODE_CPL)
   {
-    r.AF.A = ~r.AF.A;
+    r.A = ~r.A;
     
     setFlag(FLAG_H, 1);
     setFlag(FLAG_N, 1);
@@ -793,7 +793,7 @@ u8 CpuGB::executeInstruction(u8 opcode)
   }
   else if (opcode == OPCODE_JP_HL)
   {
-    r.PC = r.HL.HL;
+    r.PC = r.HL;
   }
   else if (opcode == OPCODE_JP_NN)
   {    
@@ -808,22 +808,22 @@ u8 CpuGB::executeInstruction(u8 opcode)
       switch (cond) {
         /* LD (FF00+C), A */
         case COND_PO: {
-          mem.write(0xFF00|r.BC.C, r.AF.A);
+          mem.write(0xFF00 | r.C, r.A);
           break;
         }
         /* LD (nn), A */
         case COND_PE: {
-          mem.write(loadDoublePC(), r.AF.A);
+          mem.write(loadDoublePC(), r.A);
           break;
         }
         /* LD A, (FF00+C) */
         case COND_SP: {
-          r.AF.A = mem.read(0xFF00|r.BC.C);
+          r.A = mem.read(0xFF00 | r.C);
           break;
         }
         /* LD A, (nn) */
         case COND_SN: {
-          r.AF.A = mem.read(loadDoublePC());
+          r.A = mem.read(loadDoublePC());
           break;
         }
       }
@@ -896,7 +896,7 @@ u8 CpuGB::executeInstruction(u8 opcode)
         /* LD (FF00+n), A */
         case COND_PO: {
           u8 p = mem.read(r.PC++);
-          mem.write(0xFF00|p, r.AF.A);
+          mem.write(0xFF00|p, r.A);
           break;
         }
         /* ADD SP, dd */
@@ -920,7 +920,7 @@ u8 CpuGB::executeInstruction(u8 opcode)
         /* LD A, (FF00+n) */
         case COND_SP: {
           u8 p = mem.read(r.PC++);
-          r.AF.A = mem.read(0xFF00|p);
+          r.A = mem.read(0xFF00|p);
           break;
         }
         /* LD HL, SP+dd*/
@@ -937,7 +937,7 @@ u8 CpuGB::executeInstruction(u8 opcode)
           setFlag(FLAG_Z, 0);
           setFlag(FLAG_N, 0);
           
-          r.HL.HL = r.SP + p;
+          r.HL = r.SP + p;
           break;
         }
       }
@@ -970,47 +970,47 @@ u8 CpuGB::executeInstruction(u8 opcode)
   /* ROTATE AND SHIFT */
   else if (opcode == OPCODE_RLCA)
   {
-    u8 value = r.AF.A;
+    u8 value = r.A;
     
     setFlag(FLAG_H, 0);
     setFlag(FLAG_N, 0);
     setFlag(FLAG_Z, 0);
     setFlag(FLAG_C, value & 0x80); 
     
-    r.AF.A = ((u8)(value << 1)) | (value >> 7);
+    r.A = ((u8)(value << 1)) | (value >> 7);
   }
   else if (opcode == OPCODE_RLA)
   {
-    u8 value = r.AF.A;
+    u8 value = r.A;
     
     setFlag(FLAG_H, 0);
     setFlag(FLAG_N, 0);
     setFlag(FLAG_Z, 0);
     
-    r.AF.A = ((u8)(value << 1)) | (isFlagSet(FLAG_C) ? 1 : 0);
+    r.A = ((u8)(value << 1)) | (isFlagSet(FLAG_C) ? 1 : 0);
     
     setFlag(FLAG_C, value & 0x80); 
   }
   else if (opcode == OPCODE_RRCA)
   {
-    u8 value = r.AF.A;
+    u8 value = r.A;
     
     setFlag(FLAG_H, 0);
     setFlag(FLAG_N, 0);
     setFlag(FLAG_Z, 0);
     setFlag(FLAG_C, value & 0x01);
     
-    r.AF.A = ((u8)(value >> 1)) | ((u8)(value << 7));
+    r.A = ((u8)(value >> 1)) | ((u8)(value << 7));
   }
   else if (opcode == OPCODE_RRA)
   {
-    u8 value = r.AF.A;
+    u8 value = r.A;
     
     setFlag(FLAG_H, 0);
     setFlag(FLAG_N, 0);
     setFlag(FLAG_Z, 0);
     
-    r.AF.A = ((u8)(value >> 1)) | (isFlagSet(FLAG_C) ? 0x80 : 0);
+    r.A = ((u8)(value >> 1)) | (isFlagSet(FLAG_C) ? 0x80 : 0);
     
     setFlag(FLAG_C, value & 0x01); 
   }

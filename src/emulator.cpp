@@ -197,13 +197,13 @@ void Emulator::init()
   regs->PC = 0x0100;
   
   if (mode == MODE_GB)
-    regs->AF.AF = 0x01B0;
+    regs->AF = 0x01B0;
   else
-    regs->AF.AF = 0x11B0;
+    regs->AF = 0x11B0;
 
-  regs->BC.BC = 0x0013;
-  regs->DE.DE = 0x00D8;
-  regs->HL.HL = 0x014D;
+  regs->BC = 0x0013;
+  regs->DE = 0x00D8;
+  regs->HL = 0x014D;
   regs->SP = 0xFFFE;
 
   mem.rawPortWrite(0xFF05, 0x00);

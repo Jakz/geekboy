@@ -19,19 +19,7 @@ namespace gb
   const u8 FLAG_PV = 0x08;
   const u8 FLAG_S = 0x04;
   
-  const u8 REGS_B = 0x00;
-  const u8 REGS_C = 0x01;
-  const u8 REGS_D = 0x02;
-  const u8 REGS_E = 0x03;
-  const u8 REGS_H = 0x04;
-  const u8 REGS_L = 0x05;
   const u8 REGS_HL = 0x06;
-  const u8 REGS_A = 0x07;
-
-  const u8 REG_BC = 0x00;
-  const u8 REG_DE = 0x01;
-  const u8 REG_HL = 0x02;
-  const u8 REG_SP = 0x03;
   const u8 REG_AF = 0x03;
 
   class Memory;
@@ -46,66 +34,41 @@ namespace gb
     INT_JOYPAD = 4
   };
 
-  union AF_UNION
-  {
-	  struct
-	  {
-		  u8 F;
-		  u8 A;
-	  };
-	
-	  u16 AF;
-  };
-
-  union BC_UNION
-  {
-	  struct
-	  {
-		  u8 C;
-		  u8 B;
-	  };
-	
-	  u16 BC;
-  };
-
-  union DE_UNION
-  {
-	  struct
-	  {
-		  u8 E;
-		  u8 D;		
-	  };
-	
-	  u16 DE;
-  };
-
-  union HL_UNION
-  {
-	  struct
-	  {
-		  u8 L;
-		  u8 H;		
-	  };
-	
-	  u16 HL;
-  };
-
   /* registri */
   struct Registers
   {
 	  u8** rr;
 	  u16** rrrsp;
     u16** rrraf;
-	
-	  AF_UNION AF;
-	  BC_UNION BC;
-	  DE_UNION DE;
-	  HL_UNION HL;
+
+    union
+    {
+      struct { u8 F; u8 A; };
+      u16 AF;
+    };
+
+    union
+    {
+      struct { u8 C; u8 B; };
+      u16 BC;
+    };
+
+    union
+    {
+      struct { u8 E; u8 D; };
+      u16 DE;
+    };
+
+    union
+    {
+      struct { u8 L; u8 H; };
+      u16 HL;
+    };
+
 	  u16 SP;
 	  u16 PC;
   };
 
-  /* stato della VM */
   struct Status
   {
     bool interruptsEnabled;

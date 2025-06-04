@@ -111,20 +111,20 @@ void Debugger::drawRegs(coord_t x, coord_t y)
   auto* r = _emu->cpu.regs();
 
   sprintf(buffer, "AF: %.4X    DE: %.4X    PC: %.4X        Z%u N%u H%u C%u",
-    r->AF.AF,
-    r->DE.DE,
+    r->AF,
+    r->DE,
     r->PC,
-    r->AF.F & gb::FLAG_Z ? 1 : 0,
-    r->AF.F & gb::FLAG_N ? 1 : 0,
-    r->AF.F & gb::FLAG_H ? 1 : 0,
-    r->AF.F & gb::FLAG_C ? 1 : 0
+    r->F & gb::FLAG_Z ? 1 : 0,
+    r->F & gb::FLAG_N ? 1 : 0,
+    r->F & gb::FLAG_H ? 1 : 0,
+    r->F & gb::FLAG_C ? 1 : 0
   );
 
   _term->drawString(x, y, buffer);
 
   sprintf(buffer, "BC: %.4X    HL: %.4X    SP: %.4X        IME%u",
-    r->BC.BC,
-    r->HL.HL,
+    r->BC,
+    r->HL,
     r->SP,
     _emu->cpu.status()->interruptsEnabled ? 1 : 0
   );
