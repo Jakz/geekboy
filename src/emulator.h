@@ -7,7 +7,7 @@
 #ifndef DEBUGGER
 #include "sound.h"
 #endif
-#include "cpu.h"
+#include "systems/gb/lr35902.h"
 
 namespace gb {
 
@@ -76,7 +76,7 @@ public:
   u8 keyPadState(u8 writeValue) const;
 
 
-  CpuGB cpu;
+  gb::LR35902 cpu;
   Memory mem;
   GpuGB<PIXEL_TYPE>* display;
 #ifndef DEBUGGER

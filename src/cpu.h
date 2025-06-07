@@ -34,12 +34,12 @@ namespace gb
     INT_JOYPAD = 4
   };
 
-  /* registri */
+  /* registers */
   struct Registers
   {
-	  u8** rr;
-	  u16** rrrsp;
-    u16** rrraf;
+	  std::array<u8*, 8> rr;
+	  std::array<u16*, 4> rrrsp;
+    std::array<u16*, 4> rrraf;
 
     union
     {
@@ -77,9 +77,11 @@ namespace gb
 
   class CpuGB
   {
-  private:
+  protected:
+    using op_func = void (CpuGB::*)();
+    std::array<op_func, 256> opcodes;
+
     Memory& mem;
-    Emulator& emu;
     
     Registers r;
     Status s;
@@ -102,9 +104,11 @@ namespace gb
     
     bool isConditionTrue(u8 cond);
     void halt();
+
+    void djnzn() { halted = true; }
   
   public:
-    CpuGB(Emulator& emu);
+    CpuGB(Memory& emu);
 
   protected:
     void resetFlag(u8 flag);
@@ -131,7 +135,6 @@ namespace gb
   
     bool halted;
   };
-
 }
 
 #endif

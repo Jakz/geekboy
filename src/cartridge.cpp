@@ -434,10 +434,8 @@ void Cartridge::load(const std::string& rom_name)
   
   if (ramSize() > 0)
   {
-    char buffer[128];
-    sprintf(buffer, "%s.sav", status.fileName);
-    
-    FILE *in = fopen(buffer, "rb");
+    std::string saveFile = status.fileName + ".sav";
+    FILE *in = fopen(saveFile.c_str(), "rb");
     
     if (in)
     {

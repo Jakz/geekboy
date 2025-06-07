@@ -6,7 +6,7 @@ using namespace gb;
 
 constexpr u32 Emulator::timerFrequencies[4];
 
-Emulator::Emulator(const EmuSpec& spec) : mem(), cpu(CpuGB(*this)), spec(spec)
+Emulator::Emulator(const EmuSpec& spec) : mem(), cpu(LR35902(*this)), spec(spec)
 #ifndef DEBUGGER
 , sound(GBSound())
 #endif

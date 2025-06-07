@@ -29,6 +29,7 @@
     <ClCompile Include="..\..\src\sound.cpp" />
     <ClCompile Include="..\..\src\systems\gb\debugger_gb.cpp" />
     <ClCompile Include="..\..\src\systems\gb\gpu.cpp" />
+    <ClCompile Include="..\..\src\systems\gb\lr35902.cpp" />
     <ClCompile Include="..\..\src\systems\nes\cartridge_nes.cpp" />
     <ClCompile Include="..\..\src\systems\nes\cpu_nes.cpp" />
     <ClCompile Include="..\..\src\systems\nes\opcodes_nes.cpp" />
@@ -56,6 +57,7 @@
     <ClInclude Include="..\..\src\sound.h" />
     <ClInclude Include="..\..\src\systems\gb\debugger_gb.h" />
     <ClInclude Include="..\..\src\systems\gb\gpu.h" />
+    <ClInclude Include="..\..\src\systems\gb\lr35902.h" />
     <ClInclude Include="..\..\src\systems\nes\cartridge_nes.h" />
     <ClInclude Include="..\..\src\systems\nes\cpu_nes.h" />
     <ClInclude Include="..\..\src\systems\nes\opcodes_nes.h" />

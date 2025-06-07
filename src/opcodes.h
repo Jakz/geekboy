@@ -151,9 +151,7 @@ namespace gb
       static OpcodeGB opcodesSpecs[];
      
       static uint8_t cpuCycles(uint8_t opcode, uint8_t opcode2, bool branchTaken);
-     
-      static uint16_t daaTable[4096];
-     
+          
       static void visualOpcode(char* buffer, uint8_t d1, uint8_t d2, uint8_t d3);
      
       /* Compared to the complete Z80, some opcodes have changed, others do not exist (those with NO as a comment), and some two-byte instructions

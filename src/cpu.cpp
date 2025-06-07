@@ -6,17 +6,13 @@
 
 using namespace gb;
 
-CpuGB::CpuGB(Emulator& emu) : emu(emu), mem(emu.mem)
+CpuGB::CpuGB(Memory& mem) : mem(mem)
 {
-
+  opcodes[OPCODE_DJNZ_N] = &CpuGB::djnzn;
 }
 
 void CpuGB::reset()
 {
-  r.rr = (u8**)calloc(8,sizeof(u8**));
-	r.rrrsp = (u16**)calloc(4,sizeof(u16**));
-  r.rrraf = (u16**)calloc(4,sizeof(u16**));
-	
 	r.B = 0;
 	r.C = 0;
 	r.D = 0;
@@ -27,32 +23,15 @@ void CpuGB::reset()
 	
 	r.PC = 0;
   r.SP = 0x0;
-	
-	r.rr[0] = &r.B;
-	r.rr[1] = &r.C;
-	r.rr[2] = &r.D;
-	r.rr[3] = &r.E;
-	r.rr[4] = &r.H;
-	r.rr[5] = &r.L;
-	
-	r.rr[7] = &r.A;
-	
-	r.rrrsp[0] = &r.BC;
-	r.rrrsp[1] = &r.DE;
-	r.rrrsp[2] = &r.HL;
-	r.rrrsp[3] = &r.SP;
-  
-  r.rrraf[0] = &r.BC;
-	r.rrraf[1] = &r.DE;
-	r.rrraf[2] = &r.HL;
-	r.rrraf[3] = &r.AF;
-  
+
+  r.rr = { &r.B, &r.C, &r.D, &r.E, &r.H, &r.L, nullptr, &r.A };
+  r.rrrsp = { &r.BC, &r.DE, &r.HL, &r.SP };
+  r.rrraf = { &r.BC, &r.DE, &r.HL, &r.AF };
+
   s.running = true;
   s.interruptsEnabled = true;
   
   halted = false;
-
-	//print_regs();
 }
 
 Registers *CpuGB::regs()
@@ -139,8 +118,6 @@ void CpuGB::sub(u8 value)
 
 void CpuGB::daa()
 {
-  //r.AF.AF = Opcodes::daaTable[r.AF.AF>>4];
-  
   u8 c = isFlagSet(FLAG_C) ? 0x60 : 0x00;
   bool cy = false;
   
@@ -336,7 +313,11 @@ u8 CpuGB::executeInstruction(u8 opcode)
   bool branchTaken = true;
   
   /* HALT */
-  if (opcode == OPCODE_HALT)
+  if (opcodes[opcode])
+  {
+    (this->*opcodes[opcode])();
+  }
+  else if (opcode == OPCODE_HALT)
   {
     halted = true;
   }
@@ -708,33 +689,9 @@ u8 CpuGB::executeInstruction(u8 opcode)
   
   /* JUMPS */
   /* DJNZ n - STOP */
-  else if (opcode == OPCODE_DJNZ_N)
-  {
-    // if a speed switch was requested
-    u8 speed = mem.rawPortRead(PORT_KEY1);
-    
-    if (Utils::bit(speed, 0))
-    {
-      // if CPU was in double mode
-      if (Utils::bit(speed, 7))
-      {
-        emu.toggleDoubleSpeed(false);
-        mem.rawPortWrite(PORT_KEY1, speed & 0x7E);
-      }
-      else
-      {
-        emu.toggleDoubleSpeed(true);
-        mem.rawPortWrite(PORT_KEY1, (speed | 0x80) & 0xFE);
-      }
-      
-      //s.interruptsEnabled = true;
-      //mem->write(PORT_IF, 0x1F);
-    }
-    else
-      halted = true;
-  }
+
   /* JR n */
-  else if (opcode == OPCODE_JR_N)
+  if (opcode == OPCODE_JR_N)
   {
     s8 value = mem.read(r.PC++);
     r.PC += value;
@@ -1241,8 +1198,3 @@ u8 CpuGB::executeSingle()
   }
   else return 0;
 }
-
-
-
-
-

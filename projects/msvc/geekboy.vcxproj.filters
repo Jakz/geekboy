@@ -96,6 +96,9 @@
     <ClCompile Include="..\..\src\test\gb_cpu_test.cpp">
       <Filter>src\test</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\systems\gb\lr35902.cpp">
+      <Filter>src\systems\gb</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\emulator.h">
@@ -176,6 +179,9 @@
     </ClInclude>
     <ClInclude Include="..\..\src\test\json.hpp">
       <Filter>src\test</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\systems\gb\lr35902.h">
+      <Filter>src\systems\gb</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
