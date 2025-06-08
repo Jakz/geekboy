@@ -1,17 +1,15 @@
 #include "cpu.h"
 
-#include "emulator.h"
-
 //#define GB_Z80
 
 using namespace gb;
 
-CpuGB::CpuGB(Memory& mem) : mem(mem)
+Mos6502::Mos6502(Memory& mem) : mem(mem)
 {
-  opcodes[OPCODE_DJNZ_N] = &CpuGB::djnzn;
+  opcodes[OPCODE_DJNZ_N] = &Mos6502::djnzn;
 }
 
-void CpuGB::reset()
+void Mos6502::reset()
 {
 	r.B = 0;
 	r.C = 0;
@@ -34,22 +32,22 @@ void CpuGB::reset()
   halted = false;
 }
 
-Registers *CpuGB::regs()
+Registers *Mos6502::regs()
 {
   return &r;
 }
 
-Status *CpuGB::status()
+Status *Mos6502::status()
 {
   return &s;
 }
 
-void CpuGB::halt()
+void Mos6502::halt()
 {
   s.running = false;
 }
 
-void CpuGB::adc(u8 b)
+void Mos6502::adc(u8 b)
 {
   u8 carry = isFlagSet(FLAG_C);
   u8 a = r.A;
@@ -77,7 +75,7 @@ void CpuGB::adc(u8 b)
 }
 
 
-void CpuGB::sbc(u8 b)
+void Mos6502::sbc(u8 b)
 {
   u8 carry = isFlagSet(FLAG_C);
   u8 a = r.A;
@@ -104,19 +102,19 @@ void CpuGB::sbc(u8 b)
   setFlag(FLAG_C, carryOut);
 }
 
-void CpuGB::add(u8 value)
+void Mos6502::add(u8 value)
 {
   setFlag(FLAG_C, 0);
   adc(value);
 }
 
-void CpuGB::sub(u8 value)
+void Mos6502::sub(u8 value)
 {
   setFlag(FLAG_C, 0);
   sbc(value);
 }
 
-void CpuGB::daa()
+void Mos6502::daa()
 {
   u8 c = isFlagSet(FLAG_C) ? 0x60 : 0x00;
   bool cy = false;
@@ -147,7 +145,7 @@ void CpuGB::daa()
   setFlag(FLAG_H, 0);
 }
 
-inline bool CpuGB::parity(u8 x)
+inline bool Mos6502::parity(u8 x)
 {
   u8 y = x ^ (x >> 1);
   y = y ^ (y >> 2);
@@ -156,7 +154,7 @@ inline bool CpuGB::parity(u8 x)
 }
 
 
-void CpuGB::enableInterrupt(u8 interrupt)
+void Mos6502::enableInterrupt(u8 interrupt)
 {
   u8 ifreg = mem.read(PORT_IF);
   
@@ -169,7 +167,7 @@ void CpuGB::enableInterrupt(u8 interrupt)
   mem.rawPortWrite(PORT_IF, ifreg);
 }
 
-bool CpuGB::manageInterrupts()
+bool Mos6502::manageInterrupts()
 {
   if (s.interruptsEnabled)
   {
@@ -206,12 +204,12 @@ bool CpuGB::manageInterrupts()
   return false;
 }
 
-inline bool CpuGB::isFlagSet(u8 flag)
+inline bool Mos6502::isFlagSet(u8 flag)
 {
   return r.F & flag;
 }
       
-inline void CpuGB::setFlag(u8 flag, u8 value)
+inline void Mos6502::setFlag(u8 flag, u8 value)
 {
   if (flag == FLAG_PV || flag == FLAG_S)
     return;
@@ -222,7 +220,7 @@ inline void CpuGB::setFlag(u8 flag, u8 value)
     r.F &= ~flag;
 }
 
-inline bool CpuGB::isConditionTrue(u8 cond)
+inline bool Mos6502::isConditionTrue(u8 cond)
 {
   switch (cond)
   {
@@ -238,12 +236,12 @@ inline bool CpuGB::isConditionTrue(u8 cond)
   }
 }
 
-inline void CpuGB::resetFlag(u8 flag)
+inline void Mos6502::resetFlag(u8 flag)
 {
   r.F ^= flag;
 }
 
-inline void CpuGB::storeSingle(u8 reg, u8 value)
+inline void Mos6502::storeSingle(u8 reg, u8 value)
 {
   if (reg == REGS_HL)
     mem.write(r.HL, value);
@@ -251,7 +249,7 @@ inline void CpuGB::storeSingle(u8 reg, u8 value)
     *r.rr[reg] = value;
 }
 
-inline u8 CpuGB::loadSingle(u8 reg)
+inline u8 Mos6502::loadSingle(u8 reg)
 {
   if (reg == REGS_HL)
     return mem.read(r.HL);
@@ -259,17 +257,17 @@ inline u8 CpuGB::loadSingle(u8 reg)
     return *r.rr[reg];
 }
 
-inline void CpuGB::storeDoubleSP(u8 reg, u16 value)
+inline void Mos6502::storeDoubleSP(u8 reg, u16 value)
 {
   *r.rrrsp[reg] = value;
 }
 
-inline u16 CpuGB::loadDoubleSP(u8 reg)
+inline u16 Mos6502::loadDoubleSP(u8 reg)
 {
   return *r.rrrsp[reg];
 }
 
-inline void CpuGB::storeDoubleAF(u8 reg, u16 value)
+inline void Mos6502::storeDoubleAF(u8 reg, u16 value)
 {
   if (reg == REG_AF)
     value &= 0xFFF0;
@@ -277,7 +275,7 @@ inline void CpuGB::storeDoubleAF(u8 reg, u16 value)
   *r.rrraf[reg] = value;
 }
 
-inline u16 CpuGB::loadDoubleAF(u8 reg)
+inline u16 Mos6502::loadDoubleAF(u8 reg)
 {
   u16 value = *r.rrraf[reg];
   
@@ -287,27 +285,27 @@ inline u16 CpuGB::loadDoubleAF(u8 reg)
   return value;
 }
 
-inline u16 CpuGB::popDoubleSP()
+inline u16 Mos6502::popDoubleSP()
 {
   u8 l = mem.read(r.SP++);
   u8 h = mem.read(r.SP++);
   return (h << 8) | l;
 }
 
-inline void CpuGB::pushDoubleSP(u16 value)
+inline void Mos6502::pushDoubleSP(u16 value)
 {
   mem.write(--r.SP, value >> 8);
   mem.write(--r.SP, value & 0xFF);
 }
 
-inline u16 CpuGB::loadDoublePC()
+inline u16 Mos6502::loadDoublePC()
 {
   u8 l = mem.read(r.PC++);
   u8 h = mem.read(r.PC++);
   return (h << 8) | l;
 }
 
-u8 CpuGB::executeInstruction(u8 opcode)
+u8 Mos6502::executeInstruction(u8 opcode)
 {	
   u8 op = opcode, op2 = -1;
   bool branchTaken = true;
@@ -1185,7 +1183,7 @@ u8 CpuGB::executeInstruction(u8 opcode)
   return Opcodes::cpuCycles(op, op2, branchTaken);
 }
 
-u8 CpuGB::executeSingle()
+u8 Mos6502::executeSingle()
 {
 	if (s.running)
   {  

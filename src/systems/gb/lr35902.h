@@ -4,7 +4,7 @@
 
 namespace gb
 {
-  class LR35902 : public CpuGB
+  class LR35902 : public Mos6502
   {
   protected:
     Emulator& emu;

@@ -75,10 +75,10 @@ namespace gb
     bool running;
   };
 
-  class CpuGB
+  class Mos6502
   {
   protected:
-    using op_func = void (CpuGB::*)();
+    using op_func = void (Mos6502::*)();
     std::array<op_func, 256> opcodes;
 
     Memory& mem;
@@ -108,7 +108,7 @@ namespace gb
     void djnzn() { halted = true; }
   
   public:
-    CpuGB(Memory& emu);
+    Mos6502(Memory& emu);
 
   protected:
     void resetFlag(u8 flag);

@@ -332,8 +332,8 @@ void Screen::loop()
 void Screen::drawString(const std::string& txt, int x, int y, float scale)
 {
   int sx = x;
-  static pixel_type buffer[Font::WIDTH*Font::HEIGHT];
-  static const pixel_type color = gb::GpuGB<Emulator::PIXEL_TYPE>::ccc(31, 31, 31);
+  static pixel_t buffer[Font::WIDTH*Font::HEIGHT];
+  static const pixel_t color = gb::GpuGB::ccc(31, 31, 31);
 
   for (auto c : txt)
   {
@@ -536,7 +536,7 @@ void Screen::renderCurrentScanline()
 {
   //if (speed > speeds.begin())
   {
-    static const pixel_type color = gb::GpuGB<Emulator::PIXEL_TYPE>::ccc(31, 0, 0);
+    static const pixel_t color = gb::GpuGB::ccc(31, 0, 0);
 
     u8 scanline = emu->mem.rawPortRead(PORT_LY);
 
@@ -544,7 +544,7 @@ void Screen::renderCurrentScanline()
   }
 }
 
-void Screen::renderRect(Surface &surface, int w, int h, int x, int y, pixel_type color)
+void Screen::renderRect(Surface &surface, int w, int h, int x, int y, pixel_t color)
 {
   for (int i = 0; i < w; ++i)
   {
@@ -562,7 +562,7 @@ void Screen::renderRect(Surface &surface, int w, int h, int x, int y, pixel_type
 
 void Screen::renderTileData(Surface& dest, u8 *data, int index)
 {
-  GpuGB<Emulator::PIXEL_TYPE>::Pixel::type colors[4];
+  pixel_t colors[4];
   u16 address;
 
   for (int i = 0; i < (0x9800 - 0x8000) / 16; ++i)
@@ -583,7 +583,7 @@ void Screen::renderTileData(Surface& dest, u8 *data, int index)
       for (int x = 0; x < 8; ++x)
       {
         u8 index = ((byte2 >> (7 - x)) & 0x01) << 1 | ((byte1 >> (7 - x)) & 0x01);
-        pixel_type color = colors[index];
+        pixel_t color = colors[index];
 
         int fx = (i%16)*8 + x;
         int fy = (i/16)*8 + y;
@@ -603,7 +603,7 @@ void Screen::renderTileMap(Surface& surface, const TileMapData& tileMap, int ind
   bool isUnsigned = Utils::bit(lcdc, 4);
   bool isCGB = emu->mode == MODE_CGB;
 
-  GpuGB<Emulator::PIXEL_TYPE>::Pixel::type colors[4];
+  pixel_t colors[4];
 
   for (int i = 0; i < TILE_MAP_HEIGHT; ++i)
     for (int j = 0; j < TILE_MAP_WIDTH; ++j)
@@ -630,7 +630,7 @@ void Screen::renderTileMap(Surface& surface, const TileMapData& tileMap, int ind
           int rx = flipX ? (8 - 1 - x) : x;
 
           u8 index = ((byte2 >> (7 - rx)) & 0x01) << 1 | ((byte1 >> (7 - rx)) & 0x01);
-          const pixel_type& color = colors[index];
+          const pixel_t& color = colors[index];
           surface.set(j*TILE_SIZE + x, i*TILE_SIZE + y, color);
         }
       }
@@ -639,7 +639,7 @@ void Screen::renderTileMap(Surface& surface, const TileMapData& tileMap, int ind
 
   if (!(Utils::bit(lcdc, 3) ^ (index == 1)))
   {
-    pixel_type edge = gb::GpuGB<Emulator::PIXEL_TYPE>::ccc(31, 0, 0);
+    pixel_t edge = gb::GpuGB::ccc(31, 0, 0);
 
     u8 scx = emu->mem.read(PORT_SCX);
     u8 scy = emu->mem.read(PORT_SCY);
@@ -649,7 +649,7 @@ void Screen::renderTileMap(Surface& surface, const TileMapData& tileMap, int ind
 
   if (!(Utils::bit(lcdc, 6) ^ (index == 1)) && Utils::bit(lcdc, 5))
   {
-    pixel_type edge = gb::GpuGB<Emulator::PIXEL_TYPE>::ccc(0, 31, 0);
+    pixel_t edge = gb::GpuGB::ccc(0, 31, 0);
 
     int wx = emu->mem.read(PORT_WX) - 7;
     int wy = emu->mem.read(PORT_WY);
@@ -684,11 +684,11 @@ void Screen::renderSpriteInfo(int x, int y)
 
 void Screen::renderSprites(const u8* oams, u8* vram_total)
 {
-  static const pixel_type black = gb::GpuGB<Emulator::PIXEL_TYPE>::ccc(0, 0, 0);
+  static const pixel_t black = gb::GpuGB::ccc(0, 0, 0);
 
   sprites.fill(black);
 
-  pixel_type colors[4];
+  pixel_t colors[4];
 
   bool doubleSize = Utils::bit(emu->mem.read(PORT_LCDC), 2);
 
@@ -786,7 +786,7 @@ void Screen::renderSprites(const u8* oams, u8* vram_total)
 
 void Screen::renderGbPalette()
 {
-  pixel_type colors[4];
+  pixel_t colors[4];
 
   /*emu->display->colorsForPalette(LAYER_BACKGROUND, 0, colors);
   memcpy(gbpal, &colors, sizeof(pixel_type)*4);

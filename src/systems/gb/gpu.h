@@ -12,62 +12,28 @@
 
 namespace gb
 {
-
   class Emulator;
   class Memory;
-  class CpuGB;
-
-
-  struct oam
-  {
-    u8 yPos;
-    u8 xPos;
-    u8 tileNumber;
-    u8 flags;
-  };
+  class Mos6502;
 
   enum DrawLayer
   {
     LAYER_SPRITE = 0,
     LAYER_BACKGROUND = 1
   };
-  
-  enum PriorityType : u8
-  {
-    PRIORITY_NONE = 0,
-    PRIORITY_SPRITE = 1,
-    PRIORITY_BG = 2,
-    PRIORITY_MAYBE_SPRITE = 3
-  };
-  
-  struct PixelStatus
-  {
-    bool hasSprite : 1;
-    u8 spriteIndex : 6;
-    u8 padding : 1;
-    u8 spriteX : 8;
-  };
-  
-  enum class PixelFormat
-  {
-    ARGB8,
-    ARGB51,
-    ARGB565
-  };
 
-  template<PixelFormat T>
+  enum DrawLayer;
+  enum PriorityType : u8;
+
+  using pixel_t = uint32_t;
+
   class GpuGB
   {
-  
-  public:
-    typedef std::conditional<(T == PixelFormat::ARGB8), u32, u16> Pixel;
-
   private:
-    typename Pixel::type* buffer;
+    pixel_t* buffer;
     PriorityType *priorityMap;
     const u32 width, height;
 
-    CpuGB& cpu;
     Memory& mem;
 
     Emulator& emu;
@@ -84,7 +50,7 @@ namespace gb
       OAM_VRAM_TRANSFER = 3
     };
 
-    const typename Pixel::type bcolors[4];
+    const pixel_t bcolors[4];
 
     void setMode(u8& reg, Mode mode) const { reg &= ~0x03; reg |= mode; }
     void manageSTAT();
@@ -92,9 +58,9 @@ namespace gb
 
   public:
 
-    GpuGB(CpuGB& cpu, Memory& memory, Emulator& emu, const EmuSpec& spec);
+    GpuGB(Memory& memory, Emulator& emu, const EmuSpec& spec);
     ~GpuGB();
-    void setBuffer(typename Pixel::type* buffer) { this->buffer = buffer; }
+    void setBuffer(pixel_t* buffer) { this->buffer = buffer; }
 
     void init();
     void reset();
@@ -108,10 +74,10 @@ namespace gb
     void drawSprites(u8 line);
   
   public:
-    void colorsForPalette(DrawLayer layer, u8 index, typename Pixel::type(&palette)[4]);
-    s16 getScanlineCounter() { return scanlineCounter; }
+    void colorsForPalette(DrawLayer layer, u8 index, pixel_t(&palette)[4]);
+    s16 getScanlineCounter() const { return scanlineCounter; }
 
-    static typename Pixel::type ccc(u8 r, u8 g, u8 b);
+    static pixel_t ccc(u8 r, u8 g, u8 b);
   };
 }
 

@@ -11,12 +11,11 @@
 
 namespace gb {
 
-template<PixelFormat T>
 class GpuGB;
 
 class GBSound;
 class Memory;
-class CpuGB;
+class Mos6502;
 
 enum Mode
 {
@@ -28,7 +27,6 @@ enum Mode
 class Emulator
 {
 public:
-  static constexpr PixelFormat PIXEL_TYPE = PixelFormat::ARGB8;
 
 private:
 
@@ -78,15 +76,13 @@ public:
 
   gb::LR35902 cpu;
   Memory mem;
-  GpuGB<PIXEL_TYPE>* display;
+  GpuGB* display;
 #ifndef DEBUGGER
   GBSound sound;
 #endif
 
   void toggleLcdState() { lcdChangedState = true; }
-
   void toggleDoubleSpeed(bool value);
-  bool isDoubleSpeedEnabled() const;
 
   void mute(bool toggle) { sound.mute(toggle); };
 

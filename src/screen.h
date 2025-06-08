@@ -17,7 +17,7 @@
 #include "emulator.h"
 #include "ui/font.h"
 
-using pixel_type = gb::GpuGB<gb::Emulator::PIXEL_TYPE>::Pixel::type;
+using pixel_type = gb::pixel_t;
 
 #define FPS (60)
 

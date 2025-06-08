@@ -15,7 +15,7 @@ Emulator::Emulator(const EmuSpec& spec) : mem(), cpu(LR35902(*this)), spec(spec)
   this->cycles = 0;
   this->mode = MODE_GB;
   
-  this->display = new GpuGB<PIXEL_TYPE>(cpu, mem, *this, spec);
+  this->display = new GpuGB(mem, *this, spec);
   
   keysState = 0xFF;
   doubleSpeed = false;

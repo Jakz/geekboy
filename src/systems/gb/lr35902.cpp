@@ -5,9 +5,9 @@
 
 using namespace gb;
 
-LR35902::LR35902(Emulator& emu) : CpuGB(emu.mem), emu(emu)
+LR35902::LR35902(Emulator& emu) : Mos6502(emu.mem), emu(emu)
 {
-  opcodes[OPCODE_DJNZ_N] = static_cast<void (CpuGB::*)()>(&LR35902::djnzn);
+  opcodes[OPCODE_DJNZ_N] = static_cast<void (Mos6502::*)()>(&LR35902::djnzn);
 }
 
 void LR35902::djnzn()
@@ -33,5 +33,5 @@ void LR35902::djnzn()
     //mem->write(PORT_IF, 0x1F);
   }
   else
-    CpuGB::djnzn();
+    Mos6502::djnzn();
 }

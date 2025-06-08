@@ -4,6 +4,17 @@
 
 using namespace gb;
 
+namespace gb
+{
+  enum PriorityType : u8
+  {
+    PRIORITY_NONE = 0,
+    PRIORITY_SPRITE = 1,
+    PRIORITY_BG = 2,
+    PRIORITY_MAYBE_SPRITE = 3
+  };
+}
+
 enum LCDC_Mask : u8
 {
   LCDC_DISPLAY_ENABLE = 7,
@@ -38,8 +49,7 @@ enum STAT_Mask
   STAT_MODE_MASK = 0x03
 };
 
-template<PixelFormat T>
-GpuGB<T>::GpuGB(CpuGB& cpu, Memory& memory, Emulator& emu, const EmuSpec& spec) : cpu(cpu), mem(memory), emu(emu), width(spec.displayWidth), height(spec.displayHeight),
+GpuGB::GpuGB(Memory& memory, Emulator& emu, const EmuSpec& spec) : mem(memory), emu(emu), width(spec.displayWidth), height(spec.displayHeight),
 bcolors{ccc(28, 31, 26),ccc(17, 24, 14),ccc(4, 13, 11),ccc(1,3,4)}
 {
   priorityMap = new PriorityType[width*height];
@@ -49,36 +59,18 @@ bcolors{ccc(28, 31, 26),ccc(17, 24, 14),ccc(4, 13, 11),ccc(1,3,4)}
   init();
 }
 
-template<PixelFormat T>
-GpuGB<T>::~GpuGB()
+GpuGB::~GpuGB()
 {
   delete [] buffer;
   delete [] priorityMap;
 }
 
-template<>
-GpuGB<PixelFormat::ARGB8>::Pixel::type GpuGB<PixelFormat::ARGB8>::ccc(u8 r, u8 g, u8 b)
+pixel_t GpuGB::ccc(u8 r, u8 g, u8 b)
 {
   return (r*8) << 24 | (g*8) << 16 | (b*8) << 8 | 0xFF;
 }
 
-template<>
-GpuGB<PixelFormat::ARGB51>::Pixel::type GpuGB<PixelFormat::ARGB51>::ccc(u8 r, u8 g, u8 b)
-{
-  return ((r) << 11) | ((g) << 6) | ((b) << 1) | 1;
-}
-
-template<>
-GpuGB<PixelFormat::ARGB565>::Pixel::type GpuGB<PixelFormat::ARGB565>::ccc(u8 r, u8 g, u8 b)
-{
-  return ((r) << 11) | ((g*2) << 5) | ((b) << 0);
-}
-
-template<PixelFormat T>
-typename GpuGB<T>::Pixel::type GpuGB<T>::ccc(u8 r, u8 g, u8 b) { return 0; }
-
-template<PixelFormat T>
-void GpuGB<T>::colorsForPalette(DrawLayer layer, u8 index, typename Pixel::type (&palette)[4])
+void GpuGB::colorsForPalette(DrawLayer layer, u8 index, pixel_t(&palette)[4])
 {
   if (emu.mode == MODE_GB)
   {
@@ -130,26 +122,22 @@ void GpuGB<T>::colorsForPalette(DrawLayer layer, u8 index, typename Pixel::type 
   }
 }
 
-template<PixelFormat T>
-void GpuGB<T>::init()
+void GpuGB::init()
 {
   line = 0;
 }
 
-template<PixelFormat T>
-void GpuGB<T>::reset()
+void GpuGB::reset()
 {
   init();
 }
 
-template<PixelFormat T>
-bool GpuGB<T>::isEnabled()
+bool GpuGB::isEnabled()
 {
   return Utils::bit(mem.rawPortRead(PORT_LCDC), LCDC_DISPLAY_ENABLE);
 }
 
-template<PixelFormat T>
-void GpuGB<T>::update(u8 cycles)
+void GpuGB::update(u8 cycles)
 {
   Mode oldMode = static_cast<Mode>(mem.rawPortRead(PORT_STAT) & STAT_MODE_MASK);
   
@@ -194,8 +182,7 @@ void GpuGB<T>::update(u8 cycles)
   }
 }
 
-template<PixelFormat T>
-void GpuGB<T>::manageSTAT()
+void GpuGB::manageSTAT()
 {
   u8 status = mem.rawPortRead(PORT_STAT);
   
@@ -302,8 +289,7 @@ void GpuGB<T>::manageSTAT()
   mem.rawPortWrite(PORT_STAT, status);
 }
 
-template<PixelFormat T>
-void GpuGB<T>::drawScanline(u8 line)
+void GpuGB::drawScanline(u8 line)
 {
   //printf("scanline: %d\n", line);
   
@@ -362,8 +348,7 @@ void GpuGB<T>::drawScanline(u8 line)
   }
 }
 
-template<PixelFormat T>
-void GpuGB<T>::drawTiles(u8 line)
+void GpuGB::drawTiles(u8 line)
 {
   u8 lcdc = mem.read(PORT_LCDC);
   bool priorityEnabled = false; /* seems to be not the real thing  && emu.mode == MODE_CGB && Utils::bit(lcdc, LCDC_BG_DISPLAY_MODE); */
@@ -403,7 +388,7 @@ void GpuGB<T>::drawTiles(u8 line)
   u16 tileAddress;
   
   
-  typename Pixel::type colors[4];
+  pixel_t colors[4];
   
   // if we're in mono gb mode we have just a palette for the background
   if (emu.mode == MODE_GB)
@@ -517,8 +502,7 @@ void GpuGB<T>::drawTiles(u8 line)
 
 }
 
-template<PixelFormat T>
-void GpuGB<T>::drawWindow(u8 line)
+void GpuGB::drawWindow(u8 line)
 {
   u8 lcdc = mem.read(PORT_LCDC);
   bool priorityEnabled = false; /* seems to be not the real thing  && emu.mode == MODE_CGB && Utils::bit(lcdc, LCDC_BG_DISPLAY_MODE); */
@@ -549,7 +533,7 @@ void GpuGB<T>::drawWindow(u8 line)
   u16 tileAddress;
   
   
-  typename Pixel::type colors[4];
+  pixel_t colors[4];
   
   bool flipX = false, flipY = false;
   
@@ -669,8 +653,7 @@ void GpuGB<T>::drawWindow(u8 line)
   }
 }
 
-template<PixelFormat T>
-void GpuGB<T>::drawSprites(u8 line)
+void GpuGB::drawSprites(u8 line)
 {
   u8 *oam = mem.oam();
   u8 *vram = mem.memoryMap()->vram;
@@ -723,7 +706,7 @@ void GpuGB<T>::drawSprites(u8 line)
     // if the sprite resides on the line we're drawing
     if (line >= y && line < y+height)
     {
-      typename Pixel::type colors[4];
+      pixel_t colors[4];
       ++drawn;
       
       // if mode is gb mono then just a bit is used for sprite palette, otherwise
@@ -793,12 +776,3 @@ void GpuGB<T>::drawSprites(u8 line)
     }
   }
 }
-
-
-template GpuGB<PixelFormat::ARGB8>::GpuGB(CpuGB& cpu, Memory& memory, Emulator& emu, const EmuSpec& spec);
-template GpuGB<PixelFormat::ARGB51>::GpuGB(CpuGB& cpu, Memory& memory, Emulator& emu, const EmuSpec& spec);
-template GpuGB<PixelFormat::ARGB565>::GpuGB(CpuGB& cpu, Memory& memory, Emulator& emu, const EmuSpec& spec);
-
-template void GpuGB<PixelFormat::ARGB8>::update(u8 cycles);
-template void GpuGB<PixelFormat::ARGB51>::update(u8 cycles);
-template void GpuGB<PixelFormat::ARGB565>::update(u8 cycles);
